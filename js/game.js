@@ -5,34 +5,43 @@ class BiathlonGame {
             sprint: {
                 name: "Спринт",
                 distance: "3 км",
-                totalSegments: 60,
+                trackLength: 150,
+                totalLaps: 3,
+                segmentsPerLap: 6,
+                totalSegments: 18,
                 shootingRounds: [
-                    { afterSegment: 20, position: "prone", name: "Стрельба лёжа" },
-                    { afterSegment: 40, position: "standing", name: "Стрельба стоя" }
+                    { afterLap: 1, position: "prone", name: "Стрельба лёжа" },
+                    { afterLap: 2, position: "standing", name: "Стрельба стоя" }
                 ],
                 description: "Короткая быстрая гонка с 2 стрельбами"
             },
             pursuit: {
                 name: "Гонка преследования", 
                 distance: "5 км",
-                totalSegments: 100,
+                trackLength: 150,
+                totalLaps: 5,
+                segmentsPerLap: 6,
+                totalSegments: 30,
                 shootingRounds: [
-                    { afterSegment: 20, position: "prone", name: "Стрельба лёжа 1" },
-                    { afterSegment: 40, position: "prone", name: "Стрельба лёжа 2" },
-                    { afterSegment: 60, position: "standing", name: "Стрельба стоя 1" },
-                    { afterSegment: 80, position: "standing", name: "Стрельба стоя 2" }
+                    { afterLap: 1, position: "prone", name: "Стрельба лёжа 1" },
+                    { afterLap: 2, position: "prone", name: "Стрельба лёжа 2" },
+                    { afterLap: 3, position: "standing", name: "Стрельба стоя 1" },
+                    { afterLap: 4, position: "standing", name: "Стрельба стоя 2" }
                 ],
                 description: "Средняя дистанция с 4 стрельбами"
             },
             individual: {
                 name: "Индивидуальная гонка",
                 distance: "6 км", 
-                totalSegments: 120,
+                trackLength: 150,
+                totalLaps: 4,
+                segmentsPerLap: 10,
+                totalSegments: 40,
                 shootingRounds: [
-                    { afterSegment: 24, position: "prone", name: "Стрельба лёжа 1" },
-                    { afterSegment: 48, position: "prone", name: "Стрельба лёжа 2" },
-                    { afterSegment: 72, position: "standing", name: "Стрельба стоя 1" },
-                    { afterSegment: 96, position: "standing", name: "Стрельба стоя 2" }
+                    { afterLap: 1, position: "prone", name: "Стрельба лёжа 1" },
+                    { afterLap: 2, position: "prone", name: "Стрельба лёжа 2" },
+                    { afterLap: 3, position: "standing", name: "Стрельба стоя 1" },
+                    { afterLap: 4, position: "standing", name: "Стрельба стоя 2" }
                 ],
                 description: "Длинная дистанция с 4 стрельбами"
             }
@@ -60,33 +69,28 @@ class BiathlonGame {
             time: 18.3,
             isPlayer: true,
             shooting: {
-                prone: 0.8,  // Точность лёжа 80%
-                standing: 0.6 // Точность стоя 60%
+                prone: 0.8,
+                standing: 0.6
             }
         };
         
         this.opponents = this.generateOpponents(15);
         this.allCompetitors = [this.player, ...this.opponents];
         
-        console.log("Биатлон Менеджер с системой меню инициализирован!");
+        console.log("Биатлон Менеджер инициализирован!");
     }
     
     generateOpponents(count) {
-        const names = [
-            "Йоханссон", "Мюллер", "Мартен", "Ларссон", "Хубер", 
-            "Бё", "Фуркад", "Самуэльссон", "Свендсен", "Устюгов",
-            "Шипулин", "Логинов", "Лазуткин", "Пидно", "Берман"
-        ];
-        
-        const flags = ["🇳🇴", "🇩🇪", "🇫🇷", "🇸🇪", "🇦🇹", "🇫🇮", "🇮🇹", "🇨🇭", "🇺🇦", "🇧🇾", "🇷🇺", "🇨🇿", "🇸🇰", "🇵🇱", "🇰🇿"];
+        const names = ["Йоханссон", "Мюллер", "Мартен", "Ларссон", "Хубер", "Бё", "Фуркад"];
+        const flags = ["🇳🇴", "🇩🇪", "🇫🇷", "🇸🇪", "🇦🇹", "🇫🇮", "🇮🇹"];
         
         return Array.from({length: count}, (_, i) => {
             const baseSpeed = 4 + Math.random() * 3;
             const baseStamina = 80 + Math.random() * 20;
             
             return {
-                name: names[i],
-                flag: flags[i],
+                name: names[i % names.length],
+                flag: flags[i % flags.length],
                 speed: baseSpeed,
                 stamina: baseStamina,
                 maxStamina: baseStamina,
@@ -95,18 +99,27 @@ class BiathlonGame {
                 time: i * 2.5,
                 isPlayer: false,
                 shooting: {
-                    prone: 0.6 + Math.random() * 0.3,  // 60-90%
-                    standing: 0.4 + Math.random() * 0.3 // 40-70%
+                    prone: 0.6 + Math.random() * 0.3,
+                    standing: 0.4 + Math.random() * 0.3
                 },
-                // Характеристики для AI
-                aggression: Math.random(), // Агрессивность (0-1)
-                consistency: 0.7 + Math.random() * 0.3, // Стабильность (0.7-1.0)
-                shootingSpeed: 1.5 + Math.random() * 1.5 // Скорость стрельбы (1.5-3.0 сек)
+                aggression: Math.random(),
+                consistency: 0.7 + Math.random() * 0.3,
+                shootingSpeed: 1.5 + Math.random() * 1.5
             };
         });
     }
     
-    // Методы для главного меню
+    // Добавляем расчет текущего круга
+    getCurrentLap() {
+        const race = this.getCurrentRace();
+        return Math.ceil(this.currentSegment / race.segmentsPerLap);
+    }
+
+    getCurrentSegmentInLap() {
+        const race = this.getCurrentRace();
+        return this.currentSegment % race.segmentsPerLap || race.segmentsPerLap;
+    }
+    
     selectRaceType(raceType) {
         if (this.raceTypes[raceType]) {
             this.selectedRaceType = raceType;
@@ -124,65 +137,70 @@ class BiathlonGame {
         return this.raceTypes;
     }
     
-   startRace(raceType = null) {
-    console.log("=== GAME.STARTRACE ===");
-    console.log("Текущий isRacing:", this.isRacing);
-    
-    if (this.isRacing) {
-        console.log("Гонка уже идет - возвращаем false");
-        return false;
+    // Запуск гонки
+    startRace(raceType = null) {
+        console.log("=== GAME.STARTRACE ===");
+        
+        if (this.isRacing) {
+            console.log("Гонка уже идет - возвращаем false");
+            return false;
+        }
+        
+        if (raceType) {
+            this.selectedRaceType = raceType;
+        }
+        
+        this.currentRaceType = this.selectedRaceType;
+        this.currentSegment = 1;
+        this.totalTime = 0;
+        this.isRacing = true;
+        this.isShooting = false;
+        this.currentShootingRound = null;
+        
+        console.log("Параметры гонки установлены");
+        console.log("Тип гонки:", this.currentRaceType);
+        
+        // Сбрасываем позиции всех участников
+        this.allCompetitors.forEach((competitor, index) => {
+            competitor.time = index * 0.5;
+            competitor.position = index + 1;
+            competitor.stamina = competitor.maxStamina;
+            competitor.pulse = 120;
+        });
+        
+        console.log(`Старт гонки: ${this.getCurrentRace().name}`);
+        
+        // Запускаем игровой цикл
+        this.raceInterval = setInterval(() => {
+            this.updateRace();
+        }, 2000);
+        
+        console.log("Игровой цикл запущен");
+        return true;
     }
-    
-    if (raceType) {
-        this.selectedRaceType = raceType;
-    }
-    
-    this.currentRaceType = this.selectedRaceType;
-    this.currentSegment = 1;
-    this.totalTime = 0;
-    this.isRacing = true;
-    this.isShooting = false;
-    this.currentShootingRound = null;
-    
-    console.log("Параметры гонки установлены");
-    console.log("Тип гонки:", this.currentRaceType);
-    console.log("isRacing установлен в:", this.isRacing);
-    
-    // Сбрасываем позиции всех участников
-    this.allCompetitors.forEach((competitor, index) => {
-        competitor.time = index * 0.5;
-        competitor.position = index + 1;
-        competitor.stamina = competitor.maxStamina;
-        competitor.pulse = 120;
-    });
-    
-    console.log(`Старт гонки: ${this.getCurrentRace().name}`);
-    
-    // Запускаем игровой цикл
-    this.raceInterval = setInterval(() => {
-        this.updateRace();
-    }, 2000);
-    
-    console.log("Игровой цикл запущен");
-    return true;
-}
     
     updateRace() {
+        if (this.isShooting) return;
+        
         const race = this.getCurrentRace();
         
-        if (this.isShooting) return; // Не обновляем гонку во время стрельбы
+        console.log(`Сегмент: ${this.currentSegment}/${race.totalSegments}`);
         
-        // Проверяем, нужно ли переходить к стрельбе
+        // Проверяем стрельбу в конце круга
+        const currentLap = this.getCurrentLap();
+        const isEndOfLap = this.currentSegment % race.segmentsPerLap === 0;
+        
         const shootingRound = race.shootingRounds.find(round => 
-            round.afterSegment === this.currentSegment
+            round.afterLap === currentLap && isEndOfLap
         );
         
         if (shootingRound && !this.isShooting) {
+            console.log(`🚨 Найдена стрельба: ${shootingRound.name}`);
             this.startShooting(shootingRound);
             return;
         }
         
-        if (this.currentSegment > race.totalSegments) {
+        if (this.currentSegment >= race.totalSegments) {
             this.finishRace();
             return;
         }
@@ -191,21 +209,18 @@ class BiathlonGame {
         this.updateCompetitors();
         
         this.currentSegment++;
-        this.totalTime += 2; // 2 секунды на сегмент
-        
-        console.log(`Сегмент: ${this.currentSegment}/${race.totalSegments}`);
+        this.totalTime += 2;
     }
     
     startShooting(shootingRound) {
+        console.log(`🎯 СТАРТ СТРЕЛЬБЫ: ${shootingRound.name}`);
         this.isShooting = true;
         this.currentShootingRound = shootingRound;
-        
-        console.log(`Началась ${shootingRound.name}`);
         
         // Симуляция стрельбы для всех участников
         this.simulateShootingRound();
         
-        // Продолжаем гонку через 5 секунд (время на стрельбу)
+        // Продолжаем гонку через 5 секунд
         setTimeout(() => {
             this.finishShooting();
         }, 5000);
@@ -220,7 +235,7 @@ class BiathlonGame {
             const misses = 5 - hits;
             
             // Добавляем штрафное время за промахи
-            const penaltyTime = misses * 10; // 10 секунд за промах
+            const penaltyTime = misses * 10;
             competitor.time += penaltyTime;
             
             console.log(`${competitor.name}: ${hits}/5 (${misses} промахов, +${penaltyTime}сек)`);
@@ -230,7 +245,6 @@ class BiathlonGame {
     calculateShootingHits(competitor, baseAccuracy) {
         let hits = 0;
         for (let i = 0; i < 5; i++) {
-            // Учитываем стабильность спортсмена
             const effectiveAccuracy = baseAccuracy * competitor.consistency;
             if (Math.random() < effectiveAccuracy) {
                 hits++;
@@ -242,34 +256,27 @@ class BiathlonGame {
     finishShooting() {
         this.isShooting = false;
         this.currentShootingRound = null;
-        
-        // Продолжаем гонку
         this.currentSegment++;
         console.log("Стрельба завершена, продолжаем гонку");
     }
     
     updateCompetitors() {
-        // Обновляем позиции всех участников
         this.allCompetitors.forEach(competitor => {
             if (!competitor.isPlayer) {
-                // AI логика для соперников
-                const baseTimeChange = (10 / competitor.speed); // Базовое время на сегмент
+                const baseTimeChange = (10 / competitor.speed);
                 const variation = (Math.random() * 0.4 - 0.2) * competitor.consistency;
                 const aggressionBonus = competitor.aggression * 0.1;
                 
                 const timeChange = baseTimeChange + variation - aggressionBonus;
                 competitor.time = Math.max(0, competitor.time + timeChange);
                 
-                // Уменьшаем выносливость
                 competitor.stamina = Math.max(0, competitor.stamina - 0.5);
                 competitor.pulse = Math.min(180, competitor.pulse + 0.3);
             }
         });
         
-        // Сортируем по времени
         this.allCompetitors.sort((a, b) => a.time - b.time);
         
-        // Обновляем позиции
         this.allCompetitors.forEach((competitor, index) => {
             competitor.position = index + 1;
         });
@@ -286,7 +293,6 @@ class BiathlonGame {
         
         console.log("Спринт активирован!");
         
-        // Возврат к нормальной скорости через 3 сегмента
         setTimeout(() => {
             this.player.speed = Math.max(5, this.player.speed - 2);
         }, 6000);
@@ -324,7 +330,6 @@ class BiathlonGame {
         return playerPosition;
     }
     
-    // Возврат в меню
     returnToMenu() {
         if (this.isRacing) {
             clearInterval(this.raceInterval);
