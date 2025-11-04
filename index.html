@@ -11,9 +11,11 @@
     <div id="mainMenu" class="screen active">
         <div class="menu-container">
             <div class="stadium-background">
+                <!--
                 <div class="stadium"></div>
                 <div class="snow"></div>
                 <div class="biathletes"></div>
+                 -->
             </div>
             
             <div class="menu-content">
@@ -171,6 +173,25 @@
     setTimeout(() => {
         window.testGame();
     }, 1000);
+</script>
+<script>
+    // Принудительная прокрутка до кнопок
+    function scrollToButtons() {
+        const buttons = document.querySelector('.menu-buttons');
+        if (buttons) {
+            buttons.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+    
+    // Прокручиваем к кнопкам через секунду после загрузки
+    setTimeout(scrollToButtons, 1000);
+    
+    // Также прокручиваем при клике на карточку гонки
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.race-card')) {
+            setTimeout(scrollToButtons, 300);
+        }
+    });
 </script>
 </body>
 </html>
