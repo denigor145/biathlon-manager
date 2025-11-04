@@ -831,3 +831,11 @@ body {
     min-height: 32px;
     flex-shrink: 0; /* Важно - строки не сжимаются */
 }
+.race-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background: transparent;
+    max-height: 60vh; /* Ограничиваем высоту чтобы был скролл */
+    min-height: 300px; /* Минимальная высота */
+}
