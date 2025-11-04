@@ -141,54 +141,34 @@
 
     <!-- Код инициализации -->
     <script>
-    // Простая последовательная загрузка
-    console.log('=== НАЧАЛО ЗАГРУЗКИ ===');
-    
-    function loadScript(src) {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-    }
-    
-    // Загружаем файлы последовательно
-    loadScript('js/game.js')
-        .then(() => {
-            console.log('✅ game.js loaded');
-            return loadScript('js/ui.js');
-        })
-        .then(() => {
-            console.log('✅ ui.js loaded');
-            initializeGame();
-        })
-        .catch(error => {
-            console.error('❌ Load error:', error);
-        });
-    
-    function initializeGame() {
-        try {
-            console.log('🚀 ИНИЦИАЛИЗАЦИЯ ИГРЫ...');
-            console.log('BiathlonGame:', typeof BiathlonGame);
-            console.log('GameUI:', typeof GameUI);
-            
-            if (window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.ready();
-                Telegram.WebApp.expand();
+        function initializeGame() {
+            try {
+                console.log('🚀 ИНИЦИАЛИЗАЦИЯ ИГРЫ...');
+                console.log('BiathlonGame:', typeof BiathlonGame);
+                console.log('GameUI:', typeof GameUI);
+                
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.ready();
+                    Telegram.WebApp.expand();
+                }
+                
+                window.biathlonGame = new BiathlonGame();
+                window.gameUI = new GameUI(window.biathlonGame);
+                window.gameUI.showScreen('mainMenu');
+                
+                console.log('✅ Игра успешно запущена!');
+                
+            } catch (error) {
+                console.error('💥 Ошибка инициализации:', error);
             }
-            
-            window.biathlonGame = new BiathlonGame();
-            window.gameUI = new GameUI(window.biathlonGame);
-            window.gameUI.showScreen('mainMenu');
-            
-            console.log('✅ Игра успешно запущена!');
-            
-        } catch (error) {
-            console.error('💥 Ошибка инициализации:', error);
         }
-    }
-</script>
+        
+        // Запускаем после загрузки страницы
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeGame);
+        } else {
+            initializeGame();
+        }
+    </script>
 </body>
 </html>
