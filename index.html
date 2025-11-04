@@ -276,5 +276,39 @@
         console.error('📏 Линия:', e.lineno);
     });
 </script>
+<script>
+    // Отладочная информация
+    console.log('=== ОТЛАДКА ===');
+    
+    // Проверяем загрузку классов
+    console.log('BiathlonGame:', typeof BiathlonGame);
+    console.log('GameUI:', typeof GameUI);
+    
+    // Проверяем элементы интерфейса
+    console.log('startRace button:', document.getElementById('startRace'));
+    console.log('race cards:', document.querySelectorAll('.race-card').length);
+    
+    // Проверяем обработчики
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'startRace' || e.target.closest('#startRace')) {
+            console.log('Клик на startRace!');
+        }
+        if (e.target.closest('.race-card')) {
+            console.log('Клик на race-card!');
+        }
+    });
+    
+    // Принудительный запуск для теста
+    window.debugStart = function() {
+        console.log('Принудительный запуск гонки...');
+        if (window.biathlonGame && window.gameUI) {
+            window.biathlonGame.startRace('sprint');
+            window.gameUI.showScreen('gameScreen');
+            window.gameUI.updateDisplay();
+        } else {
+            console.log('Игра не инициализирована');
+        }
+    };
+</script>
 </body>
 </html>
