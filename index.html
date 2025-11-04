@@ -4,67 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Биатлон Менеджер</title>
-    <style>
-        body {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            text-align: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .btn {
-            padding: 15px;
-            margin: 10px;
-            border: none;
-            border-radius: 10px;
-            background: #ff4444;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div id="segment">1/20</div>
-            <div id="time">00:00.0</div>
-        </div>
-        
-        <div class="content">
-            <h1>🏁 Биатлон Менеджер</h1>
-            <p>GitHub Pages работает!</p>
-            <button class="btn" onclick="startGame()">🎮 Начать игру</button>
+    <div class="app-container">
+        <!-- Верхняя панель -->
+        <header class="race-header">
+            <div class="segment-info">
+                <span class="current-segment" id="currentSegment">1</span>
+                <span class="segment-divider">/</span>
+                <span class="total-segments" id="totalSegments">60</span>
+            </div>
+            <div class="race-time" id="raceTime">00:00.0</div>
+        </header>
+
+        <!-- Основное поле -->
+        <main class="race-main">
+            <div class="leaderboard-container">
+                <!-- Лидер гонки -->
+                <div class="leader-poster" id="leaderPoster">
+                    <div class="leader-flag">🇳🇴</div>
+                    <div class="leader-name">Йоханссон</div>
+                    <div class="leader-time">00:00.0</div>
+                    <div class="leader-stats">
+                        <div class="stat">Скорость: 8.5</div>
+                        <div class="stat">Выносливость: 85%</div>
+                    </div>
+                </div>
+
+                <!-- Таблица соперников -->
+                <div class="competitors-list" id="competitorsList">
+                    <!-- Заполнится через JavaScript -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Панель управления -->
+        <footer class="control-panel">
+            <button class="control-btn slow-btn" id="slowBtn">
+                <div class="btn-icon">🐢</div>
+                <div class="btn-label">Снизить темп</div>
+            </button>
+            
+            <button class="control-btn menu-btn" id="menuBtn">
+                <div class="btn-icon">⚙️</div>
+                <div class="btn-label">Меню</div>
+            </button>
+            
+            <button class="control-btn sprint-btn" id="sprintBtn">
+                <div class="btn-icon">💨</div>
+                <div class="btn-label">Спринт!</div>
+            </button>
+        </footer>
+
+        <!-- Индикаторы -->
+        <div class="status-indicators">
+            <div class="pulse-indicator">
+                <span>Пульс:</span>
+                <div class="pulse-value" id="pulseValue">145</div>
+                <div class="pulse-bar">
+                    <div class="pulse-fill" id="pulseFill"></div>
+                </div>
+            </div>
+            <div class="stamina-indicator">
+                <span>Выносливость:</span>
+                <div class="stamina-value" id="staminaValue">75%</div>
+                <div class="stamina-bar">
+                    <div class="stamina-fill" id="staminaFill"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script>
-        function startGame() {
-            document.getElementById('segment').textContent = '2/20';
-            document.getElementById('time').textContent = '00:05.3';
-            alert('Игра началась! Следующий шаг - добавить таблицу лидеров.');
-        }
-        
-        console.log('Биатлон Менеджер загружен на GitHub!');
-    </script>
+    <!-- Подключаем JavaScript -->
+    <script src="js/game.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
