@@ -3,11 +3,13 @@ class GameUI {
         this.game = game;
         this.currentScreen = 'mainMenu';
         
-        // Даем время на загрузку DOM перед настройкой событий
+        console.log("GameUI создан!");
+        
+        // Даем время на загрузку DOM
         setTimeout(() => {
             this.setupMenuEventListeners();
             this.setupGameEventListeners();
-        }, 200);
+        }, 100);
     }
 
     // Управление экранами
@@ -24,9 +26,6 @@ class GameUI {
         if (targetScreen) {
             targetScreen.classList.add('active');
             this.currentScreen = screenId;
-            console.log(`Экран ${screenId} активирован`);
-        } else {
-            console.error(`Экран ${screenId} не найден`);
         }
     }
 
@@ -35,78 +34,34 @@ class GameUI {
         console.log("Настройка обработчиков меню...");
         
         // Выбор гонки
-        const raceCards = document.querySelectorAll('.race-card');
-        if (raceCards.length > 0) {
-            raceCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    this.handleRaceCardClick(card);
-                });
+        document.querySelectorAll('.race-card').forEach(card => {
+            card.addEventListener('click', () => {
+                this.handleRaceCardClick(card);
             });
-            console.log(`Найдено карточек гонок: ${raceCards.length}`);
-        } else {
-            console.warn("Карточки гонок не найдены");
-        }
+        });
 
         // Кнопка "Начать гонку"
-        const startBtn = document.getElementById('startRace');
-        if (startBtn) {
-            startBtn.addEventListener('click', () => {
-                this.handleStartRace();
-            });
-            console.log("Кнопка 'Начать гонку' настроена");
-        } else {
-            console.warn("Кнопка 'Начать гонку' не найдена");
-        }
-
-        // Кнопка "Настройки"
-        const settingsBtn = document.getElementById('settingsBtn');
-        if (settingsBtn) {
-            settingsBtn.addEventListener('click', () => {
-                alert('Раздел настроек в разработке!');
-            });
-        }
-
-        // Кнопка "Статистика"
-        const statsBtn = document.getElementById('statsBtn');
-        if (statsBtn) {
-            statsBtn.addEventListener('click', () => {
-                alert('Раздел статистики в разработке!');
-            });
-        }
-        
-        console.log("Обработчики меню настроены");
+        document.getElementById('startRace').addEventListener('click', () => {
+            this.handleStartRace();
+        });
     }
 
     // Настройка обработчиков игры
     setupGameEventListeners() {
         console.log("Настройка обработчиков игры...");
         
-        // Кнопки управления во время гонки
-        const sprintBtn = document.getElementById('sprintBtn');
-        if (sprintBtn) {
-            sprintBtn.addEventListener('click', () => {
-                this.handleSprint();
-            });
-            console.log("Кнопка спринта настроена");
-        }
+        // Кнопки управления
+        document.getElementById('sprintBtn').addEventListener('click', () => {
+            this.handleSprint();
+        });
 
-        const slowBtn = document.getElementById('slowBtn');
-        if (slowBtn) {
-            slowBtn.addEventListener('click', () => {
-                this.handleSlowPace();
-            });
-            console.log("Кнопка замедления настроена");
-        }
+        document.getElementById('slowBtn').addEventListener('click', () => {
+            this.handleSlowPace();
+        });
 
-        const menuBtn = document.getElementById('menuBtn');
-        if (menuBtn) {
-            menuBtn.addEventListener('click', () => {
-                this.showGameMenu();
-            });
-            console.log("Кнопка меню игры настроена");
-        }
-        
-        console.log("Обработчики игры настроены");
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            this.showGameMenu();
+        });
     }
 
     handleRaceCardClick(card) {
@@ -120,68 +75,46 @@ class GameUI {
         
         const raceType = card.getAttribute('data-race');
         this.game.selectRaceType(raceType);
-        
-        console.log(`Выбрана гонка: ${this.game.getSelectedRace().name}`);
     }
 
     handleStartRace() {
-    console.log("=== HANDLE START RACE ===");
-    console.log("Кнопка нажата!");
-    
-    const selectedRace = this.game.getSelectedRace();
-    console.log("Выбранная гонка:", selectedRace);
-    
-    if (selectedRace) {
-        console.log(`Запуск гонки: ${selectedRace.name}`);
-        this.startGame();
-    } else {
-        console.log("Гонка не выбрана - показываем alert");
-        alert('Пожалуйста, выберите тип гонки!');
+        console.log("=== START RACE CLICKED ===");
+        
+        const selectedRace = this.game.getSelectedRace();
+        console.log("Selected race:", selectedRace);
+        
+        if (selectedRace) {
+            this.startGame();
+        } else {
+            alert('Пожалуйста, выберите тип гонки!');
+        }
     }
-}
 
-startGame() {
-    console.log("=== START GAME ===");
-    
-    // Останавливаем любую текущую гонку
-    if (this.game.isRacing) {
-        console.log("Останавливаем текущую гонку");
-        this.game.returnToMenu();
+    startGame() {
+        console.log("Starting game...");
+        
+        // Запускаем гонку
+        const success = this.game.startRace();
+        console.log("Race started:", success);
+        
+        if (success) {
+            this.showScreen('gameScreen');
+            this.updateDisplay();
+        }
     }
-    
-    // Запускаем новую гонку
-    console.log("Запускаем game.startRace()");
-    const success = this.game.startRace();
-    console.log("Результат startRace:", success);
-    
-    if (success) {
-        // Переключаем экран
-        console.log("Переключаем на gameScreen");
-        this.showScreen('gameScreen');
-        this.updateDisplay();
-        console.log("Гонка запущена успешно!");
-    } else {
-        console.log("Ошибка запуска гонки");
-        alert("Не удалось запустить гонку");
-    }
-}
 
-    // Обработчики кнопок игры
     handleSprint() {
-        console.log("Нажата кнопка спринта");
+        console.log("Sprint button clicked");
         const success = this.game.activateSprint();
         if (!success) {
-            alert("Недостаточно выносливость для спринта!");
-        } else {
-            this.showSprintEffect();
+            alert("Недостаточно выносливости для спринта!");
         }
         this.updateDisplay();
     }
 
     handleSlowPace() {
-        console.log("Нажата кнопка замедления");
+        console.log("Slow pace button clicked");
         this.game.activateSlowPace();
-        this.showSlowEffect();
         this.updateDisplay();
     }
 
@@ -190,53 +123,40 @@ startGame() {
         let message = `🏁 ${race.name}\n`;
         message += `📊 Сегмент: ${this.game.currentSegment}/${race.totalSegments}\n`;
         message += `🏅 Позиция: ${this.game.player.position}\n`;
-        message += `💪 Выносливость: ${Math.round(this.game.player.stamina)}%\n`;
-        message += `❤️ Пульс: ${Math.round(this.game.player.pulse)}`;
+        message += `💪 Выносливость: ${Math.round(this.game.player.stamina)}%`;
         
         alert(message);
     }
 
-    // Обновление дисплея во время гонки
+    // Обновление дисплея
     updateDisplay() {
         if (this.currentScreen !== 'gameScreen') return;
 
         const race = this.game.getCurrentRace();
         
-        // Обновляем верхнюю панель
-        const currentSegmentEl = document.getElementById('currentSegment');
-        const totalSegmentsEl = document.getElementById('totalSegments');
+        // Обновляем круги и отрезки
+        const currentLap = this.game.getCurrentLap();
+        const currentSegmentInLap = this.game.getCurrentSegmentInLap();
         
-        if (currentSegmentEl) currentSegmentEl.textContent = this.game.currentSegment;
-        if (totalSegmentsEl) totalSegmentsEl.textContent = race.totalSegments;
+        document.getElementById('currentLap').textContent = currentLap;
+        document.getElementById('totalLaps').textContent = race.totalLaps;
+        document.getElementById('currentSegmentInLap').textContent = currentSegmentInLap;
+        document.getElementById('totalSegmentsPerLap').textContent = race.segmentsPerLap;
         
         // Обновляем индикаторы
-        this.updateIndicators();
+        document.getElementById('pulseValue').textContent = Math.round(this.game.player.pulse);
+        document.getElementById('staminaValue').textContent = Math.round(this.game.player.stamina) + '%';
         
         // Обновляем таблицу лидеров
         this.updateCompetitorsList();
-    }
-
-    updateIndicators() {
-        const pulseValueEl = document.getElementById('pulseValue');
-        const staminaValueEl = document.getElementById('staminaValue');
-        
-        if (pulseValueEl) pulseValueEl.textContent = Math.round(this.game.player.pulse);
-        if (staminaValueEl) staminaValueEl.textContent = Math.round(this.game.player.stamina) + '%';
     }
 
     updateCompetitorsList() {
         const competitorsList = document.getElementById('competitorsList');
         const leader = this.game.allCompetitors[0];
         
-        if (!competitorsList) {
-            console.error("Элемент competitorsList не найден");
-            return;
-        }
-        
         competitorsList.innerHTML = this.game.allCompetitors.map(competitor => {
             const gap = competitor.time - leader.time;
-            
-            // Форматируем имя: Фамилия + первая буква имени
             const shortName = this.formatShortName(competitor.name);
             
             return `
@@ -250,42 +170,16 @@ startGame() {
     }
 
     formatShortName(fullName) {
-        // Берем только фамилию (первое слово) и первую букву имени
         const parts = fullName.split(' ');
         if (parts.length >= 2) {
             return parts[0] + ' ' + parts[1].charAt(0) + '.';
         }
-        return fullName; // Если только одно слово
+        return fullName;
     }
 
     formatTime(seconds) {
         const mins = Math.floor(seconds / 60);
         const secs = (seconds % 60).toFixed(1);
         return `${mins.toString().padStart(2, '0')}:${secs.padStart(4, '0')}`;
-    }
-
-    // Анимации и эффекты
-    showSprintEffect() {
-        const btn = document.getElementById('sprintBtn');
-        if (btn) {
-            btn.style.transform = 'scale(0.9)';
-            btn.style.background = 'linear-gradient(135deg, #FF1744, #D50000)';
-            
-            setTimeout(() => {
-                btn.style.transform = 'scale(1)';
-                btn.style.background = 'linear-gradient(135deg, #FF5252, #FF1744)';
-            }, 300);
-        }
-    }
-
-    showSlowEffect() {
-        const btn = document.getElementById('slowBtn');
-        if (btn) {
-            btn.style.transform = 'scale(0.9)';
-            
-            setTimeout(() => {
-                btn.style.transform = 'scale(1)';
-            }, 300);
-        }
     }
 }
