@@ -81,17 +81,6 @@ class GameUI {
     setupGameEventListeners() {
         console.log("Настройка обработчиков игры...");
         
-        // Кнопка возврата в меню
-        const backBtn = document.getElementById('backToMenu');
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                this.returnToMenu();
-            });
-            console.log("Кнопка возврата в меню настроена");
-        } else {
-            console.warn("Кнопка возврата в меню не найдена");
-        }
-
         // Кнопки управления во время гонки
         const sprintBtn = document.getElementById('sprintBtn');
         if (sprintBtn) {
@@ -99,8 +88,6 @@ class GameUI {
                 this.handleSprint();
             });
             console.log("Кнопка спринта настроена");
-        } else {
-            console.warn("Кнопка спринта не найдена");
         }
 
         const slowBtn = document.getElementById('slowBtn');
@@ -109,8 +96,6 @@ class GameUI {
                 this.handleSlowPace();
             });
             console.log("Кнопка замедления настроена");
-        } else {
-            console.warn("Кнопка замедления не найдена");
         }
 
         const menuBtn = document.getElementById('menuBtn');
@@ -119,8 +104,6 @@ class GameUI {
                 this.showGameMenu();
             });
             console.log("Кнопка меню игры настроена");
-        } else {
-            console.warn("Кнопка меню игры не найдена");
         }
         
         console.log("Обработчики игры настроены");
@@ -175,19 +158,12 @@ class GameUI {
         }
     }
 
-    // Возврат в меню
-    returnToMenu() {
-        this.game.returnToMenu();
-        this.showScreen('mainMenu');
-        console.log("Возврат в главное меню");
-    }
-
     // Обработчики кнопок игры
     handleSprint() {
         console.log("Нажата кнопка спринта");
         const success = this.game.activateSprint();
         if (!success) {
-            alert("Недостаточно выносливости для спринта!");
+            alert("Недостаточно выносливость для спринта!");
         } else {
             this.showSprintEffect();
         }
@@ -219,49 +195,25 @@ class GameUI {
         const race = this.game.getCurrentRace();
         
         // Обновляем верхнюю панель
-        document.getElementById('currentSegment').textContent = this.game.currentSegment;
-        document.getElementById('totalSegments').textContent = race.totalSegments;
+        const currentSegmentEl = document.getElementById('currentSegment');
+        const totalSegmentsEl = document.getElementById('totalSegments');
+        
+        if (currentSegmentEl) currentSegmentEl.textContent = this.game.currentSegment;
+        if (totalSegmentsEl) totalSegmentsEl.textContent = race.totalSegments;
         
         // Обновляем индикаторы
         this.updateIndicators();
         
         // Обновляем таблицу лидеров
         this.updateCompetitorsList();
-
-        // Обновляем информацию о текущем этапе
-        this.updateStageInfo();
     }
 
     updateIndicators() {
-        document.getElementById('pulseValue').textContent = Math.round(this.game.player.pulse);
-        document.getElementById('staminaValue').textContent = Math.round(this.game.player.stamina) + '%';
-    }
-
-    updateStageInfo() {
-        const race = this.game.getCurrentRace();
-        const currentSegment = this.game.currentSegment;
+        const pulseValueEl = document.getElementById('pulseValue');
+        const staminaValueEl = document.getElementById('staminaValue');
         
-        // Определяем текущий этап
-        let stageInfo = "Гонка";
-        let nextEvent = "";
-
-        if (this.game.isShooting) {
-            stageInfo = this.game.currentShootingRound.name;
-        } else {
-            // Проверяем, какая стрельба будет следующей
-            const nextShooting = race.shootingRounds.find(round => 
-                round.afterSegment > currentSegment
-            );
-            
-            if (nextShooting) {
-                const segmentsToShooting = nextShooting.afterSegment - currentSegment;
-                nextEvent = `Стрельба через ${segmentsToShooting} сегментов`;
-            } else if (currentSegment >= race.totalSegments - 5) {
-                nextEvent = "ФИНИШ близко!";
-            }
-        }
-
-        console.log(`Этап: ${stageInfo} | ${nextEvent}`);
+        if (pulseValueEl) pulseValueEl.textContent = Math.round(this.game.player.pulse);
+        if (staminaValueEl) staminaValueEl.textContent = Math.round(this.game.player.stamina) + '%';
     }
 
     updateCompetitorsList() {
