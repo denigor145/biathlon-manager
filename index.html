@@ -169,5 +169,113 @@
         }
     });
 </script>
+<script>
+    // Проверка загрузки файлов
+    console.log('=== ПРОВЕРКА ФАЙЛОВ ===');
+    
+    // Список файлов для проверки
+    const files = [
+        'css/style.css',
+        'js/game.js',
+        'js/ui.js', 
+        'js/app.js'
+    ];
+    
+    let loadedFiles = 0;
+    
+    files.forEach(file => {
+        const link = document.createElement('link');
+        if (file.endsWith('.css')) {
+            link.rel = 'stylesheet';
+            link.href = file;
+            link.onload = () => {
+                console.log('✅ CSS loaded:', file);
+                loadedFiles++;
+                checkAllLoaded();
+            };
+            link.onerror = () => {
+                console.error('❌ CSS failed:', file);
+                loadedFiles++;
+                checkAllLoaded();
+            };
+            document.head.appendChild(link);
+        } else {
+            const script = document.createElement('script');
+            script.src = file;
+            script.onload = () => {
+                console.log('✅ JS loaded:', file);
+                loadedFiles++;
+                checkAllLoaded();
+            };
+            script.onerror = () => {
+                console.error('❌ JS failed:', file);
+                loadedFiles++;
+                checkAllLoaded();
+            };
+            document.body.appendChild(script);
+        }
+    });
+    
+    function checkAllLoaded() {
+        if (loadedFiles === files.length) {
+            console.log('=== ВСЕ ФАЙЛЫ ПРОВЕРЕНЫ ===');
+            // Запускаем игру после загрузки всех файлов
+            setTimeout(initializeGame, 100);
+        }
+    }
+    
+    // Перемещаем инициализацию сюда
+    function initializeGame() {
+        try {
+            console.log('🚀 ИНИЦИАЛИЗАЦИЯ ИГРЫ...');
+            
+            if (window.Telegram && Telegram.WebApp) {
+                console.log('📱 Telegram Web App detected');
+                Telegram.WebApp.ready();
+                Telegram.WebApp.expand();
+            }
+            
+            if (window.BiathlonGame && window.GameUI) {
+                window.biathlonGame = new BiathlonGame();
+                window.gameUI = new GameUI(window.biathlonGame);
+                window.gameUI.showScreen('mainMenu');
+                console.log('✅ Игра успешно запущена!');
+            } else {
+                console.error('❌ Классы игры не найдены');
+            }
+            
+        } catch (error) {
+            console.error('💥 Ошибка инициализации:', error);
+            // Показываем ошибку на странице
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                background: #ff4444;
+                color: white;
+                padding: 20px;
+                font-family: Arial;
+                z-index: 10000;
+                font-size: 16px;
+                text-align: center;
+            `;
+            errorDiv.innerHTML = `
+                <strong>Ошибка загрузки игры</strong><br>
+                ${error.message}<br>
+                <small>Проверьте консоль для деталей</small>
+            `;
+            document.body.appendChild(errorDiv);
+        }
+    }
+    
+    // Глобальный обработчик ошибок
+    window.addEventListener('error', function(e) {
+        console.error('🔴 Глобальная ошибка:', e.error);
+        console.error('📄 Файл:', e.filename);
+        console.error('📏 Линия:', e.lineno);
+    });
+</script>
 </body>
 </html>
