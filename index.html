@@ -15,7 +15,7 @@
                 <div class="stadium"></div>
                 <div class="snow"></div>
                 <div class="biathletes"></div>
-                 -->
+                -->
             </div>
             
             <div class="menu-content">
@@ -74,16 +74,26 @@
             </div>
         </div>
     </div>
-        <!-- Экран гонки -->
+
+    <!-- Экран гонки -->
     <div id="gameScreen" class="screen">
         <div class="app-container">
             <!-- Верхняя панель - упрощенная -->
             <header class="race-header">
                 <div class="race-info">
                     <div class="laps-info">
-                        <span class="current-lap" id="currentSegment">1</span>
-                        <span class="lap-divider">/</span>
-                        <span class="total-laps" id="totalSegments">60</span>
+                        <div class="lap-display">
+                            <span class="lap-label">КРУГ</span>
+                            <span class="current-lap" id="currentLap">1</span>
+                            <span class="lap-divider">/</span>
+                            <span class="total-laps" id="totalLaps">3</span>
+                        </div>
+                        <div class="segment-display">
+                            <span class="segment-label">ОТРЕЗОК</span>
+                            <span class="current-segment" id="currentSegmentInLap">1</span>
+                            <span class="segment-divider">/</span>
+                            <span class="total-segments" id="totalSegmentsPerLap">20</span>
+                        </div>
                     </div>
                     <div class="player-stats">
                         <div class="stat-item">
@@ -124,191 +134,150 @@
             </footer>
         </div>
     </div>
-    <!-- Подключаем JavaScript -->
+
+    <!-- Подключаем JavaScript файлы -->
     <script src="js/game.js"></script>
     <script src="js/ui.js"></script>
+
+    <!-- Код инициализации -->
     <script>
-    // Простая отладка - проверяем клики
-    document.addEventListener('click', function(e) {
-        console.log('Клик по:', e.target);
-    });
-
-    // Глобальные функции для тестирования
-    window.testGame = function() {
-        console.log('=== ТЕСТ ИГРЫ ===');
-        console.log('biathlonGame:', window.biathlonGame);
-        console.log('gameUI:', window.gameUI);
+        // Проверка загрузки файлов
+        console.log('=== ПРОВЕРКА ФАЙЛОВ ===');
         
-        if (window.biathlonGame) {
-            console.log('Выбранная гонка:', window.biathlonGame.getSelectedRace());
-        }
-    };
-
-    // Запускаем тест при загрузке
-    setTimeout(() => {
-        window.testGame();
-    }, 1000);
-</script>
-<script>
-    // Принудительная прокрутка до кнопок
-    function scrollToButtons() {
-        const buttons = document.querySelector('.menu-buttons');
-        if (buttons) {
-            buttons.scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-    
-    // Прокручиваем к кнопкам через секунду после загрузки
-    setTimeout(scrollToButtons, 1000);
-    
-    // Также прокручиваем при клике на карточку гонки
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.race-card')) {
-            setTimeout(scrollToButtons, 300);
-        }
-    });
-</script>
-<script>
-    // Проверка загрузки файлов
-    console.log('=== ПРОВЕРКА ФАЙЛОВ ===');
-    
-    // Список файлов для проверки
-    const files = [
-        'css/style.css',
-        'js/game.js',
-        'js/ui.js', 
-        'js/app.js'
-    ];
-    
-    let loadedFiles = 0;
-    
-    files.forEach(file => {
-        const link = document.createElement('link');
-        if (file.endsWith('.css')) {
-            link.rel = 'stylesheet';
-            link.href = file;
-            link.onload = () => {
-                console.log('✅ CSS loaded:', file);
-                loadedFiles++;
-                checkAllLoaded();
-            };
-            link.onerror = () => {
-                console.error('❌ CSS failed:', file);
-                loadedFiles++;
-                checkAllLoaded();
-            };
-            document.head.appendChild(link);
-        } else {
-            const script = document.createElement('script');
-            script.src = file;
-            script.onload = () => {
-                console.log('✅ JS loaded:', file);
-                loadedFiles++;
-                checkAllLoaded();
-            };
-            script.onerror = () => {
-                console.error('❌ JS failed:', file);
-                loadedFiles++;
-                checkAllLoaded();
-            };
-            document.body.appendChild(script);
-        }
-    });
-    
-    function checkAllLoaded() {
-        if (loadedFiles === files.length) {
-            console.log('=== ВСЕ ФАЙЛЫ ПРОВЕРЕНЫ ===');
-            // Запускаем игру после загрузки всех файлов
-            setTimeout(initializeGame, 100);
-        }
-    }
-    
-    // Перемещаем инициализацию сюда
-    function initializeGame() {
-        try {
-            console.log('🚀 ИНИЦИАЛИЗАЦИЯ ИГРЫ...');
-            
-            if (window.Telegram && Telegram.WebApp) {
-                console.log('📱 Telegram Web App detected');
-                Telegram.WebApp.ready();
-                Telegram.WebApp.expand();
-            }
-            
-            if (window.BiathlonGame && window.GameUI) {
-                window.biathlonGame = new BiathlonGame();
-                window.gameUI = new GameUI(window.biathlonGame);
-                window.gameUI.showScreen('mainMenu');
-                console.log('✅ Игра успешно запущена!');
+        const files = [
+            'css/style.css',
+            'js/game.js',
+            'js/ui.js'
+        ];
+        
+        let loadedFiles = 0;
+        
+        files.forEach(file => {
+            const link = document.createElement('link');
+            if (file.endsWith('.css')) {
+                link.rel = 'stylesheet';
+                link.href = file;
+                link.onload = () => {
+                    console.log('✅ CSS loaded:', file);
+                    loadedFiles++;
+                    checkAllLoaded();
+                };
+                link.onerror = () => {
+                    console.error('❌ CSS failed:', file);
+                    loadedFiles++;
+                    checkAllLoaded();
+                };
+                document.head.appendChild(link);
             } else {
-                console.error('❌ Классы игры не найдены');
+                const script = document.createElement('script');
+                script.src = file;
+                script.onload = () => {
+                    console.log('✅ JS loaded:', file);
+                    loadedFiles++;
+                    checkAllLoaded();
+                };
+                script.onerror = () => {
+                    console.error('❌ JS failed:', file);
+                    loadedFiles++;
+                    checkAllLoaded();
+                };
+                document.body.appendChild(script);
             }
-            
-        } catch (error) {
-            console.error('💥 Ошибка инициализации:', error);
-            // Показываем ошибку на странице
-            const errorDiv = document.createElement('div');
-            errorDiv.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                background: #ff4444;
-                color: white;
-                padding: 20px;
-                font-family: Arial;
-                z-index: 10000;
-                font-size: 16px;
-                text-align: center;
-            `;
-            errorDiv.innerHTML = `
-                <strong>Ошибка загрузки игры</strong><br>
-                ${error.message}<br>
-                <small>Проверьте консоль для деталей</small>
-            `;
-            document.body.appendChild(errorDiv);
+        });
+        
+        function checkAllLoaded() {
+            if (loadedFiles === files.length) {
+                console.log('=== ВСЕ ФАЙЛЫ ПРОВЕРЕНЫ ===');
+                // Запускаем игру после загрузки всех файлов
+                setTimeout(initializeGame, 100);
+            }
         }
-    }
-    
-    // Глобальный обработчик ошибок
-    window.addEventListener('error', function(e) {
-        console.error('🔴 Глобальная ошибка:', e.error);
-        console.error('📄 Файл:', e.filename);
-        console.error('📏 Линия:', e.lineno);
-    });
-</script>
-<script>
-    // Отладочная информация
-    console.log('=== ОТЛАДКА ===');
-    
-    // Проверяем загрузку классов
-    console.log('BiathlonGame:', typeof BiathlonGame);
-    console.log('GameUI:', typeof GameUI);
-    
-    // Проверяем элементы интерфейса
-    console.log('startRace button:', document.getElementById('startRace'));
-    console.log('race cards:', document.querySelectorAll('.race-card').length);
-    
-    // Проверяем обработчики
-    document.addEventListener('click', function(e) {
-        if (e.target.id === 'startRace' || e.target.closest('#startRace')) {
-            console.log('Клик на startRace!');
+        
+        // Инициализация игры
+        function initializeGame() {
+            try {
+                console.log('🚀 ИНИЦИАЛИЗАЦИЯ ИГРЫ...');
+                
+                if (window.Telegram && Telegram.WebApp) {
+                    console.log('📱 Telegram Web App detected');
+                    Telegram.WebApp.ready();
+                    Telegram.WebApp.expand();
+                }
+                
+                if (window.BiathlonGame && window.GameUI) {
+                    window.biathlonGame = new BiathlonGame();
+                    window.gameUI = new GameUI(window.biathlonGame);
+                    window.gameUI.showScreen('mainMenu');
+                    console.log('✅ Игра успешно запущена!');
+                } else {
+                    console.error('❌ Классы игры не найдены');
+                }
+                
+            } catch (error) {
+                console.error('💥 Ошибка инициализации:', error);
+                // Показываем ошибку на странице
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    background: #ff4444;
+                    color: white;
+                    padding: 20px;
+                    font-family: Arial;
+                    z-index: 10000;
+                    font-size: 16px;
+                    text-align: center;
+                `;
+                errorDiv.innerHTML = `
+                    <strong>Ошибка загрузки игры</strong><br>
+                    ${error.message}<br>
+                    <small>Проверьте консоль для деталей</small>
+                `;
+                document.body.appendChild(errorDiv);
+            }
         }
-        if (e.target.closest('.race-card')) {
-            console.log('Клик на race-card!');
-        }
-    });
-    
-    // Принудительный запуск для теста
-    window.debugStart = function() {
-        console.log('Принудительный запуск гонки...');
-        if (window.biathlonGame && window.gameUI) {
-            window.biathlonGame.startRace('sprint');
-            window.gameUI.showScreen('gameScreen');
-            window.gameUI.updateDisplay();
-        } else {
-            console.log('Игра не инициализирована');
-        }
-    };
-</script>
+        
+        // Глобальный обработчик ошибок
+        window.addEventListener('error', function(e) {
+            console.error('🔴 Глобальная ошибка:', e.error);
+            console.error('📄 Файл:', e.filename);
+            console.error('📏 Линия:', e.lineno);
+        });
+
+        // Отладочная информация
+        console.log('=== ОТЛАДКА ===');
+        
+        // Проверяем загрузку классов
+        console.log('BiathlonGame:', typeof BiathlonGame);
+        console.log('GameUI:', typeof GameUI);
+        
+        // Проверяем элементы интерфейса
+        console.log('startRace button:', document.getElementById('startRace'));
+        console.log('race cards:', document.querySelectorAll('.race-card').length);
+        
+        // Проверяем обработчики
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'startRace' || e.target.closest('#startRace')) {
+                console.log('Клик на startRace!');
+            }
+            if (e.target.closest('.race-card')) {
+                console.log('Клик на race-card!');
+            }
+        });
+        
+        // Принудительный запуск для теста
+        window.debugStart = function() {
+            console.log('Принудительный запуск гонки...');
+            if (window.biathlonGame && window.gameUI) {
+                window.biathlonGame.startRace('sprint');
+                window.gameUI.showScreen('gameScreen');
+                window.gameUI.updateDisplay();
+            } else {
+                console.log('Игра не инициализирована');
+            }
+        };
+    </script>
 </body>
 </html>
