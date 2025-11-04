@@ -124,38 +124,48 @@ class BiathlonGame {
         return this.raceTypes;
     }
     
-    // Запуск гонки
-    startRace(raceType = null) {
-        if (this.isRacing) return false;
-        
-        if (raceType) {
-            this.selectedRaceType = raceType;
-        }
-        
-        this.currentRaceType = this.selectedRaceType;
-        this.currentSegment = 1;
-        this.totalTime = 0;
-        this.isRacing = true;
-        this.isShooting = false;
-        this.currentShootingRound = null;
-        
-        // Сбрасываем позиции всех участников
-        this.allCompetitors.forEach((competitor, index) => {
-            competitor.time = index * 0.5; // Небольшой разрыв на старте
-            competitor.position = index + 1;
-            competitor.stamina = competitor.maxStamina;
-            competitor.pulse = 120;
-        });
-        
-        console.log(`Старт гонки: ${this.getCurrentRace().name}`);
-        
-        // Запускаем игровой цикл
-        this.raceInterval = setInterval(() => {
-            this.updateRace();
-        }, 2000); // Обновление каждые 2 секунды (1 сегмент)
-        
-        return true;
+   startRace(raceType = null) {
+    console.log("=== GAME.STARTRACE ===");
+    console.log("Текущий isRacing:", this.isRacing);
+    
+    if (this.isRacing) {
+        console.log("Гонка уже идет - возвращаем false");
+        return false;
     }
+    
+    if (raceType) {
+        this.selectedRaceType = raceType;
+    }
+    
+    this.currentRaceType = this.selectedRaceType;
+    this.currentSegment = 1;
+    this.totalTime = 0;
+    this.isRacing = true;
+    this.isShooting = false;
+    this.currentShootingRound = null;
+    
+    console.log("Параметры гонки установлены");
+    console.log("Тип гонки:", this.currentRaceType);
+    console.log("isRacing установлен в:", this.isRacing);
+    
+    // Сбрасываем позиции всех участников
+    this.allCompetitors.forEach((competitor, index) => {
+        competitor.time = index * 0.5;
+        competitor.position = index + 1;
+        competitor.stamina = competitor.maxStamina;
+        competitor.pulse = 120;
+    });
+    
+    console.log(`Старт гонки: ${this.getCurrentRace().name}`);
+    
+    // Запускаем игровой цикл
+    this.raceInterval = setInterval(() => {
+        this.updateRace();
+    }, 2000);
+    
+    console.log("Игровой цикл запущен");
+    return true;
+}
     
     updateRace() {
         const race = this.getCurrentRace();

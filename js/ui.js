@@ -125,38 +125,46 @@ class GameUI {
     }
 
     handleStartRace() {
-        console.log("Нажата кнопка 'Начать гонку'");
-        
-        const selectedRace = this.game.getSelectedRace();
-        console.log("Выбранная гонка:", selectedRace);
-        
-        if (selectedRace) {
-            console.log(`Запуск гонки: ${selectedRace.name}`);
-            this.startGame();
-        } else {
-            console.log("Гонка не выбрана!");
-            alert('Пожалуйста, выберите тип гонки!');
-        }
+    console.log("=== HANDLE START RACE ===");
+    console.log("Кнопка нажата!");
+    
+    const selectedRace = this.game.getSelectedRace();
+    console.log("Выбранная гонка:", selectedRace);
+    
+    if (selectedRace) {
+        console.log(`Запуск гонки: ${selectedRace.name}`);
+        this.startGame();
+    } else {
+        console.log("Гонка не выбрана - показываем alert");
+        alert('Пожалуйста, выберите тип гонки!');
     }
+}
 
-    // Запуск игры
-    startGame() {
-        // Останавливаем любую текущую гонку
-        if (this.game.isRacing) {
-            this.game.returnToMenu();
-        }
-        
-        // Запускаем новую гонку
-        const success = this.game.startRace();
-        console.log("Гонка запущена:", success);
-        
-        if (success) {
-            // Переключаем экран
-            this.showScreen('gameScreen');
-            this.updateDisplay();
-            console.log("Экран переключен на gameScreen");
-        }
+startGame() {
+    console.log("=== START GAME ===");
+    
+    // Останавливаем любую текущую гонку
+    if (this.game.isRacing) {
+        console.log("Останавливаем текущую гонку");
+        this.game.returnToMenu();
     }
+    
+    // Запускаем новую гонку
+    console.log("Запускаем game.startRace()");
+    const success = this.game.startRace();
+    console.log("Результат startRace:", success);
+    
+    if (success) {
+        // Переключаем экран
+        console.log("Переключаем на gameScreen");
+        this.showScreen('gameScreen');
+        this.updateDisplay();
+        console.log("Гонка запущена успешно!");
+    } else {
+        console.log("Ошибка запуска гонки");
+        alert("Не удалось запустить гонку");
+    }
+}
 
     // Обработчики кнопок игры
     handleSprint() {
