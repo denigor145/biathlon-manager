@@ -7,70 +7,140 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Верхняя панель -->
-        <header class="race-header">
-            <div class="segment-info">
-                <span class="current-segment" id="currentSegment">1</span>
-                <span class="segment-divider">/</span>
-                <span class="total-segments" id="totalSegments">60</span>
+    <!-- Главное меню -->
+    <div id="mainMenu" class="screen active">
+        <div class="menu-container">
+            <div class="stadium-background">
+                <div class="stadium"></div>
+                <div class="snow"></div>
+                <div class="biathletes"></div>
             </div>
-            <div class="race-time" id="raceTime">00:00.0</div>
-        </header>
-
-        <!-- Основное поле -->
-        <main class="race-main">
-            <div class="leaderboard-container">
-                <!-- Лидер гонки -->
-                <div class="leader-poster" id="leaderPoster">
-                    <div class="leader-flag">🇳🇴</div>
-                    <div class="leader-name">Йоханссон</div>
-                    <div class="leader-time">00:00.0</div>
-                    <div class="leader-stats">
-                        <div class="stat">Скорость: 8.5</div>
-                        <div class="stat">Выносливость: 85%</div>
+            
+            <div class="menu-content">
+                <h1 class="game-title">🏁 Биатлон Менеджер</h1>
+                <div class="menu-options">
+                    <div class="race-selection">
+                        <h2>Выберите гонку</h2>
+                        <div class="race-cards">
+                            <div class="race-card" data-race="sprint">
+                                <div class="race-icon">⚡</div>
+                                <h3>Спринт</h3>
+                                <p>3 км • 2 стрельбы</p>
+                                <div class="race-stats">
+                                    <span>📏 3km</span>
+                                    <span>🎯 2x</span>
+                                    <span>⏱️ 25min</span>
+                                </div>
+                            </div>
+                            
+                            <div class="race-card" data-race="pursuit">
+                                <div class="race-icon">🏃</div>
+                                <h3>Гонка преследования</h3>
+                                <p>5 км • 4 стрельбы</p>
+                                <div class="race-stats">
+                                    <span>📏 5km</span>
+                                    <span>🎯 4x</span>
+                                    <span>⏱️ 35min</span>
+                                </div>
+                            </div>
+                            
+                            <div class="race-card" data-race="individual">
+                                <div class="race-icon">👤</div>
+                                <h3>Индивидуальная</h3>
+                                <p>6 км • 4 стрельбы</p>
+                                <div class="race-stats">
+                                    <span>📏 6km</span>
+                                    <span>🎯 4x</span>
+                                    <span>⏱️ 45min</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="menu-buttons">
+                        <button class="menu-btn primary" id="startRace">
+                            🎮 Начать гонку
+                        </button>
+                        <button class="menu-btn secondary" id="settingsBtn">
+                            ⚙️ Настройки
+                        </button>
+                        <button class="menu-btn secondary" id="statsBtn">
+                            📊 Статистика
+                        </button>
                     </div>
                 </div>
-
-                <!-- Таблица соперников -->
-                <div class="competitors-list" id="competitorsList">
-                    <!-- Заполнится через JavaScript -->
-                </div>
             </div>
-        </main>
+        </div>
+    </div>
 
-        <!-- Панель управления -->
-        <footer class="control-panel">
-            <button class="control-btn slow-btn" id="slowBtn">
-                <div class="btn-icon">🐢</div>
-                <div class="btn-label">Снизить темп</div>
-            </button>
-            
-            <button class="control-btn menu-btn" id="menuBtn">
-                <div class="btn-icon">⚙️</div>
-                <div class="btn-label">Меню</div>
-            </button>
-            
-            <button class="control-btn sprint-btn" id="sprintBtn">
-                <div class="btn-icon">💨</div>
-                <div class="btn-label">Спринт!</div>
-            </button>
-        </footer>
-
-        <!-- Индикаторы -->
-        <div class="status-indicators">
-            <div class="pulse-indicator">
-                <span>Пульс:</span>
-                <div class="pulse-value" id="pulseValue">145</div>
-                <div class="pulse-bar">
-                    <div class="pulse-fill" id="pulseFill"></div>
+    <!-- Экран гонки -->
+    <div id="gameScreen" class="screen">
+        <div class="app-container">
+            <!-- Верхняя панель -->
+            <header class="race-header">
+                <div class="segment-info">
+                    <span class="current-segment" id="currentSegment">1</span>
+                    <span class="segment-divider">/</span>
+                    <span class="total-segments" id="totalSegments">60</span>
                 </div>
-            </div>
-            <div class="stamina-indicator">
-                <span>Выносливость:</span>
-                <div class="stamina-value" id="staminaValue">75%</div>
-                <div class="stamina-bar">
-                    <div class="stamina-fill" id="staminaFill"></div>
+                <div class="race-time" id="raceTime">00:00.0</div>
+                <button class="back-btn" id="backToMenu">← Меню</button>
+            </header>
+
+            <!-- Основное поле -->
+            <main class="race-main">
+                <div class="leaderboard-container">
+                    <!-- Лидер гонки -->
+                    <div class="leader-poster" id="leaderPoster">
+                        <div class="leader-flag">🇳🇴</div>
+                        <div class="leader-name">Йоханссон</div>
+                        <div class="leader-time">00:00.0</div>
+                        <div class="leader-stats">
+                            <div class="stat">Скорость: 8.5</div>
+                            <div class="stat">Выносливость: 85%</div>
+                        </div>
+                    </div>
+
+                    <!-- Таблица соперников -->
+                    <div class="competitors-list" id="competitorsList">
+                        <!-- Заполнится через JavaScript -->
+                    </div>
+                </div>
+            </main>
+
+            <!-- Панель управления -->
+            <footer class="control-panel">
+                <button class="control-btn slow-btn" id="slowBtn">
+                    <div class="btn-icon">🐢</div>
+                    <div class="btn-label">Снизить темп</div>
+                </button>
+                
+                <button class="control-btn menu-btn" id="menuBtn">
+                    <div class="btn-icon">⚙️</div>
+                    <div class="btn-label">Меню</div>
+                </button>
+                
+                <button class="control-btn sprint-btn" id="sprintBtn">
+                    <div class="btn-icon">💨</div>
+                    <div class="btn-label">Спринт!</div>
+                </button>
+            </footer>
+
+            <!-- Индикаторы -->
+            <div class="status-indicators">
+                <div class="pulse-indicator">
+                    <span>Пульс:</span>
+                    <div class="pulse-value" id="pulseValue">145</div>
+                    <div class="pulse-bar">
+                        <div class="pulse-fill" id="pulseFill"></div>
+                    </div>
+                </div>
+                <div class="stamina-indicator">
+                    <span>Выносливость:</span>
+                    <div class="stamina-value" id="staminaValue">75%</div>
+                    <div class="stamina-bar">
+                        <div class="stamina-fill" id="staminaFill"></div>
+                    </div>
                 </div>
             </div>
         </div>
