@@ -839,3 +839,80 @@ body {
     max-height: 60vh; /* Ограничиваем высоту чтобы был скролл */
     min-height: 300px; /* Минимальная высота */
 }
+/* Основные исправления прокрутки */
+body {
+    overflow: hidden;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.app-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Главный контейнер для прокрутки */
+.race-main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+    background: transparent;
+    
+    /* Критически важные свойства для прокрутки */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    
+    /* Для десктопа */
+    min-height: 0; /* Разрешаем сжатие */
+    height: 0; /* Принудительно включаем flex-сжатие */
+}
+
+/* Контейнер списка должен занимать всю доступную высоту */
+.compact-leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-height: min-content;
+}
+
+/* Убедимся что строки не сжимаются */
+.compact-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 12px;
+    min-height: 32px;
+    flex-shrink: 0; /* Не сжимаются! */
+}
+
+/* Принудительное решение для десктопа */
+@media (min-width: 768px) {
+    .race-main {
+        max-height: calc(100vh - 200px); /* Высота минус шапка и кнопки */
+    }
+}
+
+/* Стили скроллбара для наглядности */
+.race-main::-webkit-scrollbar {
+    width: 8px;
+}
+
+.race-main::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.race-main::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.race-main::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
