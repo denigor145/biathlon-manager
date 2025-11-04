@@ -170,5 +170,23 @@
             initializeGame();
         }
     </script>
+    <script>
+    // Принудительная прокрутка для десктопа
+    document.addEventListener('DOMContentLoaded', function() {
+        const raceMain = document.querySelector('.race-main');
+        
+        if (raceMain) {
+            // Обработчик колесика мыши
+            raceMain.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                this.scrollTop += e.deltaY;
+            }, { passive: false });
+            
+            // Делаем элемент фокусируемым
+            raceMain.setAttribute('tabindex', '0');
+            raceMain.style.outline = 'none';
+        }
+    });
+</script>
 </body>
 </html>
