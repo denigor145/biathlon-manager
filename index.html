@@ -1,192 +1,41 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Биатлон Менеджер</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
     <!-- Главное меню -->
     <div id="mainMenu" class="screen active">
         <div class="menu-container">
-            <div class="stadium-background">
-                <!--
-                <div class="stadium"></div>
-                <div class="snow"></div>
-                <div class="biathletes"></div>
-                -->
-            </div>
-            
             <div class="menu-content">
                 <h1 class="game-title">🏁 Биатлон Менеджер</h1>
-                <div class="menu-options">
-                    <div class="race-selection">
-                        <h2>Выберите гонку</h2>
-                        <div class="race-cards">
-                            <div class="race-card" data-race="sprint">
-                                <div class="race-icon">⚡</div>
-                                <h3>Спринт</h3>
-                                <p>3 км • 2 стрельбы</p>
-                                <div class="race-stats">
-                                    <span>📏 3km</span>
-                                    <span>🎯 2x</span>
-                                    <span>⏱️ 25min</span>
-                                </div>
-                            </div>
-                            
-                            <div class="race-card" data-race="pursuit">
-                                <div class="race-icon">🏃</div>
-                                <h3>Гонка преследования</h3>
-                                <p>5 км • 4 стрельбы</p>
-                                <div class="race-stats">
-                                    <span>📏 5km</span>
-                                    <span>🎯 4x</span>
-                                    <span>⏱️ 35min</span>
-                                </div>
-                            </div>
-                            
-                            <div class="race-card" data-race="individual">
-                                <div class="race-icon">👤</div>
-                                <h3>Индивидуальная</h3>
-                                <p>6 км • 4 стрельбы</p>
-                                <div class="race-stats">
-                                    <span>📏 6km</span>
-                                    <span>🎯 4x</span>
-                                    <span>⏱️ 45min</span>
-                                </div>
-                            </div>
+                
+                <div class="race-selection">
+                    <h2>Выберите гонку</h2>
+                    <div class="race-cards">
+                        <div class="race-card" data-race="sprint">
+                            <div class="race-icon">⚡</div>
+                            <h3>Спринт</h3>
+                            <p>3 км • 2 стрельбы</p>
                         </div>
-                    </div>
-                    
-                    <div class="menu-buttons">
-                        <button class="menu-btn primary" id="startRace">
-                            🎮 Начать гонку
-                        </button>
-                        <button class="menu-btn secondary" id="settingsBtn">
-                            ⚙️ Настройки
-                        </button>
-                        <button class="menu-btn secondary" id="statsBtn">
-                            📊 Статистика
-                        </button>
+                        
+                        <div class="race-card" data-race="pursuit">
+                            <div class="race-icon">🏃</div>
+                            <h3>Гонка преследования</h3>
+                            <p>5 км • 4 стрельбы</p>
+                        </div>
+                        
+                        <div class="race-card" data-race="individual">
+                            <div class="race-icon">👤</div>
+                            <h3>Индивидуальная</h3>
+                            <p>6 км • 4 стрельбы</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Экран гонки -->
-    <div id="gameScreen" class="screen">
-        <div class="app-container">
-            <!-- Верхняя панель - упрощенная -->
-            <header class="race-header">
-                <div class="race-info">
-                    <div class="laps-info">
-                        <div class="lap-display">
-                            <span class="lap-label">КРУГ</span>
-                            <span class="current-lap" id="currentLap">1</span>
-                            <span class="lap-divider">/</span>
-                            <span class="total-laps" id="totalLaps">3</span>
-                        </div>
-                        <div class="segment-display">
-                            <span class="segment-label">ОТРЕЗОК</span>
-                            <span class="current-segment" id="currentSegmentInLap">1</span>
-                            <span class="segment-divider">/</span>
-                            <span class="total-segments" id="totalSegmentsPerLap">20</span>
-                        </div>
-                    </div>
-                    <div class="player-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">❤️</span>
-                            <span class="stat-value" id="pulseValue">145</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">💪</span>
-                            <span class="stat-value" id="staminaValue">75%</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Таблица лидеров - компактная -->
-            <main class="race-main">
-                <div class="compact-leaderboard" id="competitorsList">
-                    <!-- Заполнится через JavaScript -->
-                </div>
-            </main>
-
-            <!-- Панель управления -->
-            <footer class="control-panel">
-                <button class="control-btn slow-btn" id="slowBtn">
-                    <div class="btn-icon">🐢</div>
-                    <div class="btn-label">Снизить темп</div>
-                </button>
-                
-                <button class="control-btn menu-btn" id="menuBtn">
-                    <div class="btn-icon">⚙️</div>
-                    <div class="btn-label">Меню</div>
-                </button>
-                
-                <button class="control-btn sprint-btn" id="sprintBtn">
-                    <div class="btn-icon">💨</div>
-                    <div class="btn-label">Спринт!</div>
-                </button>
-            </footer>
-        </div>
-    </div>
-
-    <!-- Подключаем JavaScript файлы -->
-    <script src="js/game.js"></script>
-    <script src="js/ui.js"></script>
-
-    <!-- Код инициализации -->
-    <script>
-        function initializeGame() {
-            try {
-                console.log('🚀 ИНИЦИАЛИЗАЦИЯ ИГРЫ...');
-                console.log('BiathlonGame:', typeof BiathlonGame);
-                console.log('GameUI:', typeof GameUI);
-                
-                if (window.Telegram && Telegram.WebApp) {
-                    Telegram.WebApp.ready();
-                    Telegram.WebApp.expand();
-                }
-                
-                window.biathlonGame = new BiathlonGame();
-                window.gameUI = new GameUI(window.biathlonGame);
-                window.gameUI.showScreen('mainMenu');
-                
-                console.log('✅ Игра успешно запущена!');
-                
-            } catch (error) {
-                console.error('💥 Ошибка инициализации:', error);
-            }
-        }
-        
-        // Запускаем после загрузки страницы
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeGame);
-        } else {
-            initializeGame();
-        }
-    </script>
-    <script>
-    // Принудительная прокрутка для десктопа
-    document.addEventListener('DOMContentLoaded', function() {
-        const raceMain = document.querySelector('.race-main');
-        
-        if (raceMain) {
-            // Обработчик колесика мыши
-            raceMain.addEventListener('wheel', function(e) {
-                e.preventDefault();
-                this.scrollTop += e.deltaY;
-            }, { passive: false });
             
-            // Делаем элемент фокусируемым
-            raceMain.setAttribute('tabindex', '0');
-            raceMain.style.outline = 'none';
-        }
-    });
-</script>
-</body>
-</html>
+            <!-- Фиксированные кнопки внизу -->
+            <div class="menu-buttons">
+                <button class="menu-btn primary" id="startRace">
+                    🎮 Начать гонку
+                </button>
+                <button class="menu-btn secondary" id="settingsBtn">
+                    ⚙️ Настройки
+                </button>
+            </div>
+        </div>
+    </div>
