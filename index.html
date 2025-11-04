@@ -78,39 +78,38 @@
     <!-- Экран гонки -->
     <div id="gameScreen" class="screen">
         <div class="app-container">
-            <!-- Верхняя панель -->
+                <!-- Экран гонки -->
+    <div id="gameScreen" class="screen">
+        <div class="app-container">
+            <!-- Верхняя панель - упрощенная -->
             <header class="race-header">
-                <div class="segment-info">
-                    <span class="current-segment" id="currentSegment">1</span>
-                    <span class="segment-divider">/</span>
-                    <span class="total-segments" id="totalSegments">60</span>
-                </div>
-                <div class="race-time" id="raceTime">00:00.0</div>
-                <button class="back-btn" id="backToMenu">← Меню</button>
-            </header>
-
-            <!-- Основное поле -->
-            <main class="race-main">
-                <div class="leaderboard-container">
-                    <!-- Лидер гонки -->
-                    <div class="leader-poster" id="leaderPoster">
-                        <div class="leader-flag">🇳🇴</div>
-                        <div class="leader-name">Йоханссон</div>
-                        <div class="leader-time">00:00.0</div>
-                        <div class="leader-stats">
-                            <div class="stat">Скорость: 8.5</div>
-                            <div class="stat">Выносливость: 85%</div>
+                <div class="race-info">
+                    <div class="laps-info">
+                        <span class="current-lap" id="currentSegment">1</span>
+                        <span class="lap-divider">/</span>
+                        <span class="total-laps" id="totalSegments">60</span>
+                    </div>
+                    <div class="player-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">❤️</span>
+                            <span class="stat-value" id="pulseValue">145</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">💪</span>
+                            <span class="stat-value" id="staminaValue">75%</span>
                         </div>
                     </div>
+                </div>
+            </header>
 
-                    <!-- Таблица соперников -->
-                    <div class="competitors-list" id="competitorsList">
-                        <!-- Заполнится через JavaScript -->
-                    </div>
+            <!-- Таблица лидеров - компактная -->
+            <main class="race-main">
+                <div class="compact-leaderboard" id="competitorsList">
+                    <!-- Заполнится через JavaScript -->
                 </div>
             </main>
 
-            <!-- Панель управления -->
+            <!-- Панель управления (оставляем как есть) -->
             <footer class="control-panel">
                 <button class="control-btn slow-btn" id="slowBtn">
                     <div class="btn-icon">🐢</div>
@@ -127,27 +126,8 @@
                     <div class="btn-label">Спринт!</div>
                 </button>
             </footer>
-
-            <!-- Индикаторы -->
-            <div class="status-indicators">
-                <div class="pulse-indicator">
-                    <span>Пульс:</span>
-                    <div class="pulse-value" id="pulseValue">145</div>
-                    <div class="pulse-bar">
-                        <div class="pulse-fill" id="pulseFill"></div>
-                    </div>
-                </div>
-                <div class="stamina-indicator">
-                    <span>Выносливость:</span>
-                    <div class="stamina-value" id="staminaValue">75%</div>
-                    <div class="stamina-bar">
-                        <div class="stamina-fill" id="staminaFill"></div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
-
     <!-- Подключаем JavaScript -->
     <script src="js/game.js"></script>
     <script src="js/ui.js"></script>

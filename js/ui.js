@@ -180,29 +180,33 @@ startGame() {
     }
 
     updateCompetitorsList() {
-        const playerIndex = this.game.allCompetitors.findIndex(c => c.isPlayer);
-        const startIndex = Math.max(0, playerIndex - 2);
-        const endIndex = Math.min(this.game.allCompetitors.length, playerIndex + 5);
+    const competitorsList = document.getElementById('competitorsList');
+    const leader = this.game.allCompetitors[0];
+    
+    competitorsList.innerHTML = this.game.allCompetitors.map(competitor => {
+        const gap = competitor.time - leader.time;
         
-        const visibleCompetitors = this.game.allCompetitors.slice(startIndex, endIndex);
-        const competitorsList = document.getElementById('competitorsList');
-        const leader = this.game.allCompetitors[0];
+        // Форматируем имя: Фамилия + первая буква имени
+        const shortName = this.formatShortName(competitor.name);
         
-        competitorsList.innerHTML = visibleCompetitors.map(competitor => {
-            const gap = competitor.time - leader.time;
-            const timeDiff = competitor.time - this.game.allCompetitors[Math.max(0, competitor.position - 2)]?.time || 0;
-            
-            return `
-                <div class="competitor-row ${competitor.isPlayer ? 'player' : ''}">
-                    <div class="competitor-position">${competitor.position}</div>
-                    <div class="competitor-flag">${competitor.flag}</div>
-                    <div class="competitor-name">${competitor.name}</div>
-                    <div class="competitor-time">${this.formatTime(competitor.time)}</div>
-                    <div class="competitor-gap">+${this.formatTime(gap)}</div>
-                </div>
-            `;
-        }).join('');
+        return `
+            <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
+                <div class="position">${competitor.position}</div>
+                <div class="name">${shortName}</div>
+                <div class="gap">+${this.formatTime(gap)}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+formatShortName(fullName) {
+    // Берем только фамилию (первое слово) и первую букву имени
+    const parts = fullName.split(' ');
+    if (parts.length >= 2) {
+        return parts[0] + ' ' + parts[1].charAt(0) + '.';
     }
+    return fullName; // Если только одно слово
+}
 
     setupEventListeners() {
         // Кнопки управления во время гонки

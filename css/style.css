@@ -611,3 +611,141 @@ body {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     }
 }
+/* Новый компактный интерфейс гонки */
+.race-header {
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.race-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.laps-info {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.current-lap {
+    color: #4FC3F7;
+    font-size: 20px;
+}
+
+.lap-divider {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 2px;
+}
+
+.total-laps {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.player-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+
+.stat-label {
+    font-size: 16px;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #4FC3F7;
+}
+
+/* Компактная таблица лидеров */
+.compact-leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.compact-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 12px;
+    min-height: 32px;
+}
+
+.compact-row.player {
+    background: rgba(33, 150, 243, 0.2);
+    border: 1px solid #2196F3;
+}
+
+.position {
+    width: 25px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 11px;
+}
+
+.name {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gap {
+    width: 60px;
+    text-align: right;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
+}
+
+/* Убираем старые элементы */
+.leaderboard-container,
+.leader-poster,
+.status-indicators {
+    display: none;
+}
+
+/* Увеличиваем основное поле */
+.race-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 480px) {
+    .compact-row {
+        padding: 6px 8px;
+        font-size: 11px;
+        min-height: 28px;
+    }
+    
+    .position {
+        width: 22px;
+        font-size: 10px;
+    }
+    
+    .gap {
+        width: 50px;
+        font-size: 10px;
+    }
+    
+    .laps-info {
+        font-size: 16px;
+    }
+    
+    .current-lap {
+        font-size: 18px;
+    }
+}
