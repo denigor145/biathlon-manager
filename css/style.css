@@ -1,0 +1,257 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    height: 100vh;
+    padding: 10px;
+}
+
+.app-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Верхняя панель */
+.race-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    margin-bottom: 15px;
+}
+
+.segment-info {
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.current-segment {
+    color: #4FC3F7;
+    font-size: 28px;
+}
+
+.segment-divider {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.total-segments {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.race-time {
+    font-size: 24px;
+    font-weight: bold;
+    color: #FFF;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 16px;
+    border-radius: 25px;
+    border: 2px solid #4FC3F7;
+}
+
+/* Основное поле */
+.race-main {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 15px;
+    overflow-y: auto;
+}
+
+.leaderboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Плакат лидера */
+.leader-poster {
+    background: linear-gradient(145deg, #FFD700, #FFA000);
+    color: #1a237e;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+}
+
+.leader-flag {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.leader-name {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.leader-time {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.leader-stats {
+    display: flex;
+    justify-content: space-around;
+    font-size: 14px;
+}
+
+/* Список соперников */
+.competitors-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.competitor-row {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.competitor-row.player {
+    background: rgba(33, 150, 243, 0.2);
+    border: 2px solid #2196F3;
+}
+
+.competitor-position {
+    font-size: 18px;
+    font-weight: bold;
+    width: 40px;
+    text-align: center;
+}
+
+.competitor-flag {
+    font-size: 24px;
+    width: 40px;
+    text-align: center;
+}
+
+.competitor-name {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.competitor-time {
+    font-size: 16px;
+    font-weight: bold;
+    color: #4FC3F7;
+}
+
+.competitor-gap {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    width: 80px;
+    text-align: right;
+}
+
+/* Панель управления */
+.control-panel {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    gap: 10px;
+}
+
+.control-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 10px;
+    border: none;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 70px;
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+.sprint-btn {
+    background: linear-gradient(135deg, #FF5252, #FF1744);
+}
+
+.slow-btn {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+}
+
+.menu-btn {
+    background: linear-gradient(135deg, #2196F3, #1565C0);
+}
+
+.btn-icon {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.btn-label {
+    font-weight: 500;
+}
+
+/* Индикаторы состояния */
+.status-indicators {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 15px;
+    border-radius: 15px;
+    width: 180px;
+}
+
+.pulse-indicator,
+.stamina-indicator {
+    margin-bottom: 15px;
+}
+
+.pulse-bar,
+.stamina-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.pulse-fill,
+.stamina-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.pulse-fill {
+    background: linear-gradient(90deg, #4CAF50, #FFC107, #FF5252);
+}
+
+.stamina-fill {
+    background: linear-gradient(90deg, #2196F3, #4FC3F7);
+}
