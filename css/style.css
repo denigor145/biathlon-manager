@@ -791,3 +791,111 @@ body {
         font-size: 9px;
     }
 }
+/* Стили для мишеней в таблице лидеров */
+.targets-inline {
+    display: flex;
+    gap: 3px;
+    width: 80px;
+    justify-content: flex-end;
+    transform: translateX(100px);
+    opacity: 0;
+    transition: all 0.5s ease;
+}
+
+.targets-inline.visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.inline-target {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    border: 1px solid #333;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.inline-target.hit::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: black;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.inline-target.miss {
+    background: #e74c3c;
+    animation: missFlash 0.5s ease;
+}
+
+.inline-target.pending {
+    background: #f39c12;
+    animation: pendingPulse 1s infinite;
+}
+
+.shooting-status-text {
+    width: 80px;
+    text-align: right;
+    font-size: 10px;
+    color: #4FC3F7;
+    font-weight: bold;
+    transform: translateX(100px);
+    opacity: 0;
+    transition: all 0.5s ease 0.1s;
+}
+
+.shooting-status-text.visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.gap {
+    transition: all 0.5s ease;
+}
+
+.gap.hidden {
+    transform: translateX(-100px);
+    opacity: 0;
+}
+
+/* Анимации для мишеней */
+@keyframes missFlash {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pendingPulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 480px) {
+    .targets-inline {
+        width: 70px;
+        gap: 2px;
+    }
+    
+    .inline-target {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .inline-target.hit::before {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .shooting-status-text {
+        width: 70px;
+        font-size: 9px;
+    }
+}
