@@ -169,130 +169,27 @@ class GameUI {
         alert('📊 Статистика пока не реализована\n\nВ будущих версиях здесь будет:\n• История гонок\n• Лучшие результаты\n• Прогресс игрока');
     }
 
-    // Управление экраном стрельбы всех участников
-    showShootingScreen(shootingRound, competitors) {
-        const shootingScreen = document.getElementById('shootingScreen');
-        const roundName = document.getElementById('shootingRoundName');
-        const timerElement = document.getElementById('shootingTimer');
-        
-        if (shootingScreen && roundName && timerElement) {
-            roundName.textContent = shootingRound.name;
-            timerElement.textContent = "Стрельба началась...";
-            shootingScreen.classList.add('active');
-            
-            // Создаем список участников с мишенями
-            this.createShootingCompetitorsList(competitors);
-            
-            // Сбрасываем прогресс
-            this.updateShootingProgress(0, "Ожидание начала стрельбы...");
-            
-            console.log("Экран стрельбы показан");
-        } else {
-            console.error("Элементы стрельбы не найдены!");
-        }
+    // Показать стрельбу в процессе
+    showShootingInProgress() {
+        // Обновляем отображение чтобы показать мишени
+        this.updateDisplay();
     }
 
-    createShootingCompetitorsList(competitors) {
-        const container = document.getElementById('shootingCompetitors');
-        if (!container) return;
-        
-        container.innerHTML = competitors.map((competitor, index) => {
-            return `
-                <div class="shooting-competitor" id="shooter-${index}">
-                    <div class="competitor-info">
-                        <div class="competitor-position">${competitor.position}</div>
-                        <div class="competitor-flag">${competitor.flag}</div>
-                        <div class="competitor-name">${competitor.name}</div>
-                    </div>
-                    <div class="competitor-targets">
-                        <div class="competitor-target" id="target-${index}-0"></div>
-                        <div class="competitor-target" id="target-${index}-1"></div>
-                        <div class="competitor-target" id="target-${index}-2"></div>
-                        <div class="competitor-target" id="target-${index}-3"></div>
-                        <div class="competitor-target" id="target-${index}-4"></div>
-                    </div>
-                    <div class="shooting-status waiting">Ожидание</div>
-                </div>
-            `;
-        }).join('');
+    // Обновить шаг стрельбы
+    updateShootingStep(step) {
+        // Просто обновляем отображение
+        this.updateDisplay();
     }
 
-    setCurrentShooter(shooterIndex, shooter) {
-        // Сбрасываем активный класс у всех
-        document.querySelectorAll('.shooting-competitor').forEach(el => {
-            el.classList.remove('active');
-        });
-        
-        // Устанавливаем активный класс текущему стрелку
-        const currentShooter = document.getElementById(`shooter-${shooterIndex}`);
-        if (currentShooter) {
-            currentShooter.classList.add('active');
-            
-            // Обновляем статус
-            const statusElement = currentShooter.querySelector('.shooting-status');
-            if (statusElement) {
-                statusElement.textContent = "Стреляет...";
-                statusElement.className = "shooting-status shooting";
-            }
-        }
-        
-        // Обновляем прогресс
-        const progress = (shooterIndex / this.game.allCompetitors.length) * 100;
-        this.updateShootingProgress(progress, `Стреляет: ${shooter.name}`);
-        
-        console.log(`Текущий стрелок: ${shooter.name}`);
+    // Показать результаты стрельбы
+    showShootingResults() {
+        // Обновляем отображение чтобы показать финальные результаты
+        this.updateDisplay();
     }
 
-    updateShooterTarget(shooter, targetIndex, isHit) {
-        const shooterIndex = this.game.allCompetitors.indexOf(shooter);
-        const targetElement = document.getElementById(`target-${shooterIndex}-${targetIndex}`);
-        
-        if (targetElement) {
-            targetElement.className = "competitor-target";
-            targetElement.classList.add(isHit ? 'hit' : 'miss');
-            
-            if (isHit) {
-                targetElement.classList.add('current');
-            }
-        }
-    }
-
-    finishShooter(shooterIndex, shooter, results) {
-        const shooterElement = document.getElementById(`shooter-${shooterIndex}`);
-        if (shooterElement) {
-            shooterElement.classList.remove('active');
-            shooterElement.classList.add('finished');
-            
-            // Обновляем статус
-            const statusElement = shooterElement.querySelector('.shooting-status');
-            if (statusElement) {
-                statusElement.textContent = `${results.hits}/5 (+${results.penaltyTime}с)`;
-                statusElement.className = "shooting-status " + 
-                    (results.misses > 0 ? "penalty" : "finished");
-            }
-        }
-        
-        // Обновляем прогресс
-        const progress = ((shooterIndex + 1) / this.game.allCompetitors.length) * 100;
-        this.updateShootingProgress(progress, `Завершил: ${shooter.name} (${results.hits}/5)`);
-        
-        console.log(`Завершил стрельбу: ${shooter.name}`);
-    }
-
-    updateShootingProgress(percent, text) {
-        const progressFill = document.getElementById('shootingProgress');
-        const progressText = document.getElementById('shootingProgressText');
-        
-        if (progressFill) progressFill.style.width = percent + '%';
-        if (progressText) progressText.textContent = text;
-    }
-
-    hideShootingScreen() {
-        const shootingScreen = document.getElementById('shootingScreen');
-        if (shootingScreen) {
-            shootingScreen.classList.remove('active');
-            console.log("Экран стрельбы скрыт");
-        }
+    // Скрыть стрельбу (вернуть нормальное отображение)
+    hideShooting() {
+        // Ничего не делаем, просто обновим отображение в следующем цикле
     }
 
     // Обновление дисплея
@@ -333,19 +230,87 @@ class GameUI {
         }
 
         const leader = this.game.allCompetitors[0];
+        const isShooting = this.game.isShootingInProgress();
+        const shootingStep = this.game.getShootingStep();
         
         competitorsList.innerHTML = this.game.allCompetitors.map(competitor => {
             const gap = competitor.time - leader.time;
             const shortName = this.formatShortName(competitor.name);
             
-            return `
-                <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
-                    <div class="position">${competitor.position}</div>
-                    <div class="name">${shortName}</div>
-                    <div class="gap">+${this.formatTime(gap)}</div>
+            if (isShooting) {
+                // Показываем мишени вместо времени
+                const shootingResults = this.game.getShootingResults(competitor);
+                return this.createShootingRow(competitor, shortName, shootingResults, shootingStep);
+            } else {
+                // Нормальное отображение с временем
+                return `
+                    <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
+                        <div class="position">${competitor.position}</div>
+                        <div class="name">${shortName}</div>
+                        <div class="gap">+${this.formatTime(gap)}</div>
+                    </div>
+                `;
+            }
+        }).join('');
+    }
+
+    createShootingRow(competitor, shortName, shootingResults, shootingStep) {
+        let targetsHTML = '';
+        let statusText = '';
+
+        if (shootingStep === 0) {
+            // Ожидание начала стрельбы
+            statusText = 'Ожидание...';
+            targetsHTML = `
+                <div class="targets-inline">
+                    <div class="inline-target pending"></div>
+                    <div class="inline-target pending"></div>
+                    <div class="inline-target pending"></div>
+                    <div class="inline-target pending"></div>
+                    <div class="inline-target pending"></div>
                 </div>
             `;
-        }).join('');
+        } else if (shootingStep <= 5) {
+            // Процесс стрельбы
+            statusText = `Выстрел ${shootingStep}/5`;
+            targetsHTML = '<div class="targets-inline">';
+            
+            for (let i = 0; i < 5; i++) {
+                if (i < shootingStep - 1) {
+                    // Уже отстрелянные мишени
+                    const isHit = shootingResults.shots[i];
+                    targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
+                } else if (i === shootingStep - 1) {
+                    // Текущая мишень (стреляет сейчас)
+                    targetsHTML += `<div class="inline-target pending"></div>`;
+                } else {
+                    // Будущие мишени
+                    targetsHTML += `<div class="inline-target"></div>`;
+                }
+            }
+            targetsHTML += '</div>';
+        } else {
+            // Стрельба завершена
+            const hits = shootingResults.hits;
+            const misses = shootingResults.misses;
+            statusText = `${hits}/5 (+${misses * 10}с)`;
+            
+            targetsHTML = '<div class="targets-inline">';
+            for (let i = 0; i < 5; i++) {
+                const isHit = shootingResults.shots[i];
+                targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
+            }
+            targetsHTML += '</div>';
+        }
+
+        return `
+            <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
+                <div class="position">${competitor.position}</div>
+                <div class="name">${shortName}</div>
+                ${targetsHTML}
+                <div class="shooting-status-text">${statusText}</div>
+            </div>
+        `;
     }
 
     formatShortName(fullName) {
