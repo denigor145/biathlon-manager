@@ -56,6 +56,9 @@ class BiathlonGame {
         this.isShooting = false;
         this.currentShootingRound = null;
         this.raceInterval = null;
+        this.shootingInterval = null;
+        this.shootingTimeLeft = 0;
+        this.currentShootingResults = [];
         
         // Игрок
         this.player = {
@@ -151,6 +154,9 @@ class BiathlonGame {
         // Очищаем предыдущий интервал если гонка уже идет
         if (this.isRacing) {
             clearInterval(this.raceInterval);
+            if (this.shootingInterval) {
+                clearInterval(this.shootingInterval);
+            }
         }
         
         if (raceType) {
@@ -163,6 +169,7 @@ class BiathlonGame {
         this.isRacing = true;
         this.isShooting = false;
         this.currentShootingRound = null;
+        this.currentShootingResults = [];
         
         console.log("Параметры гонки установлены");
         console.log("Тип гонки:", this.currentRaceType);
@@ -228,48 +235,87 @@ class BiathlonGame {
         console.log(`🎯 СТАРТ СТРЕЛЬБЫ: ${shootingRound.name}`);
         this.isShooting = true;
         this.currentShootingRound = shootingRound;
+        this.shootingTimeLeft = 5;
+        this.currentShootingResults = [];
         
-        // Симуляция стрельбы для всех участников
-        this.simulateShootingRound();
-        
-        // Продолжаем гонку через 5 секунд
-        setTimeout(() => {
-            this.finishShooting();
-        }, 5000);
-    }
-    
-    simulateShootingRound() {
-        const round = this.currentShootingRound;
-        
-        this.allCompetitors.forEach(competitor => {
-            const accuracy = competitor.shooting[round.position];
-            const hits = this.calculateShootingHits(competitor, accuracy);
-            const misses = 5 - hits;
-            
-            // Добавляем штрафное время за промахи
-            const penaltyTime = misses * 10;
-            competitor.time += penaltyTime;
-            
-            console.log(`${competitor.name}: ${hits}/5 (${misses} промахов, +${penaltyTime}сек)`);
-        });
-    }
-    
-    calculateShootingHits(competitor, baseAccuracy) {
-        let hits = 0;
-        for (let i = 0; i < 5; i++) {
-            const effectiveAccuracy = baseAccuracy * competitor.consistency;
-            if (Math.random() < effectiveAccuracy) {
-                hits++;
-            }
+        // Показываем экран стрельбы
+        if (window.gameUI) {
+            window.gameUI.showShootingScreen(shootingRound);
         }
-        return hits;
+        
+        // Запускаем таймер стрельбы
+        this.shootingInterval = setInterval(() => {
+            this.updateShooting();
+        }, 1000);
+    }
+    
+    updateShooting() {
+        this.shootingTimeLeft--;
+        
+        // Обновляем UI таймера
+        if (window.gameUI) {
+            window.gameUI.updateShootingTimer(this.shootingTimeLeft);
+        }
+        
+        // Симулируем выстрелы
+        if (this.shootingTimeLeft === 4) this.simulateShot(0);
+        if (this.shootingTimeLeft === 3) this.simulateShot(1);
+        if (this.shootingTimeLeft === 2) this.simulateShot(2);
+        if (this.shootingTimeLeft === 1) this.simulateShot(3);
+        if (this.shootingTimeLeft === 0) this.simulateShot(4);
+        
+        if (this.shootingTimeLeft <= 0) {
+            this.finishShooting();
+        }
+    }
+    
+    simulateShot(shotIndex) {
+        const round = this.currentShootingRound;
+        const accuracy = this.player.shooting[round.position];
+        const effectiveAccuracy = accuracy * this.player.consistency;
+        const isHit = Math.random() < effectiveAccuracy;
+        
+        this.currentShootingResults[shotIndex] = isHit;
+        
+        // Обновляем UI мишени
+        if (window.gameUI) {
+            window.gameUI.updateTarget(shotIndex, isHit);
+        }
+        
+        console.log(`Выстрел ${shotIndex + 1}: ${isHit ? 'ПОПАДАНИЕ!' : 'ПРОМАХ'}`);
     }
     
     finishShooting() {
-        this.isShooting = false;
-        this.currentShootingRound = null;
-        this.currentSegment++;
-        console.log("Стрельба завершена, продолжаем гонку");
+        clearInterval(this.shootingInterval);
+        
+        // Подсчитываем результаты
+        const hits = this.currentShootingResults.filter(result => result).length;
+        const misses = 5 - hits;
+        const penaltyTime = misses * 10;
+        
+        // Добавляем штрафное время игроку
+        this.player.time += penaltyTime;
+        
+        // Обновляем UI с итогами стрельбы
+        if (window.gameUI) {
+            window.gameUI.showShootingResult(hits, penaltyTime);
+        }
+        
+        console.log(`Результат стрельбы: ${hits}/5, штраф: +${penaltyTime}сек`);
+        
+        // Ждем 2 секунды и продолжаем гонку
+        setTimeout(() => {
+            this.isShooting = false;
+            this.currentShootingRound = null;
+            this.currentSegment++;
+            
+            // Скрываем экран стрельбы
+            if (window.gameUI) {
+                window.gameUI.hideShootingScreen();
+            }
+            
+            console.log("Стрельба завершена, продолжаем гонку");
+        }, 2000);
     }
     
     updateCompetitors() {
@@ -323,6 +369,9 @@ class BiathlonGame {
     
     finishRace() {
         clearInterval(this.raceInterval);
+        if (this.shootingInterval) {
+            clearInterval(this.shootingInterval);
+        }
         this.isRacing = false;
         
         const playerPosition = this.player.position;
@@ -341,6 +390,9 @@ class BiathlonGame {
     returnToMenu() {
         if (this.isRacing) {
             clearInterval(this.raceInterval);
+            if (this.shootingInterval) {
+                clearInterval(this.shootingInterval);
+            }
             this.isRacing = false;
         }
         this.isShooting = false;
