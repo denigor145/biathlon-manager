@@ -76,7 +76,7 @@
     <!-- Экран гонки -->
     <div id="gameScreen" class="screen">
         <div class="app-container">
-            <!-- Верхняя панель - упрощенная -->
+            <!-- Верхняя панель -->
             <header class="race-header">
                 <div class="race-info">
                     <div class="laps-info">
@@ -106,7 +106,7 @@
                 </div>
             </header>
 
-            <!-- Блок стрельбы (появляется только во время стрельбы) -->
+            <!-- Блок стрельбы -->
             <div id="shootingScreen" class="shooting-screen">
                 <div class="shooting-container">
                     <div class="shooting-header">
@@ -153,7 +153,7 @@
                 </div>
             </div>
 
-            <!-- Таблица лидеров - компактная -->
+            <!-- Таблица лидеров -->
             <main class="race-main">
                 <div class="compact-leaderboard" id="competitorsList">
                     <!-- Заполнится через JavaScript -->
@@ -180,38 +180,23 @@
         </div>
     </div>
 
-    <!-- Подключаем JavaScript файлы -->
     <script src="js/game.js"></script>
     <script src="js/ui.js"></script>
-
-    <!-- Код инициализации -->
+    
     <script>
-        function initializeGame() {
+        // Простая инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Загрузка игры...');
+            
             try {
-                console.log('🚀 ИНИЦИАЛИЗАЦИЯ ИГРЫ...');
-                
-                if (window.Telegram && Telegram.WebApp) {
-                    Telegram.WebApp.ready();
-                    Telegram.WebApp.expand();
-                }
-                
                 window.biathlonGame = new BiathlonGame();
                 window.gameUI = new GameUI(window.biathlonGame);
-                window.gameUI.showScreen('mainMenu');
-                
-                console.log('✅ Игра успешно запущена!');
-                
+                console.log('Игра успешно загружена!');
             } catch (error) {
-                console.error('💥 Ошибка инициализации:', error);
+                console.error('Ошибка загрузки:', error);
+                alert('Ошибка загрузки игры. Проверьте консоль.');
             }
-        }
-        
-        // Запускаем после загрузки страницы
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeGame);
-        } else {
-            initializeGame();
-        }
+        });
     </script>
 </body>
 </html>
