@@ -106,6 +106,53 @@
                 </div>
             </header>
 
+            <!-- Блок стрельбы (появляется только во время стрельбы) -->
+            <div id="shootingScreen" class="shooting-screen">
+                <div class="shooting-container">
+                    <div class="shooting-header">
+                        <h2 id="shootingRoundName">Стрельба лёжа</h2>
+                        <div class="shooting-timer">
+                            <span id="shootingTime">5</span> сек
+                        </div>
+                    </div>
+                    
+                    <div class="targets-container">
+                        <div class="target-row">
+                            <div class="target" id="target1">
+                                <div class="target-circle"></div>
+                            </div>
+                            <div class="target" id="target2">
+                                <div class="target-circle"></div>
+                            </div>
+                            <div class="target" id="target3">
+                                <div class="target-circle"></div>
+                            </div>
+                            <div class="target" id="target4">
+                                <div class="target-circle"></div>
+                            </div>
+                            <div class="target" id="target5">
+                                <div class="target-circle"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="shooting-stats">
+                        <div class="shooting-result">
+                            Результат: <span id="shootingHits">0</span>/5
+                        </div>
+                        <div class="penalty-info">
+                            Штраф: +<span id="penaltyTime">0</span> сек
+                        </div>
+                    </div>
+                    
+                    <div class="shooting-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="shootingProgress"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Таблица лидеров - компактная -->
             <main class="race-main">
                 <div class="compact-leaderboard" id="competitorsList">
