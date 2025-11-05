@@ -58,11 +58,9 @@ class BiathlonGame {
         this.raceInterval = null;
         this.shootingInterval = null;
         
-        // Состояние стрельбы для всех участников
-        this.currentShooterIndex = 0;
-        this.shootingQueue = [];
+        // Состояние стрельбы
+        this.shootingStep = 0; // 0-5: 0=ожидание, 1-5=выстрелы, 6=завершено
         this.allShootingResults = new Map();
-        this.currentShotIndex = 0;
         
         // Игрок
         this.player = {
@@ -173,9 +171,7 @@ class BiathlonGame {
         this.isRacing = true;
         this.isShooting = false;
         this.currentShootingRound = null;
-        this.currentShooterIndex = 0;
-        this.currentShotIndex = 0;
-        this.shootingQueue = [];
+        this.shootingStep = 0;
         this.allShootingResults.clear();
         
         console.log("Параметры гонки установлены");
@@ -242,12 +238,7 @@ class BiathlonGame {
         console.log(`🎯 СТАРТ СТРЕЛЬБЫ: ${shootingRound.name}`);
         this.isShooting = true;
         this.currentShootingRound = shootingRound;
-        this.currentShooterIndex = 0;
-        this.currentShotIndex = 0;
-        
-        // Создаем очередь стрельбы (все участники)
-        this.shootingQueue = [...this.allCompetitors];
-        this.allShootingResults.clear();
+        this.shootingStep = 0;
         
         // Инициализируем результаты стрельбы для всех участников
         this.allCompetitors.forEach(competitor => {
@@ -255,65 +246,62 @@ class BiathlonGame {
                 hits: 0,
                 misses: 0,
                 shots: [null, null, null, null, null], // 5 выстрелов
-                finished: false,
-                penaltyTime: 0
+                finished: false
             });
         });
         
-        // Показываем экран стрельбы
+        // Обновляем UI для показа мишеней
         if (window.gameUI) {
-            window.gameUI.showShootingScreen(shootingRound, this.allCompetitors);
+            window.gameUI.showShootingInProgress();
         }
         
-        // Запускаем процесс стрельбы
-        this.startNextShooter();
+        // Запускаем процесс стрельбы - все стреляют одновременно
+        this.startSimultaneousShooting();
     }
     
-    startNextShooter() {
-        if (this.currentShooterIndex >= this.shootingQueue.length) {
-            // Все отстреляли
+    startSimultaneousShooting() {
+        // Сначала показываем ожидание
+        this.shootingStep = 0;
+        if (window.gameUI) {
+            window.gameUI.updateShootingStep(this.shootingStep);
+        }
+        
+        // Запускаем последовательные выстрелы с интервалом
+        this.shootingInterval = setInterval(() => {
+            this.processShootingStep();
+        }, 1500); // Интервал между выстрелами
+    }
+    
+    processShootingStep() {
+        this.shootingStep++;
+        
+        if (this.shootingStep > 5) {
+            // Завершаем стрельбу
             this.finishShooting();
             return;
         }
         
-        const currentShooter = this.shootingQueue[this.currentShooterIndex];
-        this.currentShotIndex = 0;
+        console.log(`🎯 Выстрел ${this.shootingStep}/5`);
         
-        console.log(`🎯 Стреляет: ${currentShooter.name}`);
+        // Все участники делают выстрел одновременно
+        this.allCompetitors.forEach(competitor => {
+            this.simulateShot(competitor, this.shootingStep - 1);
+        });
         
-        // Обновляем UI для текущего стрелка
+        // Обновляем UI
         if (window.gameUI) {
-            window.gameUI.setCurrentShooter(this.currentShooterIndex, currentShooter);
+            window.gameUI.updateShootingStep(this.shootingStep);
         }
-        
-        // Запускаем стрельбу для текущего участника
-        this.startShooterSequence(currentShooter);
     }
     
-    startShooterSequence(shooter) {
-        const shootingSpeed = shooter.shootingSpeed * 1000; // преобразуем в миллисекунды
-        
-        // Симулируем 5 выстрелов с интервалом
-        for (let i = 0; i < 5; i++) {
-            setTimeout(() => {
-                this.simulateShot(shooter, i);
-            }, i * shootingSpeed);
-        }
-        
-        // После завершения стрельбы переходим к следующему участнику
-        setTimeout(() => {
-            this.finishShooter(shooter);
-        }, 5 * shootingSpeed + 500);
-    }
-    
-    simulateShot(shooter, shotIndex) {
+    simulateShot(competitor, shotIndex) {
         const round = this.currentShootingRound;
-        const accuracy = shooter.shooting[round.position];
-        const effectiveAccuracy = accuracy * shooter.consistency;
+        const accuracy = competitor.shooting[round.position];
+        const effectiveAccuracy = accuracy * competitor.consistency;
         const isHit = Math.random() < effectiveAccuracy;
         
         // Сохраняем результат выстрела
-        const results = this.allShootingResults.get(shooter);
+        const results = this.allShootingResults.get(competitor);
         results.shots[shotIndex] = isHit;
         
         if (isHit) {
@@ -322,49 +310,30 @@ class BiathlonGame {
             results.misses++;
         }
         
-        this.currentShotIndex = shotIndex + 1;
-        
-        // Обновляем UI мишени
-        if (window.gameUI) {
-            window.gameUI.updateShooterTarget(shooter, shotIndex, isHit);
-        }
-        
-        console.log(`${shooter.name}: выстрел ${shotIndex + 1} - ${isHit ? 'ПОПАДАНИЕ!' : 'ПРОМАХ'}`);
-    }
-    
-    finishShooter(shooter) {
-        const results = this.allShootingResults.get(shooter);
-        results.finished = true;
-        results.penaltyTime = results.misses * 10; // 10 секунд штрафа за каждый промах
-        
-        // Добавляем штрафное время
-        shooter.time += results.penaltyTime;
-        
-        console.log(`${shooter.name} завершил стрельбу: ${results.hits}/5, штраф: +${results.penaltyTime}сек`);
-        
-        // Обновляем UI
-        if (window.gameUI) {
-            window.gameUI.finishShooter(this.currentShooterIndex, shooter, results);
-        }
-        
-        // Переходим к следующему стрелку
-        this.currentShooterIndex++;
-        
-        // Небольшая пауза перед следующим стрелком
-        setTimeout(() => {
-            this.startNextShooter();
-        }, 1000);
+        console.log(`${competitor.name}: выстрел ${shotIndex + 1} - ${isHit ? 'ПОПАДАНИЕ!' : 'ПРОМАХ'}`);
     }
     
     finishShooting() {
+        clearInterval(this.shootingInterval);
+        
         console.log("🎯 ВСЕ УЧАСТНИКИ ЗАВЕРШИЛИ СТРЕЛЬБУ");
         
-        // Обновляем прогресс
+        // Добавляем штрафное время за промахи
+        this.allCompetitors.forEach(competitor => {
+            const results = this.allShootingResults.get(competitor);
+            const penaltyTime = results.misses * 10; // 10 секунд штрафа за каждый промах
+            competitor.time += penaltyTime;
+            results.finished = true;
+            
+            console.log(`${competitor.name}: ${results.hits}/5, штраф: +${penaltyTime}сек`);
+        });
+        
+        // Обновляем UI для показа результатов
         if (window.gameUI) {
-            window.gameUI.updateShootingProgress(100, "Все участники завершили стрельбу");
+            window.gameUI.showShootingResults();
         }
         
-        // Ждем 2 секунды и продолжаем гонку
+        // Ждем 3 секунды и продолжаем гонку
         setTimeout(() => {
             this.isShooting = false;
             this.currentShootingRound = null;
@@ -376,13 +345,29 @@ class BiathlonGame {
                 competitor.position = index + 1;
             });
             
-            // Скрываем экран стрельбы
+            // Возвращаем нормальный UI
             if (window.gameUI) {
-                window.gameUI.hideShootingScreen();
+                window.gameUI.hideShooting();
+                window.gameUI.updateDisplay();
             }
             
             console.log("Стрельба завершена, продолжаем гонку");
-        }, 2000);
+        }, 3000);
+    }
+    
+    // Получить результаты стрельбы для участника
+    getShootingResults(competitor) {
+        return this.allShootingResults.get(competitor);
+    }
+    
+    // Получить текущий шаг стрельбы
+    getShootingStep() {
+        return this.shootingStep;
+    }
+    
+    // Проверить, идет ли стрельба
+    isShootingInProgress() {
+        return this.isShooting;
     }
     
     updateCompetitors() {
