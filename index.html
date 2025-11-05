@@ -11,11 +11,9 @@
     <div id="mainMenu" class="screen active">
         <div class="menu-container">
             <div class="stadium-background">
-                <!--
                 <div class="stadium"></div>
                 <div class="snow"></div>
                 <div class="biathletes"></div>
-                -->
             </div>
             
             <div class="menu-content">
@@ -24,7 +22,7 @@
                     <div class="race-selection">
                         <h2>Выберите гонку</h2>
                         <div class="race-cards">
-                            <div class="race-card" data-race="sprint">
+                            <div class="race-card selected" data-race="sprint">
                                 <div class="race-icon">⚡</div>
                                 <h3>Спринт</h3>
                                 <p>3 км • 2 стрельбы</p>
@@ -144,8 +142,6 @@
         function initializeGame() {
             try {
                 console.log('🚀 ИНИЦИАЛИЗАЦИЯ ИГРЫ...');
-                console.log('BiathlonGame:', typeof BiathlonGame);
-                console.log('GameUI:', typeof GameUI);
                 
                 if (window.Telegram && Telegram.WebApp) {
                     Telegram.WebApp.ready();
