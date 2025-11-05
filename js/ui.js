@@ -146,6 +146,70 @@ class GameUI {
         alert('📊 Статистика пока не реализована\n\nВ будущих версиях здесь будет:\n• История гонок\n• Лучшие результаты\n• Прогресс игрока');
     }
 
+    // Управление экраном стрельбы
+    showShootingScreen(shootingRound) {
+        const shootingScreen = document.getElementById('shootingScreen');
+        const roundName = document.getElementById('shootingRoundName');
+        
+        roundName.textContent = shootingRound.name;
+        shootingScreen.classList.add('active');
+        
+        // Сбрасываем мишени
+        this.resetTargets();
+        
+        // Сбрасываем прогресс
+        this.updateShootingProgress(0);
+    }
+
+    hideShootingScreen() {
+        const shootingScreen = document.getElementById('shootingScreen');
+        shootingScreen.classList.remove('active');
+    }
+
+    resetTargets() {
+        for (let i = 1; i <= 5; i++) {
+            const target = document.getElementById(`target${i}`);
+            target.classList.remove('hit', 'miss');
+        }
+        
+        // Сбрасываем статистику
+        document.getElementById('shootingHits').textContent = '0';
+        document.getElementById('penaltyTime').textContent = '0';
+    }
+
+    updateTarget(targetIndex, isHit) {
+        const target = document.getElementById(`target${targetIndex + 1}`);
+        
+        if (isHit) {
+            target.classList.add('hit');
+            target.classList.remove('miss');
+        } else {
+            target.classList.add('miss');
+            target.classList.remove('hit');
+        }
+        
+        // Обновляем прогресс
+        const progress = ((targetIndex + 1) / 5) * 100;
+        this.updateShootingProgress(progress);
+    }
+
+    updateShootingTimer(timeLeft) {
+        document.getElementById('shootingTime').textContent = timeLeft;
+    }
+
+    updateShootingProgress(percent) {
+        const progressFill = document.getElementById('shootingProgress');
+        progressFill.style.width = percent + '%';
+    }
+
+    showShootingResult(hits, penaltyTime) {
+        document.getElementById('shootingHits').textContent = hits;
+        document.getElementById('penaltyTime').textContent = penaltyTime;
+        
+        // Завершаем прогресс
+        this.updateShootingProgress(100);
+    }
+
     // Обновление дисплея
     updateDisplay() {
         if (this.currentScreen !== 'gameScreen') return;
@@ -163,41 +227,4 @@ class GameUI {
         
         // Обновляем индикаторы
         document.getElementById('pulseValue').textContent = Math.round(this.game.player.pulse);
-        document.getElementById('staminaValue').textContent = Math.round(this.game.player.stamina) + '%';
-        
-        // Обновляем таблицу лидеров
-        this.updateCompetitorsList();
-    }
-
-    updateCompetitorsList() {
-        const competitorsList = document.getElementById('competitorsList');
-        const leader = this.game.allCompetitors[0];
-        
-        competitorsList.innerHTML = this.game.allCompetitors.map(competitor => {
-            const gap = competitor.time - leader.time;
-            const shortName = this.formatShortName(competitor.name);
-            
-            return `
-                <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
-                    <div class="position">${competitor.position}</div>
-                    <div class="name">${shortName}</div>
-                    <div class="gap">+${this.formatTime(gap)}</div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    formatShortName(fullName) {
-        const parts = fullName.split(' ');
-        if (parts.length >= 2) {
-            return parts[0] + ' ' + parts[1].charAt(0) + '.';
-        }
-        return fullName;
-    }
-
-    formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = (seconds % 60).toFixed(1);
-        return `${mins.toString().padStart(2, '0')}:${secs.padStart(4, '0')}`;
-    }
-}
+        document.getElementById('staminaValue').textContent = Math.round(this.game.player.stamina
