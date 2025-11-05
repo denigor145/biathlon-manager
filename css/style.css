@@ -428,7 +428,7 @@ body {
     font-weight: 500;
 }
 
-/* Стили для экрана стрельбы */
+/* Стили для экрана стрельбы всех участников */
 .shooting-screen {
     display: none;
     position: fixed;
@@ -451,14 +451,19 @@ body {
     border-radius: 20px;
     padding: 30px;
     text-align: center;
-    max-width: 500px;
-    width: 90%;
+    max-width: 600px;
+    width: 95%;
     border: 3px solid #4FC3F7;
     box-shadow: 0 0 30px rgba(79, 195, 247, 0.5);
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .shooting-header {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .shooting-header h2 {
@@ -469,95 +474,149 @@ body {
 }
 
 .shooting-timer {
-    font-size: 1.5em;
+    font-size: 1.2em;
     font-weight: bold;
     color: #4FC3F7;
 }
 
-/* Контейнер мишеней */
-.targets-container {
-    margin: 30px 0;
+/* Контейнер участников стрельбы */
+.shooting-competitors {
+    flex: 1;
+    overflow-y: auto;
+    margin: 15px 0;
+    max-height: 50vh;
 }
 
-.target-row {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.target {
-    width: 60px;
-    height: 60px;
-    background: #2c3e50;
-    border-radius: 50%;
+.shooting-competitor {
     display: flex;
     align-items: center;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.shooting-competitor.active {
+    background: rgba(79, 195, 247, 0.2);
+    border-color: #4FC3F7;
+    animation: currentShooter 2s infinite;
+}
+
+.shooting-competitor.player {
+    background: rgba(33, 150, 243, 0.3);
+    border-color: #2196F3;
+}
+
+.shooting-competitor.finished {
+    background: rgba(46, 125, 50, 0.2);
+    border-color: #2E7D32;
+}
+
+.competitor-info {
+    display: flex;
+    align-items: center;
+    min-width: 150px;
+    flex-shrink: 0;
+}
+
+.competitor-position {
+    font-weight: bold;
+    width: 30px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.competitor-flag {
+    font-size: 20px;
+    width: 40px;
+    text-align: center;
+}
+
+.competitor-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+
+/* Мишени для всех участников */
+.competitor-targets {
+    display: flex;
+    gap: 8px;
+    margin-left: 20px;
+    flex: 1;
     justify-content: center;
-    border: 3px solid #34495e;
+}
+
+.competitor-target {
+    width: 25px;
+    height: 25px;
+    background: white;
+    border-radius: 50%;
+    border: 2px solid #333;
     position: relative;
     transition: all 0.3s ease;
 }
 
-.target-circle {
-    width: 40px;
-    height: 40px;
-    background: #e74c3c;
+.competitor-target.hit::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 15px;
+    height: 15px;
+    background: black;
     border-radius: 50%;
-    border: 2px solid #c0392b;
-    transition: all 0.3s ease;
+    transform: translate(-50%, -50%);
 }
 
-/* Состояния мишеней */
-.target.hit .target-circle {
-    background: #27ae60;
-    border-color: #2ecc71;
-    transform: scale(0.8);
-}
-
-.target.miss {
-    animation: missFlash 0.5s ease;
-    border-color: #e74c3c;
-}
-
-.target.miss .target-circle {
+.competitor-target.miss {
     background: #e74c3c;
-    border-color: #c0392b;
-    animation: targetPulse 1s infinite;
+    animation: missFlash 0.5s ease;
 }
 
-@keyframes missFlash {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); border-color: #ff0000; }
-    100% { transform: scale(1); }
+.competitor-target.pending {
+    background: #f39c12;
+    animation: pendingPulse 1s infinite;
 }
 
-@keyframes targetPulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
+.competitor-target.current {
+    border-color: #4FC3F7;
+    box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
 }
 
-/* Статистика стрельбы */
-.shooting-stats {
-    margin: 20px 0;
-    font-size: 1.2em;
-}
-
-.shooting-result {
+/* Статус стрельбы */
+.shooting-status {
+    min-width: 100px;
+    text-align: right;
+    font-size: 12px;
     font-weight: bold;
-    color: #FFD700;
-    margin-bottom: 10px;
+    margin-left: 15px;
 }
 
-.penalty-info {
+.shooting-status.waiting {
+    color: #95a5a6;
+}
+
+.shooting-status.shooting {
+    color: #f39c12;
+}
+
+.shooting-status.finished {
+    color: #27ae60;
+}
+
+.shooting-status.penalty {
     color: #e74c3c;
-    font-weight: bold;
 }
 
 /* Прогресс стрельбы */
 .shooting-progress {
-    margin-top: 20px;
+    margin-top: 15px;
+    flex-shrink: 0;
 }
 
 .progress-bar {
@@ -576,6 +635,33 @@ body {
     width: 0%;
 }
 
+.progress-text {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #4FC3F7;
+    font-weight: bold;
+}
+
+/* Анимации */
+@keyframes missFlash {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); border-color: #ff0000; }
+    100% { transform: scale(1); }
+}
+
+@keyframes pendingPulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+@keyframes currentShooter {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .game-title {
@@ -588,24 +674,37 @@ body {
     
     .shooting-container {
         padding: 20px;
-        margin: 20px;
+        margin: 10px;
     }
     
-    .target {
-        width: 50px;
-        height: 50px;
+    .shooting-competitor {
+        padding: 8px 10px;
     }
     
-    .target-circle {
-        width: 30px;
-        height: 30px;
+    .competitor-info {
+        min-width: 120px;
+    }
+    
+    .competitor-name {
+        max-width: 80px;
+    }
+    
+    .competitor-targets {
+        gap: 5px;
+        margin-left: 10px;
+    }
+    
+    .competitor-target {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .competitor-target.hit::before {
+        width: 12px;
+        height: 12px;
     }
     
     .shooting-header h2 {
         font-size: 1.5em;
-    }
-    
-    .target-row {
-        gap: 10px;
     }
 }
