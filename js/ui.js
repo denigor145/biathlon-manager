@@ -169,25 +169,122 @@ class GameUI {
         alert('📊 Статистика пока не реализована\n\nВ будущих версиях здесь будет:\n• История гонок\n• Лучшие результаты\n• Прогресс игрока');
     }
 
-    // Управление экраном стрельбы
-    showShootingScreen(shootingRound) {
+    // Управление экраном стрельбы всех участников
+    showShootingScreen(shootingRound, competitors) {
         const shootingScreen = document.getElementById('shootingScreen');
         const roundName = document.getElementById('shootingRoundName');
+        const timerElement = document.getElementById('shootingTimer');
         
-        if (shootingScreen && roundName) {
+        if (shootingScreen && roundName && timerElement) {
             roundName.textContent = shootingRound.name;
+            timerElement.textContent = "Стрельба началась...";
             shootingScreen.classList.add('active');
             
-            // Сбрасываем мишени
-            this.resetTargets();
+            // Создаем список участников с мишенями
+            this.createShootingCompetitorsList(competitors);
             
             // Сбрасываем прогресс
-            this.updateShootingProgress(0);
+            this.updateShootingProgress(0, "Ожидание начала стрельбы...");
             
             console.log("Экран стрельбы показан");
         } else {
             console.error("Элементы стрельбы не найдены!");
         }
+    }
+
+    createShootingCompetitorsList(competitors) {
+        const container = document.getElementById('shootingCompetitors');
+        if (!container) return;
+        
+        container.innerHTML = competitors.map((competitor, index) => {
+            return `
+                <div class="shooting-competitor" id="shooter-${index}">
+                    <div class="competitor-info">
+                        <div class="competitor-position">${competitor.position}</div>
+                        <div class="competitor-flag">${competitor.flag}</div>
+                        <div class="competitor-name">${competitor.name}</div>
+                    </div>
+                    <div class="competitor-targets">
+                        <div class="competitor-target" id="target-${index}-0"></div>
+                        <div class="competitor-target" id="target-${index}-1"></div>
+                        <div class="competitor-target" id="target-${index}-2"></div>
+                        <div class="competitor-target" id="target-${index}-3"></div>
+                        <div class="competitor-target" id="target-${index}-4"></div>
+                    </div>
+                    <div class="shooting-status waiting">Ожидание</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    setCurrentShooter(shooterIndex, shooter) {
+        // Сбрасываем активный класс у всех
+        document.querySelectorAll('.shooting-competitor').forEach(el => {
+            el.classList.remove('active');
+        });
+        
+        // Устанавливаем активный класс текущему стрелку
+        const currentShooter = document.getElementById(`shooter-${shooterIndex}`);
+        if (currentShooter) {
+            currentShooter.classList.add('active');
+            
+            // Обновляем статус
+            const statusElement = currentShooter.querySelector('.shooting-status');
+            if (statusElement) {
+                statusElement.textContent = "Стреляет...";
+                statusElement.className = "shooting-status shooting";
+            }
+        }
+        
+        // Обновляем прогресс
+        const progress = (shooterIndex / this.game.allCompetitors.length) * 100;
+        this.updateShootingProgress(progress, `Стреляет: ${shooter.name}`);
+        
+        console.log(`Текущий стрелок: ${shooter.name}`);
+    }
+
+    updateShooterTarget(shooter, targetIndex, isHit) {
+        const shooterIndex = this.game.allCompetitors.indexOf(shooter);
+        const targetElement = document.getElementById(`target-${shooterIndex}-${targetIndex}`);
+        
+        if (targetElement) {
+            targetElement.className = "competitor-target";
+            targetElement.classList.add(isHit ? 'hit' : 'miss');
+            
+            if (isHit) {
+                targetElement.classList.add('current');
+            }
+        }
+    }
+
+    finishShooter(shooterIndex, shooter, results) {
+        const shooterElement = document.getElementById(`shooter-${shooterIndex}`);
+        if (shooterElement) {
+            shooterElement.classList.remove('active');
+            shooterElement.classList.add('finished');
+            
+            // Обновляем статус
+            const statusElement = shooterElement.querySelector('.shooting-status');
+            if (statusElement) {
+                statusElement.textContent = `${results.hits}/5 (+${results.penaltyTime}с)`;
+                statusElement.className = "shooting-status " + 
+                    (results.misses > 0 ? "penalty" : "finished");
+            }
+        }
+        
+        // Обновляем прогресс
+        const progress = ((shooterIndex + 1) / this.game.allCompetitors.length) * 100;
+        this.updateShootingProgress(progress, `Завершил: ${shooter.name} (${results.hits}/5)`);
+        
+        console.log(`Завершил стрельбу: ${shooter.name}`);
+    }
+
+    updateShootingProgress(percent, text) {
+        const progressFill = document.getElementById('shootingProgress');
+        const progressText = document.getElementById('shootingProgressText');
+        
+        if (progressFill) progressFill.style.width = percent + '%';
+        if (progressText) progressText.textContent = text;
     }
 
     hideShootingScreen() {
@@ -196,68 +293,6 @@ class GameUI {
             shootingScreen.classList.remove('active');
             console.log("Экран стрельбы скрыт");
         }
-    }
-
-    resetTargets() {
-        for (let i = 1; i <= 5; i++) {
-            const target = document.getElementById(`target${i}`);
-            if (target) {
-                target.classList.remove('hit', 'miss');
-            }
-        }
-        
-        // Сбрасываем статистику
-        const hitsElement = document.getElementById('shootingHits');
-        const penaltyElement = document.getElementById('penaltyTime');
-        if (hitsElement) hitsElement.textContent = '0';
-        if (penaltyElement) penaltyElement.textContent = '0';
-    }
-
-    updateTarget(targetIndex, isHit) {
-        const target = document.getElementById(`target${targetIndex + 1}`);
-        
-        if (target) {
-            if (isHit) {
-                target.classList.add('hit');
-                target.classList.remove('miss');
-            } else {
-                target.classList.add('miss');
-                target.classList.remove('hit');
-            }
-            
-            // Обновляем прогресс
-            const progress = ((targetIndex + 1) / 5) * 100;
-            this.updateShootingProgress(progress);
-            
-            console.log(`Мишень ${targetIndex + 1} обновлена: ${isHit ? 'попадание' : 'промах'}`);
-        }
-    }
-
-    updateShootingTimer(timeLeft) {
-        const timeElement = document.getElementById('shootingTime');
-        if (timeElement) {
-            timeElement.textContent = timeLeft;
-        }
-    }
-
-    updateShootingProgress(percent) {
-        const progressFill = document.getElementById('shootingProgress');
-        if (progressFill) {
-            progressFill.style.width = percent + '%';
-        }
-    }
-
-    showShootingResult(hits, penaltyTime) {
-        const hitsElement = document.getElementById('shootingHits');
-        const penaltyElement = document.getElementById('penaltyTime');
-        
-        if (hitsElement) hitsElement.textContent = hits;
-        if (penaltyElement) penaltyElement.textContent = penaltyTime;
-        
-        // Завершаем прогресс
-        this.updateShootingProgress(100);
-        
-        console.log(`Результат стрельбы: ${hits}/5, штраф: ${penaltyTime}сек`);
     }
 
     // Обновление дисплея
