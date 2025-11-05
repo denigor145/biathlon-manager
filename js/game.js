@@ -115,7 +115,7 @@ class BiathlonGame {
         });
     }
     
-    // Добавляем расчет текущего круга
+    // Расчет текущего круга
     getCurrentLap() {
         const race = this.getCurrentRace();
         return Math.ceil(this.currentSegment / race.segmentsPerLap);
@@ -149,7 +149,7 @@ class BiathlonGame {
     
     // Запуск гонки
     startRace(raceType = null) {
-        console.log("=== GAME.STARTRACE ===");
+        console.log("=== START RACE ===");
         
         // Очищаем предыдущий интервал если гонка уже идет
         if (this.isRacing) {
