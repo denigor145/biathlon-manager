@@ -59,7 +59,7 @@ class BiathlonGame {
         this.shootingInterval = null;
         
         // Состояние стрельбы
-        this.shootingStep = 0; // 0-5: 0=ожидание, 1-5=выстрелы, 6=завершено
+        this.shootingStep = 0; // 0=ожидание, 1-5=выстрелы, 6=завершено
         this.allShootingResults = new Map();
         
         // Игрок
@@ -188,20 +188,27 @@ class BiathlonGame {
         console.log(`Старт гонки: ${this.getCurrentRace().name}`);
         
         // Запускаем игровой цикл
-        this.raceInterval = setInterval(() => {
-            this.updateRace();
-        }, 2000);
+        this.startRaceInterval();
         
         console.log("Игровой цикл запущен");
         return true;
     }
+
+    startRaceInterval() {
+        this.raceInterval = setInterval(() => {
+            this.updateRace();
+        }, 2000);
+    }
     
     updateRace() {
-        if (this.isShooting) return;
+        if (this.isShooting) {
+            console.log("Стрельба в процессе, пропускаем обновление гонки");
+            return;
+        }
         
         const race = this.getCurrentRace();
         
-        console.log(`Сегмент: ${this.currentSegment}/${race.totalSegments}`);
+        console.log(`Сегмент: ${this.currentSegment}/${race.totalSegments}, Круг: ${this.getCurrentLap()}/${race.totalLaps}`);
         
         // Обновляем UI
         if (window.gameUI) {
@@ -211,6 +218,8 @@ class BiathlonGame {
         // Проверяем стрельбу в конце круга
         const currentLap = this.getCurrentLap();
         const isEndOfLap = this.currentSegment % race.segmentsPerLap === 0;
+        
+        console.log(`Проверка стрельбы: круг ${currentLap}, конец круга: ${isEndOfLap}`);
         
         const shootingRound = race.shootingRounds.find(round => 
             round.afterLap === currentLap && isEndOfLap
@@ -232,6 +241,8 @@ class BiathlonGame {
         
         this.currentSegment++;
         this.totalTime += 2;
+        
+        console.log(`Переход к сегменту: ${this.currentSegment}`);
     }
     
     startShooting(shootingRound) {
@@ -255,8 +266,10 @@ class BiathlonGame {
             window.gameUI.showShootingInProgress();
         }
         
-        // Запускаем процесс стрельбы - все стреляют одновременно
-        this.startSimultaneousShooting();
+        // Ждем немного перед началом стрельбы для анимации
+        setTimeout(() => {
+            this.startSimultaneousShooting();
+        }, 1000);
     }
     
     startSimultaneousShooting() {
@@ -275,13 +288,13 @@ class BiathlonGame {
     processShootingStep() {
         this.shootingStep++;
         
+        console.log(`🎯 Выстрел ${this.shootingStep}/5`);
+        
         if (this.shootingStep > 5) {
             // Завершаем стрельбу
             this.finishShooting();
             return;
         }
-        
-        console.log(`🎯 Выстрел ${this.shootingStep}/5`);
         
         // Все участники делают выстрел одновременно
         this.allCompetitors.forEach(competitor => {
@@ -335,24 +348,38 @@ class BiathlonGame {
         
         // Ждем 3 секунды и продолжаем гонку
         setTimeout(() => {
-            this.isShooting = false;
-            this.currentShootingRound = null;
-            this.currentSegment++;
-            
-            // Пересчитываем позиции после штрафного времени
-            this.allCompetitors.sort((a, b) => a.time - b.time);
-            this.allCompetitors.forEach((competitor, index) => {
-                competitor.position = index + 1;
-            });
-            
-            // Возвращаем нормальный UI
-            if (window.gameUI) {
-                window.gameUI.hideShooting();
-                window.gameUI.updateDisplay();
-            }
-            
-            console.log("Стрельба завершена, продолжаем гонку");
+            this.completeShooting();
         }, 3000);
+    }
+
+    completeShooting() {
+        this.isShooting = false;
+        this.currentShootingRound = null;
+        
+        // Увеличиваем сегмент только если мы не на последнем сегменте
+        const race = this.getCurrentRace();
+        if (this.currentSegment < race.totalSegments) {
+            this.currentSegment++;
+        }
+        
+        // Пересчитываем позиции после штрафного времени
+        this.allCompetitors.sort((a, b) => a.time - b.time);
+        this.allCompetitors.forEach((competitor, index) => {
+            competitor.position = index + 1;
+        });
+        
+        // Возвращаем нормальный UI
+        if (window.gameUI) {
+            window.gameUI.hideShooting();
+            window.gameUI.updateDisplay();
+        }
+        
+        console.log(`Стрельба завершена, переходим к сегменту: ${this.currentSegment}`);
+        
+        // Проверяем не завершилась ли гонка
+        if (this.currentSegment >= race.totalSegments) {
+            this.finishRace();
+        }
     }
     
     // Получить результаты стрельбы для участника
