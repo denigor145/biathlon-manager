@@ -9,6 +9,7 @@ class GameUI {
         setTimeout(() => {
             this.setupMenuEventListeners();
             this.setupGameEventListeners();
+            console.log("Обработчики установлены");
         }, 100);
     }
 
@@ -26,6 +27,7 @@ class GameUI {
         if (targetScreen) {
             targetScreen.classList.add('active');
             this.currentScreen = screenId;
+            console.log(`Экран ${screenId} активирован`);
         }
     }
 
@@ -41,19 +43,30 @@ class GameUI {
         });
 
         // Кнопка "Начать гонку"
-        document.getElementById('startRace').addEventListener('click', () => {
-            this.handleStartRace();
-        });
+        const startBtn = document.getElementById('startRace');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                this.handleStartRace();
+            });
+        } else {
+            console.error("Кнопка startRace не найдена!");
+        }
 
         // Кнопка "Настройки"
-        document.getElementById('settingsBtn').addEventListener('click', () => {
-            this.showSettings();
-        });
+        const settingsBtn = document.getElementById('settingsBtn');
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', () => {
+                this.showSettings();
+            });
+        }
 
         // Кнопка "Статистика"
-        document.getElementById('statsBtn').addEventListener('click', () => {
-            this.showStats();
-        });
+        const statsBtn = document.getElementById('statsBtn');
+        if (statsBtn) {
+            statsBtn.addEventListener('click', () => {
+                this.showStats();
+            });
+        }
     }
 
     // Настройка обработчиков игры
@@ -61,17 +74,26 @@ class GameUI {
         console.log("Настройка обработчиков игры...");
         
         // Кнопки управления
-        document.getElementById('sprintBtn').addEventListener('click', () => {
-            this.handleSprint();
-        });
+        const sprintBtn = document.getElementById('sprintBtn');
+        if (sprintBtn) {
+            sprintBtn.addEventListener('click', () => {
+                this.handleSprint();
+            });
+        }
 
-        document.getElementById('slowBtn').addEventListener('click', () => {
-            this.handleSlowPace();
-        });
+        const slowBtn = document.getElementById('slowBtn');
+        if (slowBtn) {
+            slowBtn.addEventListener('click', () => {
+                this.handleSlowPace();
+            });
+        }
 
-        document.getElementById('menuBtn').addEventListener('click', () => {
-            this.showGameMenu();
-        });
+        const menuBtn = document.getElementById('menuBtn');
+        if (menuBtn) {
+            menuBtn.addEventListener('click', () => {
+                this.showGameMenu();
+            });
+        }
     }
 
     handleRaceCardClick(card) {
@@ -85,6 +107,7 @@ class GameUI {
         
         const raceType = card.getAttribute('data-race');
         this.game.selectRaceType(raceType);
+        console.log(`Выбрана гонка: ${raceType}`);
     }
 
     handleStartRace() {
@@ -151,63 +174,90 @@ class GameUI {
         const shootingScreen = document.getElementById('shootingScreen');
         const roundName = document.getElementById('shootingRoundName');
         
-        roundName.textContent = shootingRound.name;
-        shootingScreen.classList.add('active');
-        
-        // Сбрасываем мишени
-        this.resetTargets();
-        
-        // Сбрасываем прогресс
-        this.updateShootingProgress(0);
+        if (shootingScreen && roundName) {
+            roundName.textContent = shootingRound.name;
+            shootingScreen.classList.add('active');
+            
+            // Сбрасываем мишени
+            this.resetTargets();
+            
+            // Сбрасываем прогресс
+            this.updateShootingProgress(0);
+            
+            console.log("Экран стрельбы показан");
+        } else {
+            console.error("Элементы стрельбы не найдены!");
+        }
     }
 
     hideShootingScreen() {
         const shootingScreen = document.getElementById('shootingScreen');
-        shootingScreen.classList.remove('active');
+        if (shootingScreen) {
+            shootingScreen.classList.remove('active');
+            console.log("Экран стрельбы скрыт");
+        }
     }
 
     resetTargets() {
         for (let i = 1; i <= 5; i++) {
             const target = document.getElementById(`target${i}`);
-            target.classList.remove('hit', 'miss');
+            if (target) {
+                target.classList.remove('hit', 'miss');
+            }
         }
         
         // Сбрасываем статистику
-        document.getElementById('shootingHits').textContent = '0';
-        document.getElementById('penaltyTime').textContent = '0';
+        const hitsElement = document.getElementById('shootingHits');
+        const penaltyElement = document.getElementById('penaltyTime');
+        if (hitsElement) hitsElement.textContent = '0';
+        if (penaltyElement) penaltyElement.textContent = '0';
     }
 
     updateTarget(targetIndex, isHit) {
         const target = document.getElementById(`target${targetIndex + 1}`);
         
-        if (isHit) {
-            target.classList.add('hit');
-            target.classList.remove('miss');
-        } else {
-            target.classList.add('miss');
-            target.classList.remove('hit');
+        if (target) {
+            if (isHit) {
+                target.classList.add('hit');
+                target.classList.remove('miss');
+            } else {
+                target.classList.add('miss');
+                target.classList.remove('hit');
+            }
+            
+            // Обновляем прогресс
+            const progress = ((targetIndex + 1) / 5) * 100;
+            this.updateShootingProgress(progress);
+            
+            console.log(`Мишень ${targetIndex + 1} обновлена: ${isHit ? 'попадание' : 'промах'}`);
         }
-        
-        // Обновляем прогресс
-        const progress = ((targetIndex + 1) / 5) * 100;
-        this.updateShootingProgress(progress);
     }
 
     updateShootingTimer(timeLeft) {
-        document.getElementById('shootingTime').textContent = timeLeft;
+        const timeElement = document.getElementById('shootingTime');
+        if (timeElement) {
+            timeElement.textContent = timeLeft;
+        }
     }
 
     updateShootingProgress(percent) {
         const progressFill = document.getElementById('shootingProgress');
-        progressFill.style.width = percent + '%';
+        if (progressFill) {
+            progressFill.style.width = percent + '%';
+        }
     }
 
     showShootingResult(hits, penaltyTime) {
-        document.getElementById('shootingHits').textContent = hits;
-        document.getElementById('penaltyTime').textContent = penaltyTime;
+        const hitsElement = document.getElementById('shootingHits');
+        const penaltyElement = document.getElementById('penaltyTime');
+        
+        if (hitsElement) hitsElement.textContent = hits;
+        if (penaltyElement) penaltyElement.textContent = penaltyTime;
         
         // Завершаем прогресс
         this.updateShootingProgress(100);
+        
+        console.log(`Результат стрельбы: ${hits}/5, штраф: ${penaltyTime}сек`);
     }
 
     // Обновление дисплея
@@ -220,11 +270,60 @@ class GameUI {
         const currentLap = this.game.getCurrentLap();
         const currentSegmentInLap = this.game.getCurrentSegmentInLap();
         
-        document.getElementById('currentLap').textContent = currentLap;
-        document.getElementById('totalLaps').textContent = race.totalLaps;
-        document.getElementById('currentSegmentInLap').textContent = currentSegmentInLap;
-        document.getElementById('totalSegmentsPerLap').textContent = race.segmentsPerLap;
+        this.updateElement('currentLap', currentLap);
+        this.updateElement('totalLaps', race.totalLaps);
+        this.updateElement('currentSegmentInLap', currentSegmentInLap);
+        this.updateElement('totalSegmentsPerLap', race.segmentsPerLap);
         
         // Обновляем индикаторы
-        document.getElementById('pulseValue').textContent = Math.round(this.game.player.pulse);
-        document.getElementById('staminaValue').textContent = Math.round(this.game.player.stamina
+        this.updateElement('pulseValue', Math.round(this.game.player.pulse));
+        this.updateElement('staminaValue', Math.round(this.game.player.stamina) + '%');
+        
+        // Обновляем таблицу лидеров
+        this.updateCompetitorsList();
+    }
+
+    updateElement(id, value) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
+    }
+
+    updateCompetitorsList() {
+        const competitorsList = document.getElementById('competitorsList');
+        if (!competitorsList) {
+            console.error("competitorsList не найден!");
+            return;
+        }
+
+        const leader = this.game.allCompetitors[0];
+        
+        competitorsList.innerHTML = this.game.allCompetitors.map(competitor => {
+            const gap = competitor.time - leader.time;
+            const shortName = this.formatShortName(competitor.name);
+            
+            return `
+                <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
+                    <div class="position">${competitor.position}</div>
+                    <div class="name">${shortName}</div>
+                    <div class="gap">+${this.formatTime(gap)}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    formatShortName(fullName) {
+        const parts = fullName.split(' ');
+        if (parts.length >= 2) {
+            return parts[0] + ' ' + parts[1].charAt(0) + '.';
+        }
+        return fullName;
+    }
+
+    formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = (seconds % 60).toFixed(1);
+        return `${mins.toString().padStart(2, '0')}:${secs.padStart(4, '0')}`;
+    }
+}
