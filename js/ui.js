@@ -171,8 +171,19 @@ class GameUI {
 
     // Показать стрельбу в процессе
     showShootingInProgress() {
-        // Обновляем отображение чтобы показать мишени
+        // Обновляем отображение чтобы показать мишени с анимацией
         this.updateDisplay();
+        
+        // Даем время для анимации появления мишеней
+        setTimeout(() => {
+            const targets = document.querySelectorAll('.targets-inline');
+            const statusTexts = document.querySelectorAll('.shooting-status-text');
+            const gaps = document.querySelectorAll('.gap');
+            
+            targets.forEach(target => target.classList.add('visible'));
+            statusTexts.forEach(status => status.classList.add('visible'));
+            gaps.forEach(gap => gap.classList.add('hidden'));
+        }, 100);
     }
 
     // Обновить шаг стрельбы
@@ -189,7 +200,19 @@ class GameUI {
 
     // Скрыть стрельбу (вернуть нормальное отображение)
     hideShooting() {
-        // Ничего не делаем, просто обновим отображение в следующем цикле
+        // Сначала скрываем мишени с анимацией
+        const targets = document.querySelectorAll('.targets-inline');
+        const statusTexts = document.querySelectorAll('.shooting-status-text');
+        const gaps = document.querySelectorAll('.gap');
+        
+        targets.forEach(target => target.classList.remove('visible'));
+        statusTexts.forEach(status => status.classList.remove('visible'));
+        gaps.forEach(gap => gap.classList.remove('hidden'));
+        
+        // Ждем завершения анимации и обновляем отображение
+        setTimeout(() => {
+            this.updateDisplay();
+        }, 500);
     }
 
     // Обновление дисплея
@@ -240,7 +263,7 @@ class GameUI {
             if (isShooting) {
                 // Показываем мишени вместо времени
                 const shootingResults = this.game.getShootingResults(competitor);
-                return this.createShootingRow(competitor, shortName, shootingResults, shootingStep);
+                return this.createShootingRow(competitor, shortName, shootingResults, shootingStep, gap);
             } else {
                 // Нормальное отображение с временем
                 return `
@@ -254,7 +277,7 @@ class GameUI {
         }).join('');
     }
 
-    createShootingRow(competitor, shortName, shootingResults, shootingStep) {
+    createShootingRow(competitor, shortName, shootingResults, shootingStep, gap) {
         let targetsHTML = '';
         let statusText = '';
 
@@ -262,7 +285,7 @@ class GameUI {
             // Ожидание начала стрельбы
             statusText = 'Ожидание...';
             targetsHTML = `
-                <div class="targets-inline">
+                <div class="targets-inline ${shootingStep > 0 ? 'visible' : ''}">
                     <div class="inline-target pending"></div>
                     <div class="inline-target pending"></div>
                     <div class="inline-target pending"></div>
@@ -273,7 +296,7 @@ class GameUI {
         } else if (shootingStep <= 5) {
             // Процесс стрельбы
             statusText = `Выстрел ${shootingStep}/5`;
-            targetsHTML = '<div class="targets-inline">';
+            targetsHTML = `<div class="targets-inline visible">`;
             
             for (let i = 0; i < 5; i++) {
                 if (i < shootingStep - 1) {
@@ -295,7 +318,7 @@ class GameUI {
             const misses = shootingResults.misses;
             statusText = `${hits}/5 (+${misses * 10}с)`;
             
-            targetsHTML = '<div class="targets-inline">';
+            targetsHTML = '<div class="targets-inline visible">';
             for (let i = 0; i < 5; i++) {
                 const isHit = shootingResults.shots[i];
                 targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
@@ -308,7 +331,8 @@ class GameUI {
                 <div class="position">${competitor.position}</div>
                 <div class="name">${shortName}</div>
                 ${targetsHTML}
-                <div class="shooting-status-text">${statusText}</div>
+                <div class="shooting-status-text ${shootingStep > 0 ? 'visible' : ''}">${statusText}</div>
+                <div class="gap ${shootingStep > 0 ? 'hidden' : ''}">+${this.formatTime(gap)}</div>
             </div>
         `;
     }
