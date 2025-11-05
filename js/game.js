@@ -71,7 +71,10 @@ class BiathlonGame {
             shooting: {
                 prone: 0.8,
                 standing: 0.6
-            }
+            },
+            aggression: 0.7,
+            consistency: 0.8,
+            shootingSpeed: 2.0
         };
         
         this.opponents = this.generateOpponents(15);
@@ -133,6 +136,10 @@ class BiathlonGame {
         return this.raceTypes[this.selectedRaceType];
     }
     
+    getCurrentRace() {
+        return this.raceTypes[this.currentRaceType];
+    }
+    
     getAllRaceTypes() {
         return this.raceTypes;
     }
@@ -141,9 +148,9 @@ class BiathlonGame {
     startRace(raceType = null) {
         console.log("=== GAME.STARTRACE ===");
         
+        // Очищаем предыдущий интервал если гонка уже идет
         if (this.isRacing) {
-            console.log("Гонка уже идет - возвращаем false");
-            return false;
+            clearInterval(this.raceInterval);
         }
         
         if (raceType) {
@@ -185,6 +192,11 @@ class BiathlonGame {
         const race = this.getCurrentRace();
         
         console.log(`Сегмент: ${this.currentSegment}/${race.totalSegments}`);
+        
+        // Обновляем UI
+        if (window.gameUI) {
+            window.gameUI.updateDisplay();
+        }
         
         // Проверяем стрельбу в конце круга
         const currentLap = this.getCurrentLap();
@@ -307,10 +319,6 @@ class BiathlonGame {
         
         console.log("Темп снижен");
         return true;
-    }
-    
-    getCurrentRace() {
-        return this.raceTypes[this.currentRaceType];
     }
     
     finishRace() {
