@@ -9,6 +9,7 @@ class GameUI {
         setTimeout(() => {
             this.setupMenuEventListeners();
             this.setupGameEventListeners();
+            this.setupStageEventListeners();
             console.log("Обработчики установлены");
         }, 100);
     }
@@ -96,6 +97,130 @@ class GameUI {
         }
     }
 
+    // Настройка обработчиков этапов
+    setupStageEventListeners() {
+        console.log("Настройка обработчиков этапов...");
+        
+        // Кнопка старта гонки
+        const startStageBtn = document.getElementById('startRaceStageBtn');
+        if (startStageBtn) {
+            startStageBtn.addEventListener('click', () => {
+                this.hideStageScreen('startStageScreen');
+                this.game.startRaceAfterStage();
+            });
+        }
+
+        // Кнопка начала стрельбы
+        const startShootingBtn = document.getElementById('startShootingBtn');
+        if (startShootingBtn) {
+            startShootingBtn.addEventListener('click', () => {
+                this.hideStageScreen('preShootingScreen');
+                this.game.startShootingAfterStage();
+            });
+        }
+
+        // Кнопка продолжения после стрельбы
+        const continueShootingBtn = document.getElementById('continueAfterShootingBtn');
+        if (continueShootingBtn) {
+            continueShootingBtn.addEventListener('click', () => {
+                this.hideStageScreen('postShootingScreen');
+                this.game.continueAfterShooting();
+            });
+        }
+    }
+
+    // Показать экран старта гонки
+    showStartStage() {
+        const race = this.game.getSelectedRace();
+        
+        // Заполняем информацию о гонке
+        this.updateElement('startRaceName', `${race.name} - ${race.distance}`);
+        this.updateElement('startDistance', race.distance);
+        this.updateElement('startShootings', race.shootingRounds.length);
+        this.updateElement('startPosition', this.game.player.position);
+        this.updateElement('startStamina', Math.round(this.game.player.stamina) + '%');
+        
+        // Показываем экран
+        this.showStageScreen('startStageScreen');
+    }
+
+    // Показать экран перед стрельбой
+    showPreShootingStage(shootingRound) {
+        const race = this.game.getCurrentRace();
+        const currentLap = this.game.getCurrentLap();
+        
+        // Заполняем информацию о стрельбе
+        this.updateElement('preShootingTitle', `🎯 ${shootingRound.name}`);
+        this.updateElement('preShootingPosition', this.game.player.position);
+        this.updateElement('preShootingGap', '+' + this.formatTime(this.game.getPlayerGap()));
+        
+        // Точность стрельбы в зависимости от положения
+        const accuracy = this.game.player.shooting[shootingRound.position] * 100;
+        this.updateElement('preShootingAccuracy', Math.round(accuracy) + '%');
+        
+        // Случайный ветер
+        const wind = this.game.getRandomWind();
+        this.updateElement('preShootingWind', wind);
+        
+        // Показываем экран
+        this.showStageScreen('preShootingScreen');
+    }
+
+    // Показать экран после стрельбы
+    showPostShootingStage() {
+        const shootingRound = this.game.currentShootingRound;
+        const results = this.game.getShootingResults(this.game.player);
+        
+        // Заполняем результаты стрельбы
+        this.updateElement('postShootingSubtitle', shootingRound.name + ' завершена');
+        this.updateElement('postShootingHits', `${results.hits}/5`);
+        this.updateElement('postShootingMisses', results.misses);
+        this.updateElement('postShootingPenalty', `+${results.misses * 10} сек`);
+        
+        // Показываем мишени
+        this.updateShootingTargetsPreview(results);
+        
+        // Показываем экран
+        this.showStageScreen('postShootingScreen');
+    }
+
+    // Обновить превью мишеней
+    updateShootingTargetsPreview(results) {
+        const container = document.getElementById('postShootingTargets');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        for (let i = 0; i < 5; i++) {
+            const target = document.createElement('div');
+            target.className = 'preview-target';
+            
+            if (results.shots[i] !== null) {
+                target.classList.add(results.shots[i] ? 'hit' : 'miss');
+            }
+            
+            container.appendChild(target);
+        }
+    }
+
+    // Показать экран этапа
+    showStageScreen(screenId) {
+        const stageScreen = document.getElementById(screenId);
+        if (stageScreen) {
+            stageScreen.classList.add('active');
+            console.log(`Экран этапа ${screenId} показан`);
+        }
+    }
+
+    // Скрыть экран этапа
+    hideStageScreen(screenId) {
+        const stageScreen = document.getElementById(screenId);
+        if (stageScreen) {
+            stageScreen.classList.remove('active');
+            console.log(`Экран этапа ${screenId} скрыт`);
+        }
+    }
+
     handleRaceCardClick(card) {
         // Убираем выделение у всех карточек
         document.querySelectorAll('.race-card').forEach(c => {
@@ -126,13 +251,12 @@ class GameUI {
     startGame() {
         console.log("Starting game...");
         
-        // Запускаем гонку
+        // Запускаем гонку (она покажет стартовый экран)
         const success = this.game.startRace();
         console.log("Race started:", success);
         
         if (success) {
             this.showScreen('gameScreen');
-            this.updateDisplay();
         }
     }
 
@@ -171,10 +295,8 @@ class GameUI {
 
     // Показать стрельбу в процессе
     showShootingInProgress() {
-        // Обновляем отображение чтобы показать мишени с анимацией
         this.updateDisplay();
         
-        // Даем время для анимации появления мишеней
         setTimeout(() => {
             const targets = document.querySelectorAll('.targets-inline');
             const statusTexts = document.querySelectorAll('.shooting-status-text');
@@ -188,19 +310,16 @@ class GameUI {
 
     // Обновить шаг стрельбы
     updateShootingStep(step) {
-        // Просто обновляем отображение
         this.updateDisplay();
     }
 
     // Показать результаты стрельбы
     showShootingResults() {
-        // Обновляем отображение чтобы показать финальные результаты
         this.updateDisplay();
     }
 
     // Скрыть стрельбу (вернуть нормальное отображение)
     hideShooting() {
-        // Сначала скрываем мишени с анимацией
         const targets = document.querySelectorAll('.targets-inline');
         const statusTexts = document.querySelectorAll('.shooting-status-text');
         const gaps = document.querySelectorAll('.gap');
@@ -209,7 +328,6 @@ class GameUI {
         statusTexts.forEach(status => status.classList.remove('visible'));
         gaps.forEach(gap => gap.classList.remove('hidden'));
         
-        // Ждем завершения анимации и обновляем отображение
         setTimeout(() => {
             this.updateDisplay();
         }, 500);
@@ -261,11 +379,9 @@ class GameUI {
             const shortName = this.formatShortName(competitor.name);
             
             if (isShooting) {
-                // Показываем мишени вместо времени
                 const shootingResults = this.game.getShootingResults(competitor);
                 return this.createShootingRow(competitor, shortName, shootingResults, shootingStep, gap);
             } else {
-                // Нормальное отображение с временем
                 return `
                     <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
                         <div class="position">${competitor.position}</div>
@@ -282,7 +398,6 @@ class GameUI {
         let statusText = '';
 
         if (shootingStep === 0) {
-            // Ожидание начала стрельбы
             statusText = 'Ожидание...';
             targetsHTML = `
                 <div class="targets-inline ${shootingStep > 0 ? 'visible' : ''}">
@@ -294,26 +409,21 @@ class GameUI {
                 </div>
             `;
         } else if (shootingStep <= 5) {
-            // Процесс стрельбы
             statusText = `Выстрел ${shootingStep}/5`;
             targetsHTML = `<div class="targets-inline visible">`;
             
             for (let i = 0; i < 5; i++) {
                 if (i < shootingStep - 1) {
-                    // Уже отстрелянные мишени
                     const isHit = shootingResults.shots[i];
                     targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
                 } else if (i === shootingStep - 1) {
-                    // Текущая мишень (стреляет сейчас)
                     targetsHTML += `<div class="inline-target pending"></div>`;
                 } else {
-                    // Будущие мишени
                     targetsHTML += `<div class="inline-target"></div>`;
                 }
             }
             targetsHTML += '</div>';
         } else {
-            // Стрельба завершена
             const hits = shootingResults.hits;
             const misses = shootingResults.misses;
             statusText = `${hits}/5 (+${misses * 10}с)`;
