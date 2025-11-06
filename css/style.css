@@ -1012,3 +1012,85 @@ body {
 .shooting-screen {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
 }
+/* Стили для рамки с мишенями */
+.targets-container {
+    width: 90px;
+    height: 30px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 8px;
+    margin-left: 10px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Анимация вспышки рамки при промахе */
+@keyframes flashRed {
+    0% { background-color: white; }
+    50% { background-color: #ff4444; }
+    100% { background-color: white; }
+}
+
+.targets-container.flash {
+    animation: flashRed 0.3s ease;
+}
+
+/* Стили для мишеней внутри рамки */
+.targets-inline {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.inline-target {
+    width: 16px;
+    height: 16px;
+    background: black;
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* Попадание - белая мишень с черным бортом */
+.inline-target.hit {
+    background: white;
+    border: 2px solid black;
+}
+
+/* Промах - красный крестик на черной мишени */
+.inline-target.miss::before,
+.inline-target.miss::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 2px;
+    background: #ff4444;
+    border-radius: 1px;
+}
+
+.inline-target.miss::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.inline-target.miss::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* Анимация появления крестика */
+@keyframes showCross {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.inline-target.miss::before,
+.inline-target.miss::after {
+    animation: showCross 0.2s ease-out 0.3s forwards;
+    opacity: 0;
+}
