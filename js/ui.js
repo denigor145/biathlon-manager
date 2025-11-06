@@ -244,17 +244,6 @@ class GameUI {
         
         // Обновляем отображение
         this.updateDisplay();
-        
-        // Показываем элементы стрельбы с небольшой задержкой для плавности
-        setTimeout(() => {
-            const targets = document.querySelectorAll('.targets-inline');
-            const statusTexts = document.querySelectorAll('.shooting-status-text');
-            const gaps = document.querySelectorAll('.gap');
-            
-            targets.forEach(target => target.classList.add('visible'));
-            statusTexts.forEach(status => status.classList.add('visible'));
-            gaps.forEach(gap => gap.classList.add('hidden'));
-        }, 50);
     }
 
     handleRaceCardClick(card) {
@@ -341,14 +330,6 @@ class GameUI {
 
     // Скрыть стрельбу (вернуть нормальное отображение)
     hideShooting() {
-        const targets = document.querySelectorAll('.targets-inline');
-        const statusTexts = document.querySelectorAll('.shooting-status-text');
-        const gaps = document.querySelectorAll('.gap');
-        
-        targets.forEach(target => target.classList.remove('visible'));
-        statusTexts.forEach(status => status.classList.remove('visible'));
-        gaps.forEach(gap => gap.classList.remove('hidden'));
-        
         // Немедленно обновляем отображение
         this.updateDisplay();
     }
@@ -402,54 +383,57 @@ class GameUI {
                 const shootingResults = this.game.getShootingResults(competitor);
                 return this.createShootingRow(competitor, shortName, shootingResults, shootingStep, gap);
             } else {
-                return `
-                    <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
-                        <div class="position">${competitor.position}</div>
-                        <div class="flag">${competitor.flag}</div>
-                        <div class="name">${shortName}</div>
-                        <div class="gap">+${this.formatTime(gap)}</div>
-                    </div>
-                `;
+                return this.createNormalRow(competitor, shortName, gap);
             }
         }).join('');
     }
 
+    createNormalRow(competitor, shortName, gap) {
+        return `
+            <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
+                <div class="position">${competitor.position}</div>
+                <div class="flag">${competitor.flag}</div>
+                <div class="name">${shortName}</div>
+                <div class="gap">+${this.formatTime(gap)}</div>
+            </div>
+        `;
+    }
+
     createShootingRow(competitor, shortName, shootingResults, shootingStep, gap) {
         let targetsHTML = '';
-        let statusText = '';
 
         if (shootingStep === 0) {
-            statusText = 'Ожидание...';
+            // Ожидание стрельбы - пустые мишени
             targetsHTML = `
                 <div class="targets-inline">
-                    <div class="inline-target pending"></div>
-                    <div class="inline-target pending"></div>
-                    <div class="inline-target pending"></div>
-                    <div class="inline-target pending"></div>
-                    <div class="inline-target pending"></div>
+                    <div class="inline-target"></div>
+                    <div class="inline-target"></div>
+                    <div class="inline-target"></div>
+                    <div class="inline-target"></div>
+                    <div class="inline-target"></div>
                 </div>
             `;
         } else if (shootingStep <= 5) {
-            statusText = `Выстрел ${shootingStep}/5`;
-            targetsHTML = `<div class="targets-inline visible">`;
+            // В процессе стрельбы
+            targetsHTML = `<div class="targets-inline">`;
             
             for (let i = 0; i < 5; i++) {
                 if (i < shootingStep - 1) {
+                    // Уже выстреленные мишени
                     const isHit = shootingResults.shots[i];
                     targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
                 } else if (i === shootingStep - 1) {
+                    // Текущая мишень (в процессе)
                     targetsHTML += `<div class="inline-target pending"></div>`;
                 } else {
+                    // Будущие мишени
                     targetsHTML += `<div class="inline-target"></div>`;
                 }
             }
             targetsHTML += '</div>';
         } else {
-            const hits = shootingResults.hits;
-            const misses = shootingResults.misses;
-            statusText = `${hits}/5 (+${misses * 10}с)`;
-            
-            targetsHTML = '<div class="targets-inline visible">';
+            // Стрельба завершена - все мишени
+            targetsHTML = '<div class="targets-inline">';
             for (let i = 0; i < 5; i++) {
                 const isHit = shootingResults.shots[i];
                 targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
@@ -462,9 +446,9 @@ class GameUI {
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
                 <div class="name">${shortName}</div>
-                ${targetsHTML}
-                <div class="shooting-status-text ${shootingStep > 0 ? 'visible' : ''}">${statusText}</div>
-                <div class="gap ${shootingStep > 0 ? 'hidden' : ''}">+${this.formatTime(gap)}</div>
+                <div class="targets-container">
+                    ${targetsHTML}
+                </div>
             </div>
         `;
     }
