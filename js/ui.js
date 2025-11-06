@@ -171,11 +171,6 @@ class GameUI {
         const shootingRound = this.game.currentShootingRound;
         const results = this.game.getShootingResults(this.game.player);
         
-        if (!results) {
-            console.error("Результаты стрельбы не найдены");
-            return;
-        }
-        
         // Заполняем результаты стрельбы
         this.updateElement('postShootingSubtitle', shootingRound.name + ' завершена');
         this.updateElement('postShootingHits', `${results.hits}/5`);
@@ -281,17 +276,13 @@ class GameUI {
     }
 
     showGameMenu() {
-        if (this.game.isRacing) {
-            const race = this.game.getCurrentRace();
-            let message = `🏁 ${race.name}\n`;
-            message += `📊 Сегмент: ${this.game.currentSegment}/${race.totalSegments}\n`;
-            message += `🏅 Позиция: ${this.game.player.position}\n`;
-            message += `💪 Выносливость: ${Math.round(this.game.player.stamina)}%`;
-            
-            alert(message);
-        } else {
-            this.game.returnToMenu();
-        }
+        const race = this.game.getCurrentRace();
+        let message = `🏁 ${race.name}\n`;
+        message += `📊 Сегмент: ${this.game.currentSegment}/${race.totalSegments}\n`;
+        message += `🏅 Позиция: ${this.game.player.position}\n`;
+        message += `💪 Выносливость: ${Math.round(this.game.player.stamina)}%`;
+        
+        alert(message);
     }
 
     showSettings() {
@@ -406,19 +397,7 @@ class GameUI {
         let targetsHTML = '';
         let statusText = '';
 
-        if (!shootingResults) {
-            // Если результатов еще нет
-            statusText = 'Ожидание...';
-            targetsHTML = `
-                <div class="targets-inline ${shootingStep > 0 ? 'visible' : ''}">
-                    <div class="inline-target pending"></div>
-                    <div class="inline-target pending"></div>
-                    <div class="inline-target pending"></div>
-                    <div class="inline-target pending"></div>
-                    <div class="inline-target pending"></div>
-                </div>
-            `;
-        } else if (shootingStep === 0) {
+        if (shootingStep === 0) {
             statusText = 'Ожидание...';
             targetsHTML = `
                 <div class="targets-inline ${shootingStep > 0 ? 'visible' : ''}">
