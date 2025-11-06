@@ -499,46 +499,6 @@ body {
     flex-shrink: 0;
 }
 
-.targets-inline {
-    display: flex;
-    gap: 3px;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-.inline-target {
-    width: 12px;
-    height: 12px;
-    background: white;
-    border-radius: 50%;
-    border: 2px solid #333;
-    position: relative;
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-}
-
-.inline-target.hit::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 8px;
-    height: 8px;
-    background: black;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.inline-target.miss {
-    background: #e74c3c;
-    animation: missFlash 0.5s ease;
-}
-
-.inline-target.pending {
-    background: #f39c12;
-    animation: pendingPulse 1s infinite;
-}
-
 /* Анимации для мишеней */
 @keyframes missFlash {
     0% { transform: scale(1); }
@@ -1034,15 +994,17 @@ body {
 /* Стили для мишеней внутри рамки */
 .targets-inline {
     display: flex;
-    gap: 4px;
+    gap: 3px;
     align-items: center;
+    justify-content: space-around;
+    width: 100%;
 }
 
 .inline-target {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     background: black;
-    border-radius: 50%;
+    border-radius: 10%;
     position: relative;
     transition: all 0.3s ease;
 }
@@ -1050,7 +1012,7 @@ body {
 /* Попадание - белая мишень с черным бортом */
 .inline-target.hit {
     background: white;
-    border: 2px solid black;
+    border: 1px solid black;
 }
 
 /* Промах - красный крестик на черной мишени */
@@ -1060,8 +1022,8 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 10px;
-    height: 2px;
+    width: 8px;
+    height: 1.5px;
     background: #ff4444;
     border-radius: 1px;
 }
