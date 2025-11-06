@@ -306,42 +306,42 @@ class BiathlonGame {
     }
     
     processShootingStep() {
-        this.shootingStep++;
-        
-        console.log(`🎯 Выстрел ${this.shootingStep}/5`);
-        
-        if (this.shootingStep > 5) {
-            this.finishShooting();
-            return;
-        }
-        
-        // Все участники делают выстрел одновременно
-        this.allCompetitors.forEach(competitor => {
-            this.simulateShot(competitor, this.shootingStep - 1);
-        });
-        
-        if (window.gameUI) {
-            window.gameUI.updateShootingStep(this.shootingStep);
-        }
+    this.shootingStep++;
+    
+    console.log(`🎯 Выстрел ${this.shootingStep}/5`);
+    
+    if (this.shootingStep > 5) {
+        this.finishShooting();
+        return;
     }
     
-    simulateShot(competitor, shotIndex) {
-        const round = this.currentShootingRound;
-        const accuracy = competitor.shooting[round.position];
-        const effectiveAccuracy = accuracy * competitor.consistency;
-        const isHit = Math.random() < effectiveAccuracy;
-        
-        const results = this.allShootingResults.get(competitor);
-        results.shots[shotIndex] = isHit;
-        
-        if (isHit) {
-            results.hits++;
-        } else {
-            results.misses++;
-        }
-        
-        console.log(`${competitor.name}: выстрел ${shotIndex + 1} - ${isHit ? 'ПОПАДАНИЕ!' : 'ПРОМАХ'}`);
+    // Все участники делают выстрел одновременно
+    this.allCompetitors.forEach(competitor => {
+        this.simulateShot(competitor, this.shootingStep - 1);
+    });
+    
+    if (window.gameUI) {
+        window.gameUI.updateShootingStep(this.shootingStep);
     }
+}
+
+simulateShot(competitor, shotIndex) {
+    const round = this.currentShootingRound;
+    const accuracy = competitor.shooting[round.position];
+    const effectiveAccuracy = accuracy * competitor.consistency;
+    const isHit = Math.random() < effectiveAccuracy;
+    
+    const results = this.allShootingResults.get(competitor);
+    results.shots[shotIndex] = isHit;
+    
+    if (isHit) {
+        results.hits++;
+    } else {
+        results.misses++;
+    }
+    
+    console.log(`${competitor.name}: выстрел ${shotIndex + 1} - ${isHit ? 'ПОПАДАНИЕ!' : 'ПРОМАХ'}`);
+}
     
     finishShooting() {
         clearInterval(this.shootingInterval);
