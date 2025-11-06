@@ -366,35 +366,39 @@ class BiathlonGame {
 
     // Продолжить гонку после стрельбы
     continueAfterShooting() {
-        this.isShooting = false;
-        this.currentShootingRound = null;
-        this.currentShootingIndex++;
-        
-        // Увеличиваем сегмент
-        const race = this.getCurrentRace();
-        if (this.currentSegment < race.totalSegments) {
-            this.currentSegment++;
-        }
-        
-        // Пересчитываем позиции после штрафного времени
-        this.allCompetitors.sort((a, b) => a.time - b.time);
-        this.allCompetitors.forEach((competitor, index) => {
-            competitor.position = index + 1;
-        });
-        
-        // Возвращаем нормальный UI
-        if (window.gameUI) {
-            window.gameUI.hideShooting();
-            window.gameUI.updateDisplay();
-        }
-        
-        console.log(`Стрельба завершена, переходим к сегменту: ${this.currentSegment}`);
-        
-        // Проверяем не завершилась ли гонка
-        if (this.currentSegment >= race.totalSegments) {
-            this.finishRace();
-        }
+    console.log("Продолжение гонки после стрельбы");
+    
+    this.isShooting = false;
+    this.currentShootingRound = null;
+    this.currentShootingIndex++;
+    
+    // Скрываем UI стрельбы
+    if (window.gameUI) {
+        window.gameUI.hideShooting();
     }
+    
+    // Увеличиваем сегмент
+    const race = this.getCurrentRace();
+    if (this.currentSegment < race.totalSegments) {
+        this.currentSegment++;
+    }
+    
+    // Пересчитываем позиции после штрафного времени
+    this.allCompetitors.sort((a, b) => a.time - b.time);
+    this.allCompetitors.forEach((competitor, index) => {
+        competitor.position = index + 1;
+    });
+    
+    // Возобновляем гонку
+    this.startRaceInterval();
+    
+    console.log(`Стрельба завершена, переходим к сегменту: ${this.currentSegment}`);
+    
+    // Проверяем не завершилась ли гонка
+    if (this.currentSegment >= race.totalSegments) {
+        this.finishRace();
+    }
+}
     
     // Получить результаты стрельбы для участника
     getShootingResults(competitor) {
