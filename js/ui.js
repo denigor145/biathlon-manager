@@ -401,7 +401,7 @@ class GameUI {
             if (isShooting) {
                 const shootingResults = this.game.getShootingResults(competitor);
                 return this.createShootingRow(competitor, shortName, shootingResults, shootingStep, gap);
-             } else {
+            } else {
                 return `
                     <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
                         <div class="position">${competitor.position}</div>
@@ -410,64 +410,64 @@ class GameUI {
                         <div class="gap">+${this.formatTime(gap)}</div>
                     </div>
                 `;
-             }
+            }
         }).join('');
     }
 
     createShootingRow(competitor, shortName, shootingResults, shootingStep, gap) {
-    let targetsHTML = '';
-    let statusText = '';
+        let targetsHTML = '';
+        let statusText = '';
 
-    if (shootingStep === 0) {
-        statusText = 'Ожидание...';
-        targetsHTML = `
-            <div class="targets-inline">
-                <div class="inline-target pending"></div>
-                <div class="inline-target pending"></div>
-                <div class="inline-target pending"></div>
-                <div class="inline-target pending"></div>
-                <div class="inline-target pending"></div>
-            </div>
-        `;
-    } else if (shootingStep <= 5) {
-        statusText = `Выстрел ${shootingStep}/5`;
-        targetsHTML = `<div class="targets-inline visible">`;
-        
-        for (let i = 0; i < 5; i++) {
-            if (i < shootingStep - 1) {
+        if (shootingStep === 0) {
+            statusText = 'Ожидание...';
+            targetsHTML = `
+                <div class="targets-inline">
+                    <div class="inline-target pending"></div>
+                    <div class="inline-target pending"></div>
+                    <div class="inline-target pending"></div>
+                    <div class="inline-target pending"></div>
+                    <div class="inline-target pending"></div>
+                </div>
+            `;
+        } else if (shootingStep <= 5) {
+            statusText = `Выстрел ${shootingStep}/5`;
+            targetsHTML = `<div class="targets-inline visible">`;
+            
+            for (let i = 0; i < 5; i++) {
+                if (i < shootingStep - 1) {
+                    const isHit = shootingResults.shots[i];
+                    targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
+                } else if (i === shootingStep - 1) {
+                    targetsHTML += `<div class="inline-target pending"></div>`;
+                } else {
+                    targetsHTML += `<div class="inline-target"></div>`;
+                }
+            }
+            targetsHTML += '</div>';
+        } else {
+            const hits = shootingResults.hits;
+            const misses = shootingResults.misses;
+            statusText = `${hits}/5 (+${misses * 10}с)`;
+            
+            targetsHTML = '<div class="targets-inline visible">';
+            for (let i = 0; i < 5; i++) {
                 const isHit = shootingResults.shots[i];
                 targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
-            } else if (i === shootingStep - 1) {
-                targetsHTML += `<div class="inline-target pending"></div>`;
-            } else {
-                targetsHTML += `<div class="inline-target"></div>`;
             }
+            targetsHTML += '</div>';
         }
-        targetsHTML += '</div>';
-    } else {
-        const hits = shootingResults.hits;
-        const misses = shootingResults.misses;
-        statusText = `${hits}/5 (+${misses * 10}с)`;
-        
-        targetsHTML = '<div class="targets-inline visible">';
-        for (let i = 0; i < 5; i++) {
-            const isHit = shootingResults.shots[i];
-            targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
-        }
-        targetsHTML += '</div>';
-    }
 
-    return `
-        <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
-            <div class="position">${competitor.position}</div>
-            <div class="flag">${competitor.flag}</div>
-            <div class="name">${shortName}</div>
-            ${targetsHTML}
-            <div class="shooting-status-text ${shootingStep > 0 ? 'visible' : ''}">${statusText}</div>
-            <div class="gap ${shootingStep > 0 ? 'hidden' : ''}">+${this.formatTime(gap)}</div>
-        </div>
-    `;
-}
+        return `
+            <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
+                <div class="position">${competitor.position}</div>
+                <div class="flag">${competitor.flag}</div>
+                <div class="name">${shortName}</div>
+                ${targetsHTML}
+                <div class="shooting-status-text ${shootingStep > 0 ? 'visible' : ''}">${statusText}</div>
+                <div class="gap ${shootingStep > 0 ? 'hidden' : ''}">+${this.formatTime(gap)}</div>
+            </div>
+        `;
+    }
 
     formatShortName(fullName) {
         const parts = fullName.split(' ');
