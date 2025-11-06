@@ -1004,3 +1004,40 @@ body {
 .race-time {
     display: none !important;
 }
+
+/* Стили для флагов в таблице лидеров */
+.compact-row .flag {
+    width: 20px;
+    height: 15px;
+    margin: 0 8px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Адаптивность для флагов */
+@media (max-width: 480px) {
+    .compact-row .flag {
+        width: 18px;
+        margin: 0 6px;
+        font-size: 10px;
+    }
+}
+
+/* Увеличиваем отступы для размещения флагов */
+.compact-row .name {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 0;
+}
+
+.position {
+    width: 25px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 11px;
+}
