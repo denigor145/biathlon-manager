@@ -295,18 +295,26 @@ class GameUI {
 
     // Показать стрельбу в процессе
     showShootingInProgress() {
-        this.updateDisplay();
+    // Сначала скрываем все экраны этапов
+    this.hideAllStageScreens();
+    
+    // Показываем основной экран гонки
+    this.showScreen('gameScreen');
+    
+    // Обновляем отображение
+    this.updateDisplay();
+    
+    // Показываем элементы стрельбы с небольшой задержкой для плавности
+    setTimeout(() => {
+        const targets = document.querySelectorAll('.targets-inline');
+        const statusTexts = document.querySelectorAll('.shooting-status-text');
+        const gaps = document.querySelectorAll('.gap');
         
-        setTimeout(() => {
-            const targets = document.querySelectorAll('.targets-inline');
-            const statusTexts = document.querySelectorAll('.shooting-status-text');
-            const gaps = document.querySelectorAll('.gap');
-            
-            targets.forEach(target => target.classList.add('visible'));
-            statusTexts.forEach(status => status.classList.add('visible'));
-            gaps.forEach(gap => gap.classList.add('hidden'));
-        }, 100);
-    }
+        targets.forEach(target => target.classList.add('visible'));
+        statusTexts.forEach(status => status.classList.add('visible'));
+        gaps.forEach(gap => gap.classList.add('hidden'));
+    }, 50);
+}
 
     // Обновить шаг стрельбы
     updateShootingStep(step) {
@@ -320,18 +328,17 @@ class GameUI {
 
     // Скрыть стрельбу (вернуть нормальное отображение)
     hideShooting() {
-        const targets = document.querySelectorAll('.targets-inline');
-        const statusTexts = document.querySelectorAll('.shooting-status-text');
-        const gaps = document.querySelectorAll('.gap');
-        
-        targets.forEach(target => target.classList.remove('visible'));
-        statusTexts.forEach(status => status.classList.remove('visible'));
-        gaps.forEach(gap => gap.classList.remove('hidden'));
-        
-        setTimeout(() => {
-            this.updateDisplay();
-        }, 500);
-    }
+    const targets = document.querySelectorAll('.targets-inline');
+    const statusTexts = document.querySelectorAll('.shooting-status-text');
+    const gaps = document.querySelectorAll('.gap');
+    
+    targets.forEach(target => target.classList.remove('visible'));
+    statusTexts.forEach(status => status.classList.remove('visible'));
+    gaps.forEach(gap => gap.classList.remove('hidden'));
+    
+    // Немедленно обновляем отображение
+    this.updateDisplay();
+}
 
     // Обновление дисплея
     updateDisplay() {
@@ -462,4 +469,16 @@ class GameUI {
         const secs = (seconds % 60).toFixed(1);
         return `${mins.toString().padStart(2, '0')}:${secs.padStart(4, '0')}`;
     }
+}
+
+hideAllStageScreens() {
+    const stageScreens = [
+        'startStageScreen',
+        'preShootingScreen', 
+        'postShootingScreen'
+    ];
+    
+    stageScreens.forEach(screenId => {
+        this.hideStageScreen(screenId);
+    });
 }
