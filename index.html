@@ -73,6 +73,105 @@
         </div>
     </div>
 
+    <!-- Экран старта гонки -->
+    <div id="startStageScreen" class="screen stage-screen">
+        <div class="stage-container">
+            <div class="stage-header">
+                <h2 class="stage-title">🏁 Старт гонки</h2>
+                <div class="stage-subtitle" id="startRaceName">Спринт - 3 км</div>
+            </div>
+            
+            <div class="stage-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Дистанция:</span>
+                    <span class="stat-value" id="startDistance">3 км</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Стрельбы:</span>
+                    <span class="stat-value" id="startShootings">2</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Ваша позиция:</span>
+                    <span class="stat-value" id="startPosition">4</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Выносливость:</span>
+                    <span class="stat-value" id="startStamina">100%</span>
+                </div>
+            </div>
+            
+            <button class="stage-start-btn" id="startRaceStageBtn">
+                🎮 Начать гонку
+            </button>
+        </div>
+    </div>
+
+    <!-- Экран перед стрельбой -->
+    <div id="preShootingScreen" class="screen stage-screen">
+        <div class="stage-container">
+            <div class="stage-header">
+                <h2 class="stage-title" id="preShootingTitle">🎯 Стрельба лёжа</h2>
+                <div class="stage-subtitle">Этап стрельбы</div>
+            </div>
+            
+            <div class="stage-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Ваша позиция:</span>
+                    <span class="stat-value" id="preShootingPosition">4</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Отставание:</span>
+                    <span class="stat-value" id="preShootingGap">+15.3</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Точность:</span>
+                    <span class="stat-value" id="preShootingAccuracy">80%</span>
+                </div>
+                <div class="wind-indicator">
+                    <span class="wind-icon">💨</span>
+                    <span class="wind-value" id="preShootingWind">Умеренный ветер</span>
+                </div>
+            </div>
+            
+            <button class="stage-start-btn" id="startShootingBtn">
+                🎯 Начать стрельбу
+            </button>
+        </div>
+    </div>
+
+    <!-- Экран после стрельбы -->
+    <div id="postShootingScreen" class="screen stage-screen">
+        <div class="stage-container">
+            <div class="stage-header">
+                <h2 class="stage-title">🎯 Результаты стрельбы</h2>
+                <div class="stage-subtitle" id="postShootingSubtitle">Стрельба лёжа завершена</div>
+            </div>
+            
+            <div class="shooting-results">
+                <div class="stat-row">
+                    <span class="stat-label">Попадания:</span>
+                    <span class="stat-value" id="postShootingHits">4/5</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Промахи:</span>
+                    <span class="stat-value" id="postShootingMisses">1</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Штрафное время:</span>
+                    <span class="stat-value" id="postShootingPenalty">+10 сек</span>
+                </div>
+                
+                <div class="targets-preview" id="postShootingTargets">
+                    <!-- Мишени будут добавлены через JS -->
+                </div>
+            </div>
+            
+            <button class="stage-start-btn" id="continueAfterShootingBtn">
+                ⛷️ Продолжить гонку
+            </button>
+        </div>
+    </div>
+
     <!-- Экран гонки -->
     <div id="gameScreen" class="screen">
         <div class="app-container">
@@ -143,7 +242,7 @@
                     <div class="btn-label">Снизить темп</div>
                 </button>
                 
-                <button class="control-btn menu-btn" id="menuBtn">
+                <button class="control-btn control-menu-btn" id="menuBtn">
                     <div class="btn-icon">⚙️</div>
                     <div class="btn-label">Меню</div>
                 </button>
@@ -173,103 +272,5 @@
             }
         });
     </script>
-        <!-- Экран старта гонки -->
-    <div id="startStageScreen" class="stage-screen">
-        <div class="stage-container">
-            <div class="stage-header">
-                <h2 class="stage-title">🏁 Старт гонки</h2>
-                <div class="stage-subtitle" id="startRaceName">Спринт - 3 км</div>
-            </div>
-            
-            <div class="stage-stats">
-                <div class="stat-row">
-                    <span class="stat-label">Дистанция:</span>
-                    <span class="stat-value" id="startDistance">3 км</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Стрельбы:</span>
-                    <span class="stat-value" id="startShootings">2</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Ваша позиция:</span>
-                    <span class="stat-value" id="startPosition">4</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Выносливость:</span>
-                    <span class="stat-value" id="startStamina">100%</span>
-                </div>
-            </div>
-            
-            <button class="stage-start-btn" id="startRaceStageBtn">
-                🎮 Начать гонку
-            </button>
-        </div>
-    </div>
-
-    <!-- Экран перед стрельбой -->
-    <div id="preShootingScreen" class="stage-screen">
-        <div class="stage-container">
-            <div class="stage-header">
-                <h2 class="stage-title" id="preShootingTitle">🎯 Стрельба лёжа</h2>
-                <div class="stage-subtitle">Этап стрельбы</div>
-            </div>
-            
-            <div class="stage-stats">
-                <div class="stat-row">
-                    <span class="stat-label">Ваша позиция:</span>
-                    <span class="stat-value" id="preShootingPosition">4</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Отставание:</span>
-                    <span class="stat-value" id="preShootingGap">+15.3</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Точность:</span>
-                    <span class="stat-value" id="preShootingAccuracy">80%</span>
-                </div>
-                <div class="wind-indicator">
-                    <span class="wind-icon">💨</span>
-                    <span class="wind-value">Умеренный ветер</span>
-                </div>
-            </div>
-            
-            <button class="stage-start-btn" id="startShootingBtn">
-                🎯 Начать стрельбу
-            </button>
-        </div>
-    </div>
-
-    <!-- Экран после стрельбы -->
-    <div id="postShootingScreen" class="stage-screen">
-        <div class="stage-container">
-            <div class="stage-header">
-                <h2 class="stage-title">🎯 Результаты стрельбы</h2>
-                <div class="stage-subtitle" id="postShootingSubtitle">Стрельба лёжа завершена</div>
-            </div>
-            
-            <div class="shooting-results">
-                <div class="stat-row">
-                    <span class="stat-label">Попадания:</span>
-                    <span class="stat-value" id="postShootingHits">4/5</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Промахи:</span>
-                    <span class="stat-value" id="postShootingMisses">1</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Штрафное время:</span>
-                    <span class="stat-value" id="postShootingPenalty">+10 сек</span>
-                </div>
-                
-                <div class="targets-preview" id="postShootingTargets">
-                    <!-- Мишени будут добавлены через JS -->
-                </div>
-            </div>
-            
-            <button class="stage-start-btn" id="continueAfterShootingBtn">
-                ⛷️ Продолжить гонку
-            </button>
-        </div>
-    </div>
 </body>
 </html>
