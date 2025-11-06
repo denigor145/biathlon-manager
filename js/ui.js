@@ -401,7 +401,7 @@ class GameUI {
             if (isShooting) {
                 const shootingResults = this.game.getShootingResults(competitor);
                 return this.createShootingRow(competitor, shortName, shootingResults, shootingStep, gap);
-            } else {
+             } else {
                 return `
                     <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
                         <div class="position">${competitor.position}</div>
@@ -410,7 +410,7 @@ class GameUI {
                         <div class="gap">+${this.formatTime(gap)}</div>
                     </div>
                 `;
-            }
+             }
         }).join('');
     }
 
