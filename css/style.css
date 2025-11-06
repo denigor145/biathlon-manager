@@ -1181,19 +1181,19 @@ body {
     transition: all 0.5s ease 0.1s;
 }
 
-/* Обновляем основной контейнер гонки */
+/* Основной контейнер гонки */
 .app-container {
     height: 100vh;
     display: flex;
     flex-direction: column;
     padding: 10px;
     padding-bottom: 100px;
-    gap: 10px; /* Добавляем отступы между элементами */
+    gap: 10px;
 }
 
 /* Верхняя панель */
 .race-header {
-    flex: 0 0 auto; /* Не растягивается */
+    flex: 0 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1201,19 +1201,234 @@ body {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     backdrop-filter: blur(10px);
+    margin-bottom: 0;
 }
 
-/* Основное поле - теперь растягивается */
+/* Основное поле - занимает всё доступное пространство */
 .race-main {
-    flex: 1; /* Занимает все доступное пространство */
+    flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Важно для корректного скроллинга в flex-контейнере */
+    min-height: 0;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+/* Обертка для таблицы лидеров */
+.leaderboard-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Контейнер таблицы лидеров */
+.leaderboard-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Заголовок таблицы */
+.leaderboard-header {
+    display: flex;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 12px;
+    font-weight: bold;
+    color: #4FC3F7;
+    flex: 0 0 auto;
+}
+
+.header-pos { width: 40px; text-align: center; }
+.header-flag { width: 50px; text-align: center; }
+.header-name { flex: 1; }
+.header-gap { width: 80px; text-align: right; }
+
+/* Контент таблицы с прокруткой */
+.leaderboard-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 200px;
+    
+    /* Плавная прокрутка */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+/* Стили скроллбара */
+.leaderboard-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.leaderboard-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.leaderboard-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.leaderboard-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Строки таблицы */
+.compact-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 12px;
+    min-height: 40px;
+    transition: all 0.3s ease;
+}
+
+.compact-row:last-child {
+    border-bottom: none;
+}
+
+.compact-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.compact-row.player {
+    background: rgba(33, 150, 243, 0.15);
+    border-left: 3px solid #2196F3;
+}
+
+/* Колонки таблицы */
+.compact-row .position {
+    width: 40px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 11px;
+}
+
+.compact-row .flag {
+    width: 50px;
+    text-align: center;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.compact-row .name {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 10px;
+}
+
+.compact-row .gap {
+    width: 80px;
+    text-align: right;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
+}
+
+/* Элементы стрельбы */
+.targets-inline {
+    display: flex;
+    gap: 3px;
+    width: 80px;
+    justify-content: flex-end;
+    transform: translateX(100px);
+    opacity: 0;
+    transition: all 0.5s ease;
+    margin-right: 10px;
+}
+
+.targets-inline.visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.inline-target {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    border: 2px solid #333;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.inline-target.hit::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: black;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.inline-target.miss {
+    background: #e74c3c;
+    animation: missFlash 0.5s ease;
+}
+
+.inline-target.pending {
+    background: #f39c12;
+    animation: pendingPulse 1s infinite;
+}
+
+.shooting-status-text {
+    width: 80px;
+    text-align: right;
+    font-size: 10px;
+    color: #4FC3F7;
+    font-weight: bold;
+    transform: translateX(100px);
+    opacity: 0;
+    transition: all 0.5s ease 0.1s;
+}
+
+.shooting-status-text.visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.gap {
+    transition: all 0.5s ease;
+}
+
+.gap.hidden {
+    transform: translateX(-100px);
+    opacity: 0;
+}
+
+/* Анимации */
+@keyframes missFlash {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pendingPulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 }
 
 /* Нижняя панель управления */
 .control-panel {
-    flex: 0 0 auto; /* Не растягивается */
     display: flex;
     justify-content: space-between;
     padding: 15px;
@@ -1230,38 +1445,39 @@ body {
     border-bottom: none;
 }
 
-/* Адаптивность для мобильных */
+/* Адаптивность */
 @media (max-width: 768px) {
     .leaderboard-header {
         padding: 10px 12px;
         font-size: 11px;
     }
     
-    .leaderboard-header span:nth-child(1) { width: 35px; }
-    .leaderboard-header span:nth-child(2) { width: 40px; }
-    .leaderboard-header span:nth-child(4) { width: 60px; }
+    .header-pos { width: 35px; }
+    .header-flag { width: 40px; }
+    .header-gap { width: 70px; }
     
     .compact-row {
         padding: 8px 12px;
         font-size: 11px;
     }
     
-    .compact-row .position {
-        width: 35px;
-    }
-    
-    .compact-row .flag {
-        width: 40px;
-        font-size: 12px;
-    }
-    
-    .compact-row .gap {
-        width: 60px;
-    }
+    .compact-row .position { width: 35px; }
+    .compact-row .flag { width: 40px; font-size: 12px; }
+    .compact-row .gap { width: 70px; }
     
     .targets-inline {
         width: 70px;
         gap: 2px;
+    }
+    
+    .inline-target {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .inline-target.hit::before {
+        width: 6px;
+        height: 6px;
     }
     
     .shooting-status-text {
@@ -1271,18 +1487,8 @@ body {
 }
 
 @media (max-height: 700px) {
-    .leaderboard-content {
-        max-height: calc(100vh - 220px);
-    }
-}
-
-@media (max-height: 600px) {
-    .leaderboard-content {
-        max-height: calc(100vh - 200px);
-    }
-    
     .compact-row {
-        padding: 6px 12px;
+        padding: 8px 12px;
         min-height: 35px;
     }
 }
