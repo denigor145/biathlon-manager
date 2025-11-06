@@ -364,34 +364,35 @@ class GameUI {
     }
 
     updateCompetitorsList() {
-        const competitorsList = document.getElementById('competitorsList');
-        if (!competitorsList) {
-            console.error("competitorsList не найден!");
-            return;
-        }
-
-        const leader = this.game.allCompetitors[0];
-        const isShooting = this.game.isShootingInProgress();
-        const shootingStep = this.game.getShootingStep();
-        
-        competitorsList.innerHTML = this.game.allCompetitors.map(competitor => {
-            const gap = competitor.time - leader.time;
-            const shortName = this.formatShortName(competitor.name);
-            
-            if (isShooting) {
-                const shootingResults = this.game.getShootingResults(competitor);
-                return this.createShootingRow(competitor, shortName, shootingResults, shootingStep, gap);
-            } else {
-                return `
-                    <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
-                        <div class="position">${competitor.position}</div>
-                        <div class="name">${shortName}</div>
-                        <div class="gap">+${this.formatTime(gap)}</div>
-                    </div>
-                `;
-            }
-        }).join('');
+    const competitorsList = document.getElementById('competitorsList');
+    if (!competitorsList) {
+        console.error("competitorsList не найден!");
+        return;
     }
+
+    const leader = this.game.allCompetitors[0];
+    const isShooting = this.game.isShootingInProgress();
+    const shootingStep = this.game.getShootingStep();
+    
+    competitorsList.innerHTML = this.game.allCompetitors.map(competitor => {
+        const gap = competitor.time - leader.time;
+        const shortName = this.formatShortName(competitor.name);
+        
+        if (isShooting) {
+            const shootingResults = this.game.getShootingResults(competitor);
+            return this.createShootingRow(competitor, shortName, shootingResults, shootingStep, gap);
+        } else {
+            return `
+                <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
+                    <div class="position">${competitor.position}</div>
+                    <div class="flag">${competitor.flag}</div>
+                    <div class="name">${shortName}</div>
+                    <div class="gap">+${this.formatTime(gap)}</div>
+                </div>
+            `;
+        }
+    }).join('');
+}
 
     createShootingRow(competitor, shortName, shootingResults, shootingStep, gap) {
     let targetsHTML = '';
