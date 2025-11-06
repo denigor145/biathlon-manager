@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -10,12 +11,21 @@ body {
     color: white;
     height: 100vh;
     overflow: hidden;
+    position: fixed;
+    width: 100%;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* Система экранов */
 .screen {
     display: none;
     height: 100vh;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 
 .screen.active {
@@ -28,6 +38,7 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
+    width: 100%;
 }
 
 /* Фон стадиона */
@@ -235,6 +246,7 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center;
+    touch-action: manipulation;
 }
 
 .menu-btn.primary {
@@ -263,21 +275,25 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 10px;
-    padding-bottom: 100px;
-    gap: 10px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
 }
 
 /* Верхняя панель */
 .race-header {
-    flex: 0 0 auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
     backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .race-info {
@@ -288,10 +304,10 @@ body {
 }
 
 .laps-info {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     display: flex;
-    gap: 20px;
+    gap: 15px;
 }
 
 .lap-display, .segment-display {
@@ -302,7 +318,7 @@ body {
 
 .current-lap, .current-segment {
     color: #4FC3F7;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .lap-divider, .segment-divider {
@@ -340,8 +356,11 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0;
-    background: transparent;
+    width: 100%;
+    margin-top: 80px; /* Высота верхней панели */
+    margin-bottom: 100px; /* Высота нижней панели */
+    padding: 10px;
+    overflow: hidden;
 }
 
 /* Обертка для таблицы лидеров */
@@ -354,6 +373,7 @@ body {
     border-radius: 15px;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
 }
 
 /* Контейнер таблицы лидеров */
@@ -361,6 +381,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 100%;
 }
 
 /* Заголовок таблицы */
@@ -373,25 +394,31 @@ body {
     font-weight: bold;
     color: #4FC3F7;
     flex: 0 0 auto;
+    width: 100%;
 }
 
 .header-pos { 
     width: 40px; 
     text-align: center; 
+    flex-shrink: 0;
 }
 
 .header-flag { 
     width: 50px; 
     text-align: center; 
+    flex-shrink: 0;
 }
 
 .header-name { 
-    flex: 1; 
+    flex: 1;
+    text-align: left;
+    padding: 0 10px;
 }
 
 .header-gap { 
     width: 80px; 
     text-align: right; 
+    flex-shrink: 0;
 }
 
 /* Контент таблицы с прокруткой */
@@ -399,50 +426,30 @@ body {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    min-height: 200px;
-    
-    /* Плавная прокрутка */
+    width: 100%;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+    scrollbar-width: none;
 }
 
-/* Стили скроллбара */
 .leaderboard-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.leaderboard-content::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-}
-
-.leaderboard-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
-}
-
-.leaderboard-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+    display: none;
 }
 
 /* Строки таблицы */
 .compact-row {
     display: flex;
     align-items: center;
-    padding: 10px 15px;
+    padding: 12px 15px;
     background: rgba(255, 255, 255, 0.02);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     font-size: 12px;
-    min-height: 40px;
+    min-height: 44px;
     transition: all 0.3s ease;
+    width: 100%;
 }
 
 .compact-row:last-child {
     border-bottom: none;
-}
-
-.compact-row:hover {
-    background: rgba(255, 255, 255, 0.05);
 }
 
 .compact-row.player {
@@ -456,6 +463,7 @@ body {
     font-weight: bold;
     text-align: center;
     font-size: 11px;
+    flex-shrink: 0;
 }
 
 .compact-row .flag {
@@ -465,6 +473,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .compact-row .name {
@@ -474,6 +483,7 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 0 10px;
+    text-align: left;
 }
 
 .compact-row .gap {
@@ -481,23 +491,23 @@ body {
     text-align: right;
     color: rgba(255, 255, 255, 0.8);
     font-size: 11px;
+    flex-shrink: 0;
 }
 
-/* Элементы стрельбы */
+/* Элементы стрельбы - ПРАВИЛЬНОЕ РАСПОЛОЖЕНИЕ */
+.targets-container {
+    width: 80px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-shrink: 0;
+}
+
 .targets-inline {
     display: flex;
     gap: 3px;
-    width: 80px;
     justify-content: flex-end;
-    transform: translateX(100px);
-    opacity: 0;
-    transition: all 0.5s ease;
-    margin-right: 10px;
-}
-
-.targets-inline.visible {
-    transform: translateX(0);
-    opacity: 1;
+    align-items: center;
 }
 
 .inline-target {
@@ -508,6 +518,7 @@ body {
     border: 2px solid #333;
     position: relative;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 .inline-target.hit::before {
@@ -532,31 +543,6 @@ body {
     animation: pendingPulse 1s infinite;
 }
 
-.shooting-status-text {
-    width: 80px;
-    text-align: right;
-    font-size: 10px;
-    color: #4FC3F7;
-    font-weight: bold;
-    transform: translateX(100px);
-    opacity: 0;
-    transition: all 0.5s ease 0.1s;
-}
-
-.shooting-status-text.visible {
-    transform: translateX(0);
-    opacity: 1;
-}
-
-.gap {
-    transition: all 0.5s ease;
-}
-
-.gap.hidden {
-    transform: translateX(-100px);
-    opacity: 0;
-}
-
 /* Анимации для мишеней */
 @keyframes missFlash {
     0% { transform: scale(1); }
@@ -572,20 +558,18 @@ body {
 
 /* Панель управления */
 .control-panel {
-    display: flex;
-    justify-content: space-between;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    gap: 10px;
     position: fixed;
     bottom: 0;
-    left: 10px;
-    right: 10px;
+    left: 0;
+    right: 0;
     z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-bottom: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    gap: 10px;
 }
 
 .control-btn {
@@ -603,6 +587,8 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     min-height: 70px;
+    touch-action: manipulation;
+    max-width: 120px;
 }
 
 .control-btn:active {
@@ -628,6 +614,7 @@ body {
 
 .btn-label {
     font-weight: 500;
+    font-size: 12px;
 }
 
 /* Адаптивность */
@@ -659,17 +646,17 @@ body {
     .header-gap { width: 70px; }
     
     .compact-row {
-        padding: 8px 12px;
+        padding: 10px 12px;
         font-size: 11px;
+        min-height: 40px;
     }
     
     .compact-row .position { width: 35px; }
     .compact-row .flag { width: 40px; font-size: 12px; }
     .compact-row .gap { width: 70px; }
     
-    .targets-inline {
+    .targets-container {
         width: 70px;
-        gap: 2px;
     }
     
     .inline-target {
@@ -682,9 +669,17 @@ body {
         height: 6px;
     }
     
-    .shooting-status-text {
-        width: 70px;
-        font-size: 9px;
+    .control-btn {
+        min-height: 60px;
+        padding: 12px 8px;
+    }
+    
+    .btn-icon {
+        font-size: 18px;
+    }
+    
+    .btn-label {
+        font-size: 11px;
     }
 }
 
@@ -692,6 +687,14 @@ body {
     .compact-row {
         padding: 8px 12px;
         min-height: 35px;
+    }
+    
+    .race-header {
+        padding: 12px 15px;
+    }
+    
+    .control-panel {
+        padding: 12px 15px;
     }
 }
 
@@ -821,6 +824,7 @@ body {
     width: 90%;
     border: 3px solid #4FC3F7;
     box-shadow: 0 0 30px rgba(79, 195, 247, 0.5);
+    margin: 20px;
 }
 
 .stage-header {
@@ -951,6 +955,7 @@ body {
     transition: all 0.3s ease;
     margin-top: 15px;
     width: 100%;
+    touch-action: manipulation;
 }
 
 .stage-start-btn:hover {
@@ -966,6 +971,7 @@ body {
 @media (max-width: 768px) {
     .stage-container {
         padding: 20px;
+        margin: 10px;
     }
     
     .stage-title {
@@ -980,5 +986,10 @@ body {
         flex-direction: column;
         gap: 5px;
         text-align: center;
+    }
+    
+    .stage-start-btn {
+        padding: 15px 20px;
+        font-size: 1.1em;
     }
 }
