@@ -345,7 +345,7 @@ body {
     color: #4FC3F7;
 }
 
-/* Основное поле - ИСПРАВЛЕНО: убраны лишние ограничения */
+/* Основное поле - ИСПРАВЛЕНО скроллинг */
 .race-main {
     flex: 1;
     background: rgba(255, 255, 255, 0.05);
@@ -358,57 +358,20 @@ body {
     /* Критически важные свойства для прокрутки */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    
+    /* УБИРАЕМ ограничения высоты */
+    min-height: 0;
+    height: auto;
 }
 
-/* Компактная таблица лидеров - ИСПРАВЛЕНО: убраны ограничения высоты */
+/* Компактная таблица лидеров - ИСПРАВЛЕНО: правильная высота */
 .compact-leaderboard {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    /* УБИРАЕМ фиксированную высоту */
     min-height: auto;
-}
-
-.compact-row {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    font-size: 14px;
-    min-height: 40px;
-    border: 1px solid rgba(255,255,255,0.05);
-    transition: all 0.3s ease;
-}
-
-.compact-row.player {
-    background: rgba(33, 150, 243, 0.25);
-    border: 2px solid #2196F3;
-    transform: scale(1.02);
-}
-
-.position {
-    width: 30px;
-    font-weight: bold;
-    text-align: center;
-    font-size: 14px;
-    color: #FFD700;
-}
-
-.name {
-    flex: 1;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 10px;
-}
-
-.gap {
-    width: 70px;
-    text-align: right;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 12px;
-    font-weight: bold;
+    height: auto;
 }
 
 /* Панель управления */
