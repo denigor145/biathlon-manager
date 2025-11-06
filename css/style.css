@@ -615,11 +615,6 @@ body {
         width: 70px;
     }
     
-    .inline-target {
-        width: 10px;
-        height: 10px;
-    }
-    
     .inline-target.hit::before {
         width: 6px;
         height: 6px;
