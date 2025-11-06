@@ -255,39 +255,44 @@ class BiathlonGame {
     
     // Подготовка к стрельбе (показ экрана перед стрельбой)
     prepareShooting(shootingRound) {
-        this.isShooting = true;
-        this.currentShootingRound = shootingRound;
-        
-        // Показываем экран перед стрельбой
-        if (window.gameUI) {
-            window.gameUI.showPreShootingStage(shootingRound);
-        }
+    this.isShooting = true;
+    this.currentShootingRound = shootingRound;
+    
+    // Останавливаем гонку на время стрельбы
+    clearInterval(this.raceInterval);
+    
+    console.log(`🚨 Подготовка к стрельбе: ${shootingRound.name}`);
+    
+    // ТОЛЬКО показываем экран перед стрельбой, не начинаем стрельбу сразу
+    if (window.gameUI) {
+        window.gameUI.showPreShootingStage(shootingRound);
     }
+}
     
     // Начать стрельбу после экрана подготовки
-    startShootingAfterStage() {
-        this.shootingStep = 0;
-        
-        // Инициализируем результаты стрельбы для всех участников
-        this.allCompetitors.forEach(competitor => {
-            this.allShootingResults.set(competitor, {
-                hits: 0,
-                misses: 0,
-                shots: [null, null, null, null, null],
-                finished: false
-            });
+    tartShootingAfterStage() {
+    console.log("🎯 Начало стрельбы после экрана подготовки");
+    
+    this.shootingStep = 0;
+    
+    // Инициализируем результаты стрельбы для всех участников
+    this.allCompetitors.forEach(competitor => {
+        this.allShootingResults.set(competitor, {
+            hits: 0,
+            misses: 0,
+            shots: [null, null, null, null, null],
+            finished: false
         });
-        
-        // Обновляем UI для показа мишеней
-        if (window.gameUI) {
-            window.gameUI.showShootingInProgress();
-        }
-        
-        // Ждем немного перед началом стрельбы для анимации
-        setTimeout(() => {
-            this.startSimultaneousShooting();
-        }, 1000);
+    });
+    
+    // Обновляем UI для показа мишеней
+    if (window.gameUI) {
+        window.gameUI.showShootingInProgress();
     }
+    
+    // УБИРАЕМ ЛИШНЮЮ ЗАДЕРЖКУ - начинаем стрельбу сразу
+    this.startSimultaneousShooting();
+}
     
     startSimultaneousShooting() {
         this.shootingStep = 0;
