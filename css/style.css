@@ -427,7 +427,7 @@ body {
     background: linear-gradient(135deg, #4CAF50, #2E7D32);
 }
 
-.menu-btn {
+.control-menu-btn {
     background: linear-gradient(135deg, #2196F3, #1565C0);
 }
 
@@ -800,7 +800,6 @@ body {
 
 /* Стили для экранов этапов */
 .stage-screen {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -810,10 +809,6 @@ body {
     z-index: 2000;
     justify-content: center;
     align-items: center;
-}
-
-.stage-screen.active {
-    display: flex;
 }
 
 .stage-container {
