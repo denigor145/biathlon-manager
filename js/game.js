@@ -203,9 +203,6 @@ class BiathlonGame {
     }
 
     startRaceInterval() {
-        if (this.raceInterval) {
-            clearInterval(this.raceInterval);
-        }
         this.raceInterval = setInterval(() => {
             this.updateRace();
         }, 2000);
@@ -296,10 +293,6 @@ class BiathlonGame {
         this.shootingStep = 0;
         if (window.gameUI) {
             window.gameUI.updateShootingStep(this.shootingStep);
-        }
-        
-        if (this.shootingInterval) {
-            clearInterval(this.shootingInterval);
         }
         
         this.shootingInterval = setInterval(() => {
@@ -481,12 +474,7 @@ class BiathlonGame {
         else if (playerPosition === 3) message += " 🥉";
         
         console.log(message);
-        
-        // Показываем сообщение о завершении
-        setTimeout(() => {
-            alert(message);
-            this.returnToMenu();
-        }, 1000);
+        alert(message);
         
         return playerPosition;
     }
@@ -503,11 +491,6 @@ class BiathlonGame {
         this.currentShootingRound = null;
         
         console.log("Возврат в главное меню");
-        
-        if (window.gameUI) {
-            window.gameUI.showScreen('mainMenu');
-        }
-        
         return true;
     }
 }
