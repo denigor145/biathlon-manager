@@ -1,10 +1,5 @@
 class GameUI {
     constructor(game) {
-        if (!game) {
-            console.error("Game instance is required!");
-            return;
-        }
-        
         this.game = game;
         this.currentScreen = 'mainMenu';
         
@@ -34,13 +29,6 @@ class GameUI {
             targetScreen.classList.add('active');
             this.currentScreen = screenId;
             console.log(`Экран ${screenId} активирован`);
-            
-            // Обновляем отображение если это игровой экран
-            if (screenId === 'gameScreen') {
-                this.updateDisplay();
-            }
-        } else {
-            console.error(`Экран ${screenId} не найден!`);
         }
     }
 
@@ -143,11 +131,6 @@ class GameUI {
 
     // Показать экран старта гонки
     showStartStage() {
-        if (!this.game) {
-            console.error("Game instance not found!");
-            return;
-        }
-        
         const race = this.game.getSelectedRace();
         
         // Заполняем информацию о гонке
@@ -158,16 +141,11 @@ class GameUI {
         this.updateElement('startStamina', Math.round(this.game.player.stamina) + '%');
         
         // Показываем экран
-        this.showScreen('startStageScreen');
+        this.showStageScreen('startStageScreen');
     }
 
     // Показать экран перед стрельбой
     showPreShootingStage(shootingRound) {
-        if (!this.game) {
-            console.error("Game instance not found!");
-            return;
-        }
-        
         const race = this.game.getCurrentRace();
         const currentLap = this.game.getCurrentLap();
         
@@ -185,23 +163,13 @@ class GameUI {
         this.updateElement('preShootingWind', wind);
         
         // Показываем экран
-        this.showScreen('preShootingScreen');
+        this.showStageScreen('preShootingScreen');
     }
 
     // Показать экран после стрельбы
     showPostShootingStage() {
-        if (!this.game) {
-            console.error("Game instance not found!");
-            return;
-        }
-        
         const shootingRound = this.game.currentShootingRound;
         const results = this.game.getShootingResults(this.game.player);
-        
-        if (!results) {
-            console.error("Shooting results not found!");
-            return;
-        }
         
         // Заполняем результаты стрельбы
         this.updateElement('postShootingSubtitle', shootingRound.name + ' завершена');
@@ -213,7 +181,7 @@ class GameUI {
         this.updateShootingTargetsPreview(results);
         
         // Показываем экран
-        this.showScreen('postShootingScreen');
+        this.showStageScreen('postShootingScreen');
     }
 
     // Обновить превью мишеней
@@ -237,7 +205,11 @@ class GameUI {
 
     // Показать экран этапа
     showStageScreen(screenId) {
-        this.showScreen(screenId);
+        const stageScreen = document.getElementById(screenId);
+        if (stageScreen) {
+            stageScreen.classList.add('active');
+            console.log(`Экран этапа ${screenId} показан`);
+        }
     }
 
     // Скрыть экран этапа
@@ -266,11 +238,6 @@ class GameUI {
     handleStartRace() {
         console.log("=== START RACE CLICKED ===");
         
-        if (!this.game) {
-            console.error("Game instance not found!");
-            return;
-        }
-        
         const selectedRace = this.game.getSelectedRace();
         console.log("Selected race:", selectedRace);
         
@@ -289,16 +256,11 @@ class GameUI {
         console.log("Race started:", success);
         
         if (success) {
-            // Стартовый экран покажет сам game.startRace()
+            this.showScreen('gameScreen');
         }
     }
 
     handleSprint() {
-        if (!this.game) {
-            console.error("Game instance not found!");
-            return;
-        }
-        
         console.log("Sprint button clicked");
         const success = this.game.activateSprint();
         if (!success) {
@@ -308,22 +270,12 @@ class GameUI {
     }
 
     handleSlowPace() {
-        if (!this.game) {
-            console.error("Game instance not found!");
-            return;
-        }
-        
         console.log("Slow pace button clicked");
         this.game.activateSlowPace();
         this.updateDisplay();
     }
 
     showGameMenu() {
-        if (!this.game) {
-            console.error("Game instance not found!");
-            return;
-        }
-        
         const race = this.game.getCurrentRace();
         let message = `🏁 ${race.name}\n`;
         message += `📊 Сегмент: ${this.game.currentSegment}/${race.totalSegments}\n`;
@@ -384,11 +336,6 @@ class GameUI {
     // Обновление дисплея
     updateDisplay() {
         if (this.currentScreen !== 'gameScreen') return;
-        
-        if (!this.game) {
-            console.error("Game instance not found!");
-            return;
-        }
 
         const race = this.game.getCurrentRace();
         
@@ -420,11 +367,6 @@ class GameUI {
         const competitorsList = document.getElementById('competitorsList');
         if (!competitorsList) {
             console.error("competitorsList не найден!");
-            return;
-        }
-
-        if (!this.game) {
-            console.error("Game instance not found!");
             return;
         }
 
