@@ -998,3 +998,17 @@ body {
         font-size: 1.1em;
     }
 }
+
+/* ФОН ДЛЯ ЭКРАНА ГОНКИ */
+#gameScreen {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+}
+
+#gameScreen .app-container {
+    background: transparent !important;
+}
+
+/* ФОН ДЛЯ ЭКРАНА СТРЕЛЬБЫ */
+.shooting-screen {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+}
