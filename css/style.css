@@ -1041,3 +1041,248 @@ body {
     text-align: center;
     font-size: 11px;
 }
+
+/* Контейнер таблицы лидеров */
+.leaderboard-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Заголовок таблицы */
+.leaderboard-header {
+    display: flex;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 12px;
+    font-weight: bold;
+    color: #4FC3F7;
+}
+
+.leaderboard-header span:nth-child(1) { width: 40px; } /* ПОЗ */
+.leaderboard-header span:nth-child(2) { width: 50px; } /* СТРАНА */
+.leaderboard-header span:nth-child(3) { flex: 1; } /* БИАТЛОНИСТ */
+.leaderboard-header span:nth-child(4) { width: 70px; text-align: right; } /* ОТСТАВАНИЕ */
+
+/* Контент таблицы с прокруткой */
+.leaderboard-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(100vh - 250px); /* Высота рассчитывается автоматически */
+    
+    /* Плавная прокрутка для iOS */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+/* Стили скроллбара */
+.leaderboard-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.leaderboard-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.leaderboard-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.leaderboard-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Обновленные стили для строк */
+.compact-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 12px;
+    min-height: 40px;
+    transition: all 0.3s ease;
+}
+
+.compact-row:last-child {
+    border-bottom: none;
+}
+
+.compact-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.compact-row.player {
+    background: rgba(33, 150, 243, 0.15);
+    border-left: 3px solid #2196F3;
+}
+
+/* Выравнивание колонок как в заголовке */
+.compact-row .position {
+    width: 40px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 11px;
+}
+
+.compact-row .flag {
+    width: 50px;
+    margin: 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.compact-row .name {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 0;
+}
+
+.compact-row .gap {
+    width: 70px;
+    text-align: right;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
+}
+
+/* Стили для элементов стрельбы */
+.targets-inline {
+    display: flex;
+    gap: 3px;
+    width: 80px;
+    justify-content: flex-end;
+    transform: translateX(100px);
+    opacity: 0;
+    transition: all 0.5s ease;
+    margin-right: 10px;
+}
+
+.shooting-status-text {
+    width: 80px;
+    text-align: right;
+    font-size: 10px;
+    color: #4FC3F7;
+    font-weight: bold;
+    transform: translateX(100px);
+    opacity: 0;
+    transition: all 0.5s ease 0.1s;
+}
+
+/* Обновляем основной контейнер гонки */
+.app-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    padding-bottom: 100px;
+    gap: 10px; /* Добавляем отступы между элементами */
+}
+
+/* Верхняя панель */
+.race-header {
+    flex: 0 0 auto; /* Не растягивается */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+/* Основное поле - теперь растягивается */
+.race-main {
+    flex: 1; /* Занимает все доступное пространство */
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Важно для корректного скроллинга в flex-контейнере */
+}
+
+/* Нижняя панель управления */
+.control-panel {
+    flex: 0 0 auto; /* Не растягивается */
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    gap: 10px;
+    position: fixed;
+    bottom: 0;
+    left: 10px;
+    right: 10px;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: none;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .leaderboard-header {
+        padding: 10px 12px;
+        font-size: 11px;
+    }
+    
+    .leaderboard-header span:nth-child(1) { width: 35px; }
+    .leaderboard-header span:nth-child(2) { width: 40px; }
+    .leaderboard-header span:nth-child(4) { width: 60px; }
+    
+    .compact-row {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+    
+    .compact-row .position {
+        width: 35px;
+    }
+    
+    .compact-row .flag {
+        width: 40px;
+        font-size: 12px;
+    }
+    
+    .compact-row .gap {
+        width: 60px;
+    }
+    
+    .targets-inline {
+        width: 70px;
+        gap: 2px;
+    }
+    
+    .shooting-status-text {
+        width: 70px;
+        font-size: 9px;
+    }
+}
+
+@media (max-height: 700px) {
+    .leaderboard-content {
+        max-height: calc(100vh - 220px);
+    }
+}
+
+@media (max-height: 600px) {
+    .leaderboard-content {
+        max-height: calc(100vh - 200px);
+    }
+    
+    .compact-row {
+        padding: 6px 12px;
+        min-height: 35px;
+    }
+}
