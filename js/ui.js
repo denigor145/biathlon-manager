@@ -400,58 +400,91 @@ class GameUI {
     }
 
     createShootingRow(competitor, shortName, shootingResults, shootingStep, gap) {
-        let targetsHTML = '';
+    let targetsHTML = '';
 
-        if (shootingStep === 0) {
-            // Ожидание стрельбы - пустые мишени
-            targetsHTML = `
-                <div class="targets-inline">
-                    <div class="inline-target"></div>
-                    <div class="inline-target"></div>
-                    <div class="inline-target"></div>
-                    <div class="inline-target"></div>
-                    <div class="inline-target"></div>
-                </div>
-            `;
-        } else if (shootingStep <= 5) {
-            // В процессе стрельбы
-            targetsHTML = `<div class="targets-inline">`;
-            
-            for (let i = 0; i < 5; i++) {
-                if (i < shootingStep - 1) {
-                    // Уже выстреленные мишени
-                    const isHit = shootingResults.shots[i];
-                    targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
-                } else if (i === shootingStep - 1) {
-                    // Текущая мишень (в процессе)
-                    targetsHTML += `<div class="inline-target pending"></div>`;
-                } else {
-                    // Будущие мишени
-                    targetsHTML += `<div class="inline-target"></div>`;
-                }
-            }
-            targetsHTML += '</div>';
-        } else {
-            // Стрельба завершена - все мишени
-            targetsHTML = '<div class="targets-inline">';
-            for (let i = 0; i < 5; i++) {
-                const isHit = shootingResults.shots[i];
-                targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
-            }
-            targetsHTML += '</div>';
-        }
-
-        return `
-            <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
-                <div class="position">${competitor.position}</div>
-                <div class="flag">${competitor.flag}</div>
-                <div class="name">${shortName}</div>
-                <div class="targets-container">
-                    ${targetsHTML}
-                </div>
+    if (shootingStep === 0) {
+        // Ожидание стрельбы - черные мишени
+        targetsHTML = `
+            <div class="targets-inline">
+                <div class="inline-target"></div>
+                <div class="inline-target"></div>
+                <div class="inline-target"></div>
+                <div class="inline-target"></div>
+                <div class="inline-target"></div>
             </div>
         `;
+    } else if (shootingStep <= 5) {
+        // В процессе стрельбы
+        targetsHTML = `<div class="targets-inline">`;
+        
+        for (let i = 0; i < 5; i++) {
+            if (i < shootingStep - 1) {
+                // Уже выстреленные мишени
+                const isHit = shootingResults.shots[i];
+                targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
+            } else if (i === shootingStep - 1) {
+                // Текущая мишень (в процессе выстрела)
+                const isHit = shootingResults.shots[i];
+                if (isHit !== null) {
+                    // Результат известен
+                    targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
+                } else {
+                    // Ожидание результата
+                    targetsHTML += `<div class="inline-target"></div>`;
+                }
+            } else {
+                // Будущие мишени
+                targetsHTML += `<div class="inline-target"></div>`;
+            }
+        }
+        targetsHTML += '</div>';
+    } else {
+        // Стрельба завершена - все мишени
+        targetsHTML = '<div class="targets-inline">';
+        for (let i = 0; i < 5; i++) {
+            const isHit = shootingResults.shots[i];
+            targetsHTML += `<div class="inline-target ${isHit ? 'hit' : 'miss'}"></div>`;
+        }
+        targetsHTML += '</div>';
     }
+
+    return `
+        <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
+            <div class="position">${competitor.position}</div>
+            <div class="flag">${competitor.flag}</div>
+            <div class="name">${shortName}</div>
+            <div class="targets-container" id="targets-${competitor.name.replace(/\s+/g, '-')}">
+                ${targetsHTML}
+            </div>
+        </div>
+    `;
+}
+
+// Обновляем метод для запуска анимации промаха
+updateShootingStep(step) {
+    this.updateDisplay();
+    
+    // Запускаем анимацию для промахов на текущем шаге
+    if (step > 0 && step <= 5) {
+        setTimeout(() => {
+            this.game.allCompetitors.forEach(competitor => {
+                const shootingResults = this.game.getShootingResults(competitor);
+                if (shootingResults && shootingResults.shots[step - 1] === false) {
+                    const containerId = `targets-${competitor.name.replace(/\s+/g, '-')}`;
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        // Добавляем класс вспышки
+                        container.classList.add('flash');
+                        // Убираем через время анимации
+                        setTimeout(() => {
+                            container.classList.remove('flash');
+                        }, 300);
+                    }
+                }
+            });
+        }, 100);
+    }
+}
 
     formatShortName(fullName) {
         const parts = fullName.split(' ');
