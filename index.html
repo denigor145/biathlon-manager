@@ -129,7 +129,7 @@
                 </div>
             </div>
 
-                        <!-- Таблица лидеров -->
+            <!-- Таблица лидеров -->
             <main class="race-main">
                 <div class="leaderboard-wrapper">
                     <div class="leaderboard-container">
@@ -166,24 +166,7 @@
         </div>
     </div>
 
-    <script src="js/game.js"></script>
-    <script src="js/ui.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Загрузка игры...');
-            
-            try {
-                window.biathlonGame = new BiathlonGame();
-                window.gameUI = new GameUI(window.biathlonGame);
-                console.log('Игра успешно загружена!');
-            } catch (error) {
-                console.error('Ошибка загрузки:', error);
-                alert('Ошибка загрузки игры. Проверьте консоль.');
-            }
-        });
-    </script>
-        <!-- Экран старта гонки -->
+    <!-- Экран старта гонки -->
     <div id="startStageScreen" class="stage-screen">
         <div class="stage-container">
             <div class="stage-header">
@@ -281,5 +264,23 @@
             </button>
         </div>
     </div>
+
+    <script src="js/game.js"></script>
+    <script src="js/ui.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Загрузка игры...');
+            
+            try {
+                window.biathlonGame = new BiathlonGame();
+                window.gameUI = new GameUI(window.biathlonGame);
+                console.log('Игра успешно загружена!');
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                alert('Ошибка загрузки игры. Проверьте консоль.');
+            }
+        });
+    </script>
 </body>
 </html>
