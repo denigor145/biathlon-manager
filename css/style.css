@@ -265,7 +265,6 @@ body {
     flex-direction: column;
     padding: 10px;
     padding-bottom: 100px;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
 }
 
 /* Верхняя панель */
@@ -278,7 +277,6 @@ body {
     border-radius: 15px;
     backdrop-filter: blur(10px);
     margin-bottom: 15px;
-    border: 1px solid rgba(255,255,255,0.2);
 }
 
 .race-info {
@@ -301,15 +299,9 @@ body {
     gap: 5px;
 }
 
-.lap-label, .segment-label {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
 .current-lap, .current-segment {
     color: #4FC3F7;
     font-size: 20px;
-    font-weight: bold;
 }
 
 .lap-divider, .segment-divider {
@@ -331,9 +323,6 @@ body {
     align-items: center;
     gap: 5px;
     font-size: 14px;
-    background: rgba(255,255,255,0.1);
-    padding: 5px 10px;
-    border-radius: 10px;
 }
 
 .stat-label {
@@ -345,41 +334,58 @@ body {
     color: #4FC3F7;
 }
 
-/* Основное поле гонки с учетом фиксированных кнопок - ИСПРАВЛЕНО */
-.app-container {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    padding-bottom: 100px; /* Место для фиксированных кнопок */
+/* Основное поле */
+.race-main {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 15px;
+    overflow-y: auto;
 }
 
-/* Фиксированные кнопки управления - ИСПРАВЛЕНО */
-.control-panel {
-    display: flex;
-    justify-content: space-between;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    gap: 10px;
-    border: 1px solid rgba(255,255,255,0.2);
-    
-    /* Фиксированная позиция */
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
-    z-index: 1000;
-    backdrop-filter: blur(10px);
-}
-/* Компактная таблица лидеров - ИСПРАВЛЕНО: правильная высота */
+/* Компактная таблица лидеров */
 .compact-leaderboard {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    /* УБИРАЕМ фиксированную высоту */
-    min-height: auto;
-    height: auto;
+    gap: 3px;
+}
+
+.compact-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 12px;
+    min-height: 32px;
+}
+
+.compact-row.player {
+    background: rgba(33, 150, 243, 0.2);
+    border: 1px solid #2196F3;
+}
+
+.position {
+    width: 25px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 11px;
+}
+
+.name {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gap {
+    width: 60px;
+    text-align: right;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
 }
 
 /* Панель управления */
@@ -387,10 +393,9 @@ body {
     display: flex;
     justify-content: space-between;
     padding: 15px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     gap: 10px;
-    border: 1px solid rgba(255,255,255,0.2);
 }
 
 .control-btn {
@@ -402,18 +407,12 @@ body {
     padding: 15px 10px;
     border: none;
     border-radius: 15px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
     color: white;
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
     min-height: 70px;
-    border: 2px solid transparent;
-}
-
-.control-btn:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.25);
 }
 
 .control-btn:active {
@@ -424,24 +423,12 @@ body {
     background: linear-gradient(135deg, #FF5252, #FF1744);
 }
 
-.sprint-btn:hover {
-    background: linear-gradient(135deg, #FF1744, #D50000);
-}
-
 .slow-btn {
     background: linear-gradient(135deg, #4CAF50, #2E7D32);
 }
 
-.slow-btn:hover {
-    background: linear-gradient(135deg, #2E7D32, #1B5E20);
-}
-
 .menu-btn {
     background: linear-gradient(135deg, #2196F3, #1565C0);
-}
-
-.menu-btn:hover {
-    background: linear-gradient(135deg, #1565C0, #0D47A1);
 }
 
 .btn-icon {
@@ -453,27 +440,279 @@ body {
     font-weight: 500;
 }
 
-/* Стили для мишеней в таблице лидеров - ИСПРАВЛЕНО: правильное отображение */
+/* Адаптивность */
+@media (max-width: 768px) {
+    .game-title {
+        font-size: 2em;
+    }
+    
+    .race-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .menu-buttons {
+        gap: 10px;
+    }
+    
+    .menu-btn {
+        padding: 15px 20px;
+        font-size: 1em;
+    }
+}
+
+/* Исправления для мобильных устройств */
+@media (max-width: 768px) {
+    .menu-container {
+        height: 100vh;
+        overflow-y: auto;
+        padding: 10px;
+    }
+    
+    .menu-content {
+        padding: 10px;
+        justify-content: flex-start;
+        min-height: auto;
+    }
+    
+    .game-title {
+        font-size: 2em;
+        margin-bottom: 20px;
+    }
+    
+    .race-selection {
+        padding: 20px 15px;
+        margin-bottom: 15px;
+    }
+    
+    .race-cards {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .race-card {
+        padding: 15px;
+    }
+    
+    .menu-buttons {
+        position: sticky;
+        bottom: 0;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        padding: 15px;
+        margin: 0 -15px -15px -15px;
+    }
+    
+    .menu-btn {
+        padding: 15px;
+        font-size: 1em;
+    }
+    
+    /* Убираем анимации для производительности */
+    .snow {
+        animation: none;
+    }
+    
+    .biathletes::before {
+        animation: none;
+    }
+}
+
+/* Гарантируем что кнопки всегда видны */
+.menu-buttons {
+    position: relative;
+    z-index: 100;
+}
+
+/* Упрощаем стадион для мобильных */
+@media (max-height: 700px) {
+    .stadium-background {
+        display: none;
+    }
+    
+    .menu-content {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
+}
+
+/* Основные исправления прокрутки */
+body {
+    overflow: hidden;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.app-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Главный контейнер для прокрутки */
+.race-main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+    background: transparent;
+    
+    /* Критически важные свойства для прокрутки */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    
+    /* Для десктопа */
+    min-height: 0;
+    height: 0;
+}
+
+/* Контейнер списка должен занимать всю доступную высоту */
+.compact-leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-height: min-content;
+}
+
+/* Убедимся что строки не сжимаются */
+.compact-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 12px;
+    min-height: 32px;
+    flex-shrink: 0;
+}
+
+/* Фиксированные кнопки управления */
+.control-panel {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px 20px 0 0;
+    gap: 10px;
+    position: fixed;
+    bottom: 0;
+    left: 10px;
+    right: 10px;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: none;
+}
+
+/* Основное поле гонки с учетом фиксированных кнопок */
+.app-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    padding-bottom: 100px;
+}
+
+/* Прокручиваемая область гонки */
+.race-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background: transparent;
+    margin-bottom: 0;
+    
+    /* Плавная прокрутка */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+/* Стили скроллбара */
+.race-main::-webkit-scrollbar {
+    width: 6px;
+}
+
+.race-main::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.race-main::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.race-main::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Верхняя панель тоже фиксированная */
+.race-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+}
+
+/* Увеличиваем список чтобы был скролл */
+.compact-leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-height: 500px;
+}
+
+/* Адаптивность для разных экранов */
+@media (max-height: 700px) {
+    .app-container {
+        padding-bottom: 90px;
+    }
+    
+    .control-panel {
+        padding: 12px;
+    }
+    
+    .compact-leaderboard {
+        min-height: 400px;
+    }
+}
+
+@media (max-height: 600px) {
+    .app-container {
+        padding-bottom: 85px;
+    }
+    
+    .compact-leaderboard {
+        min-height: 350px;
+    }
+}
+
+/* Стили для мишеней в таблице лидеров */
 .targets-inline {
     display: flex;
-    gap: 4px;
-    width: 90px;
-    justify-content: center;
-    margin: 0 10px;
+    gap: 3px;
+    width: 80px;
+    justify-content: flex-end;
+    transform: translateX(100px);
+    opacity: 0;
+    transition: all 0.5s ease;
+}
+
+.targets-inline.visible {
+    transform: translateX(0);
+    opacity: 1;
 }
 
 .inline-target {
-    width: 14px;
-    height: 14px;
-    background: rgba(255, 255, 255, 0.3);
+    width: 12px;
+    height: 12px;
+    background: white;
     border-radius: 50%;
     border: 2px solid #333;
     position: relative;
     transition: all 0.3s ease;
-}
-
-.inline-target.hit {
-    background: white;
 }
 
 .inline-target.hit::before {
@@ -500,15 +739,27 @@ body {
 
 .shooting-status-text {
     width: 80px;
-    text-align: center;
-    font-size: 11px;
+    text-align: right;
+    font-size: 10px;
     color: #4FC3F7;
     font-weight: bold;
-    margin: 0 10px;
+    transform: translateX(100px);
+    opacity: 0;
+    transition: all 0.5s ease 0.1s;
+}
+
+.shooting-status-text.visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.gap {
+    transition: all 0.5s ease;
 }
 
 .gap.hidden {
-    display: none;
+    transform: translateX(-100px);
+    opacity: 0;
 }
 
 /* Анимации для мишеней */
@@ -522,6 +773,29 @@ body {
     0% { opacity: 0.6; }
     50% { opacity: 1; }
     100% { opacity: 0.6; }
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 480px) {
+    .targets-inline {
+        width: 70px;
+        gap: 2px;
+    }
+    
+    .inline-target {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .inline-target.hit::before {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .shooting-status-text {
+        width: 70px;
+        font-size: 9px;
+    }
 }
 
 /* Стили для экранов этапов */
@@ -694,23 +968,6 @@ body {
 
 /* Адаптивность */
 @media (max-width: 768px) {
-    .game-title {
-        font-size: 2em;
-    }
-    
-    .race-cards {
-        grid-template-columns: 1fr;
-    }
-    
-    .menu-buttons {
-        gap: 10px;
-    }
-    
-    .menu-btn {
-        padding: 15px 20px;
-        font-size: 1em;
-    }
-    
     .stage-container {
         padding: 20px;
     }
@@ -728,79 +985,22 @@ body {
         gap: 5px;
         text-align: center;
     }
-    
-    .compact-row {
-        padding: 8px 10px;
-        font-size: 12px;
-        min-height: 35px;
-    }
-    
-    .position {
-        width: 25px;
-        font-size: 12px;
-    }
-    
-    .targets-inline {
-        width: 70px;
-        gap: 2px;
-    }
-    
-    .inline-target {
-        width: 10px;
-        height: 10px;
-    }
-    
-    .inline-target.hit::before {
-        width: 6px;
-        height: 6px;
-    }
-    
-    .shooting-status-text {
-        width: 60px;
-        font-size: 9px;
-    }
 }
 
-/* Убираем ненужные элементы */
-.shooting-screen {
+/* УБИРАЕМ НАДПИСЬ О СТРЕЛЬБЕ ИЗ ОСНОВНОГО ИНТЕРФЕЙСА */
+.shooting-header {
     display: none !important;
 }
 
-#shootingScreen {
+#shootingRoundName,
+.shooting-timer {
     display: none !important;
 }
 
-/* Исправления для мобильных устройств */
-@media (max-height: 700px) {
-    .stadium-background {
-        display: none;
-    }
-    
-    .menu-content {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    }
-    
-    .compact-row {
-        min-height: 30px;
-        padding: 6px 8px;
-    }
-}
-
-/* Стили скроллбара */
-.race-main::-webkit-scrollbar {
-    width: 6px;
-}
-
-.race-main::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-}
-
-.race-main::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
-}
-
-.race-main::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+/* Убираем старые элементы которые не используются */
+.leaderboard-container,
+.leader-poster,
+.status-indicators,
+.race-time {
+    display: none !important;
 }
