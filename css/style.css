@@ -271,6 +271,10 @@ body {
 }
 
 /* Экран гонки */
+#gameScreen {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+
 .app-container {
     height: 100vh;
     display: flex;
@@ -278,6 +282,7 @@ body {
     width: 100%;
     position: relative;
     overflow: hidden;
+    background: inherit; /* Наследует фон от gameScreen */
 }
 
 /* Верхняя панель */
