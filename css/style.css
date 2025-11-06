@@ -258,22 +258,6 @@ body {
     transform: translateY(-2px);
 }
 
-/* Кнопка назад */
-.back-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-.back-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
 /* Экран гонки */
 .app-container {
     height: 100vh;
@@ -295,35 +279,59 @@ body {
     margin-bottom: 15px;
 }
 
-.segment-info {
-    font-size: 24px;
+.race-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.laps-info {
+    font-size: 18px;
     font-weight: bold;
+    display: flex;
+    gap: 20px;
+}
+
+.lap-display, .segment-display {
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
-.current-segment {
+.current-lap, .current-segment {
     color: #4FC3F7;
-    font-size: 28px;
+    font-size: 20px;
 }
 
-.segment-divider {
+.lap-divider, .segment-divider {
     color: rgba(255, 255, 255, 0.7);
+    margin: 0 2px;
 }
 
-.total-segments {
+.total-laps, .total-segments {
     color: rgba(255, 255, 255, 0.8);
 }
 
-.race-time {
-    font-size: 24px;
+.player-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+
+.stat-label {
+    font-size: 16px;
+}
+
+.stat-value {
     font-weight: bold;
-    color: #FFF;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 8px 16px;
-    border-radius: 25px;
-    border: 2px solid #4FC3F7;
+    color: #4FC3F7;
 }
 
 /* Основное поле */
@@ -336,96 +344,48 @@ body {
     overflow-y: auto;
 }
 
-.leaderboard-container {
+/* Компактная таблица лидеров */
+.compact-leaderboard {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 3px;
 }
 
-/* Плакат лидера */
-.leader-poster {
-    background: linear-gradient(145deg, #FFD700, #FFA000);
-    color: #1a237e;
-    padding: 20px;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
-}
-
-.leader-flag {
-    font-size: 48px;
-    margin-bottom: 10px;
-}
-
-.leader-name {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.leader-time {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.leader-stats {
-    display: flex;
-    justify-content: space-around;
-    font-size: 14px;
-}
-
-/* Список соперников */
-.competitors-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.competitor-row {
+.compact-row {
     display: flex;
     align-items: center;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    transition: all 0.3s ease;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 12px;
+    min-height: 32px;
 }
 
-.competitor-row.player {
+.compact-row.player {
     background: rgba(33, 150, 243, 0.2);
-    border: 2px solid #2196F3;
+    border: 1px solid #2196F3;
 }
 
-.competitor-position {
-    font-size: 18px;
+.position {
+    width: 25px;
     font-weight: bold;
-    width: 40px;
     text-align: center;
+    font-size: 11px;
 }
 
-.competitor-flag {
-    font-size: 24px;
-    width: 40px;
-    text-align: center;
-}
-
-.competitor-name {
+.name {
     flex: 1;
-    font-size: 16px;
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.competitor-time {
-    font-size: 16px;
-    font-weight: bold;
-    color: #4FC3F7;
-}
-
-.competitor-gap {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
-    width: 80px;
+.gap {
+    width: 60px;
     text-align: right;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
 }
 
 /* Панель управления */
@@ -480,47 +440,6 @@ body {
     font-weight: 500;
 }
 
-/* Индикаторы состояния */
-.status-indicators {
-    position: absolute;
-    top: 80px;
-    right: 20px;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 15px;
-    border-radius: 15px;
-    width: 180px;
-}
-
-.pulse-indicator,
-.stamina-indicator {
-    margin-bottom: 15px;
-}
-
-.pulse-bar,
-.stamina-bar {
-    width: 100%;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    margin-top: 5px;
-    overflow: hidden;
-}
-
-.pulse-fill,
-.stamina-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.5s ease;
-}
-
-.pulse-fill {
-    background: linear-gradient(90deg, #4CAF50, #FFC107, #FF5252);
-}
-
-.stamina-fill {
-    background: linear-gradient(90deg, #2196F3, #4FC3F7);
-}
-
 /* Адаптивность */
 @media (max-width: 768px) {
     .game-title {
@@ -540,6 +459,7 @@ body {
         font-size: 1em;
     }
 }
+
 /* Исправления для мобильных устройств */
 @media (max-width: 768px) {
     .menu-container {
@@ -612,162 +532,7 @@ body {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     }
 }
-/* Новый компактный интерфейс гонки */
-.race-header {
-    padding: 10px 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    margin-bottom: 10px;
-}
 
-.race-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.laps-info {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.current-lap {
-    color: #4FC3F7;
-    font-size: 20px;
-}
-
-.lap-divider {
-    color: rgba(255, 255, 255, 0.7);
-    margin: 0 2px;
-}
-
-.total-laps {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.player-stats {
-    display: flex;
-    gap: 15px;
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 14px;
-}
-
-.stat-label {
-    font-size: 16px;
-}
-
-.stat-value {
-    font-weight: bold;
-    color: #4FC3F7;
-}
-
-/* Компактная таблица лидеров */
-.compact-leaderboard {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.compact-row {
-    display: flex;
-    align-items: center;
-    padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    font-size: 12px;
-    min-height: 32px;
-}
-
-.compact-row.player {
-    background: rgba(33, 150, 243, 0.2);
-    border: 1px solid #2196F3;
-}
-
-.position {
-    width: 25px;
-    font-weight: bold;
-    text-align: center;
-    font-size: 11px;
-}
-
-.name {
-    flex: 1;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.gap {
-    width: 60px;
-    text-align: right;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 11px;
-}
-
-/* Убираем старые элементы */
-.leaderboard-container,
-.leader-poster,
-.status-indicators {
-    display: none !important;
-}
-
-.race-time {
-    display: none !important;
-}
-
-/* Убираем надпись о стрельбе над таблицей */
-.segment-info {
-    display: none !important;
-}
-
-/* Увеличиваем основное поле */
-.race-main {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px;
-    background: transparent;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 480px) {
-    .compact-row {
-        padding: 6px 8px;
-        font-size: 11px;
-        min-height: 28px;
-    }
-    
-    .position {
-        width: 22px;
-        font-size: 10px;
-    }
-    
-    .gap {
-        width: 50px;
-        font-size: 10px;
-    }
-    
-    .laps-info {
-        font-size: 16px;
-    }
-    
-    .current-lap {
-        font-size: 18px;
-    }
-    
-    .player-stats {
-        gap: 10px;
-    }
-    
-    .stat-item {
-        font-size: 12px;
-    }
-}
 /* Основные исправления прокрутки */
 body {
     overflow: hidden;
@@ -796,8 +561,8 @@ body {
     overscroll-behavior: contain;
     
     /* Для десктопа */
-    min-height: 0; /* Разрешаем сжатие */
-    height: 0; /* Принудительно включаем flex-сжатие */
+    min-height: 0;
+    height: 0;
 }
 
 /* Контейнер списка должен занимать всю доступную высоту */
@@ -817,34 +582,9 @@ body {
     border-radius: 8px;
     font-size: 12px;
     min-height: 32px;
-    flex-shrink: 0; /* Не сжимаются! */
+    flex-shrink: 0;
 }
 
-/* Принудительное решение для десктопа */
-@media (min-width: 768px) {
-    .race-main {
-        max-height: calc(100vh - 200px); /* Высота минус шапка и кнопки */
-    }
-}
-
-/* Стили скроллбара для наглядности */
-.race-main::-webkit-scrollbar {
-    width: 8px;
-}
-
-.race-main::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-}
-
-.race-main::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-}
-
-.race-main::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
 /* Фиксированные кнопки управления */
 .control-panel {
     display: flex;
@@ -869,7 +609,7 @@ body {
     display: flex;
     flex-direction: column;
     padding: 10px;
-    padding-bottom: 100px; /* Место для фиксированных кнопок */
+    padding-bottom: 100px;
 }
 
 /* Прокручиваемая область гонки */
@@ -921,7 +661,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 3px;
-    min-height: 500px; /* Гарантируем что будет скролл */
+    min-height: 500px;
 }
 
 /* Адаптивность для разных экранов */
@@ -947,57 +687,6 @@ body {
     .compact-leaderboard {
         min-height: 350px;
     }
-}
-/* Фиксированные кнопки в главном меню */
-.menu-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    z-index: 1000;
-}
-
-.menu-container {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    background: linear-gradient(160deg, #0c2461 0%, #1e3799 30%, #4a69bd 100%);
-    padding-bottom: 120px; /* Место для фиксированных кнопок */
-}
-
-.menu-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    position: relative;
-    z-index: 1;
-    overflow-y: auto;
-}
-
-/* Прокручиваемый выбор гонок */
-.race-selection {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 30px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255,255,255,0.2);
-    max-height: 60vh;
-    overflow-y: auto;
-}
-
-.race-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
 }
 
 /* Стили для мишеней в таблице лидеров */
@@ -1296,4 +985,22 @@ body {
         gap: 5px;
         text-align: center;
     }
+}
+
+/* УБИРАЕМ НАДПИСЬ О СТРЕЛЬБЕ ИЗ ОСНОВНОГО ИНТЕРФЕЙСА */
+.shooting-header {
+    display: none !important;
+}
+
+#shootingRoundName,
+.shooting-timer {
+    display: none !important;
+}
+
+/* Убираем старые элементы которые не используются */
+.leaderboard-container,
+.leader-poster,
+.status-indicators,
+.race-time {
+    display: none !important;
 }
