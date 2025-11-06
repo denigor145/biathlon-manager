@@ -721,6 +721,11 @@ body {
     display: none !important;
 }
 
+/* Убираем надпись о стрельбе над таблицей */
+.segment-info {
+    display: none !important;
+}
+
 /* Увеличиваем основное поле */
 .race-main {
     flex: 1;
