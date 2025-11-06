@@ -32,6 +32,15 @@ body {
     display: block;
 }
 
+/* ФОН ДЛЯ ВСЕХ ЭКРАНОВ */
+#mainMenu,
+#gameScreen,
+#startStageScreen,
+#preShootingScreen,
+#postShootingScreen {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+
 /* Главное меню */
 .menu-container {
     height: 100vh;
@@ -58,7 +67,6 @@ body {
     width: 100%;
     height: 60%;
     background: 
-        /* Лыжня */
         repeating-linear-gradient(
             90deg,
             transparent,
@@ -66,7 +74,6 @@ body {
             rgba(255,255,255,0.3) 50px,
             rgba(255,255,255,0.3) 100px
         ),
-        /* Снег */
         linear-gradient(0deg, #FFFFFF 0%, #F0F8FF 100%);
 }
 
@@ -83,12 +90,6 @@ body {
         radial-gradient(circle at 60% 10%, rgba(255,255,255,0.5) 1px, transparent 0),
         radial-gradient(circle at 30% 50%, rgba(255,255,255,0.6) 2px, transparent 0);
     background-size: 200px 200px, 150px 150px, 180px 180px, 120px 120px, 160px 160px;
-    animation: snowFall 20s linear infinite;
-}
-
-@keyframes snowFall {
-    0% { background-position: 0px 0px, 0px 0px, 0px 0px, 0px 0px, 0px 0px; }
-    100% { background-position: 0px 200px, 0px 150px, 0px 180px, 0px 120px, 0px 160px; }
 }
 
 .biathletes {
@@ -102,12 +103,6 @@ body {
     content: "⛷️🎯⛷️🎯⛷️🎯";
     position: absolute;
     font-size: 24px;
-    animation: biathletesMove 15s linear infinite;
-}
-
-@keyframes biathletesMove {
-    0% { transform: translateX(-100px); }
-    100% { transform: translateX(500px); }
 }
 
 /* Контент меню */
@@ -172,21 +167,6 @@ body {
     border: 2px solid transparent;
     position: relative;
     overflow: hidden;
-}
-
-.race-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-
-.race-card:hover::before {
-    left: 100%;
 }
 
 .race-card:hover {
@@ -271,10 +251,6 @@ body {
 }
 
 /* Экран гонки */
-#gameScreen {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-}
-
 .app-container {
     height: 100vh;
     display: flex;
@@ -282,7 +258,7 @@ body {
     width: 100%;
     position: relative;
     overflow: hidden;
-    background: inherit; /* Наследует фон от gameScreen */
+    background: transparent;
 }
 
 /* Верхняя панель */
@@ -362,8 +338,8 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    margin-top: 80px; /* Высота верхней панели */
-    margin-bottom: 100px; /* Высота нижней панели */
+    margin-top: 80px;
+    margin-bottom: 100px;
     padding: 10px;
     overflow: hidden;
 }
@@ -499,17 +475,92 @@ body {
     flex-shrink: 0;
 }
 
-/* Анимации для мишеней */
-@keyframes missFlash {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+/* Стили для рамки с мишенями */
+.targets-container {
+    width: 70px;
+    height: 20px;
+    background: white;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 8px;
+    margin-left: 10px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-@keyframes pendingPulse {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
+/* Анимация вспышки рамки при промахе */
+@keyframes flashRed {
+    0% { background-color: white; }
+    50% { background-color: #ff4444; }
+    100% { background-color: white; }
+}
+
+.targets-container.flash {
+    animation: flashRed 0.3s ease;
+}
+
+/* Стили для мишеней внутри рамки */
+.targets-inline {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.inline-target {
+    width: 12px;
+    height: 12px;
+    background: black;
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+/* Попадание - белая мишень с черным бортом */
+.inline-target.hit {
+    background: white;
+    border: 2px solid black;
+    border-radius: 50%;
+}
+
+/* Промах - красный крестик на черной мишени */
+.inline-target.miss::before,
+.inline-target.miss::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 1.5px;
+    background: #ff4444;
+    border-radius: 1px;
+}
+
+.inline-target.miss::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.inline-target.miss::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* Анимация появления крестика */
+@keyframes showCross {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.inline-target.miss::before,
+.inline-target.miss::after {
+    animation: showCross 0.2s ease-out 0.3s forwards;
+    opacity: 0;
 }
 
 /* Панель управления */
@@ -571,172 +622,6 @@ body {
 .btn-label {
     font-weight: 500;
     font-size: 12px;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .game-title {
-        font-size: 2em;
-    }
-    
-    .race-cards {
-        grid-template-columns: 1fr;
-    }
-    
-    .menu-buttons {
-        gap: 10px;
-    }
-    
-    .menu-btn {
-        padding: 15px 20px;
-        font-size: 1em;
-    }
-    
-    .leaderboard-header {
-        padding: 10px 12px;
-        font-size: 11px;
-    }
-    
-    .header-pos { width: 35px; }
-    .header-flag { width: 40px; }
-    .header-gap { width: 70px; }
-    
-    .compact-row {
-        padding: 10px 12px;
-        font-size: 11px;
-        min-height: 40px;
-    }
-    
-    .compact-row .position { width: 35px; }
-    .compact-row .flag { width: 40px; font-size: 12px; }
-    .compact-row .gap { width: 70px; }
-    
-    .control-btn {
-        min-height: 60px;
-        padding: 12px 8px;
-    }
-    
-    .btn-icon {
-        font-size: 18px;
-    }
-    
-    .btn-label {
-        font-size: 11px;
-    }
-}
-
-@media (max-height: 700px) {
-    .compact-row {
-        padding: 8px 12px;
-        min-height: 35px;
-    }
-    
-    .race-header {
-        padding: 12px 15px;
-    }
-    
-    .control-panel {
-        padding: 12px 15px;
-    }
-}
-
-/* Исправления для мобильных устройств */
-@media (max-width: 768px) {
-    .menu-container {
-        height: 100vh;
-        overflow-y: auto;
-        padding: 10px;
-    }
-    
-    .menu-content {
-        padding: 10px;
-        justify-content: flex-start;
-        min-height: auto;
-    }
-    
-    .game-title {
-        font-size: 2em;
-        margin-bottom: 20px;
-    }
-    
-    .race-selection {
-        padding: 20px 15px;
-        margin-bottom: 15px;
-    }
-    
-    .race-cards {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .race-card {
-        padding: 15px;
-    }
-    
-    .menu-buttons {
-        position: sticky;
-        bottom: 0;
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        padding: 15px;
-        margin: 0 -15px -15px -15px;
-    }
-    
-    .menu-btn {
-        padding: 15px;
-        font-size: 1em;
-    }
-    
-    /* Убираем анимации для производительности */
-    .snow {
-        animation: none;
-    }
-    
-    .biathletes::before {
-        animation: none;
-    }
-}
-
-/* Гарантируем что кнопки всегда видны */
-.menu-buttons {
-    position: relative;
-    z-index: 100;
-}
-
-/* Упрощаем стадион для мобильных */
-@media (max-height: 700px) {
-    .stadium-background {
-        display: none;
-    }
-    
-    .menu-content {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    }
-}
-
-/* Основные исправления прокрутки */
-body {
-    overflow: hidden;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-}
-
-/* УБИРАЕМ НАДПИСЬ О СТРЕЛЬБЕ ИЗ ОСНОВНОГО ИНТЕРФЕЙСА */
-.shooting-header {
-    display: none !important;
-}
-
-#shootingRoundName,
-.shooting-timer {
-    display: none !important;
-}
-
-/* Убираем старые элементы которые не используются */
-.leaderboard-container-old,
-.leader-poster,
-.status-indicators,
-.race-time {
-    display: none !important;
 }
 
 /* Стили для экранов этапов */
@@ -830,18 +715,11 @@ body {
 
 .wind-icon {
     font-size: 1.5em;
-    animation: windBlow 2s infinite;
 }
 
 .wind-value {
     font-weight: bold;
     color: #4FC3F7;
-}
-
-@keyframes windBlow {
-    0% { transform: translateX(0); }
-    50% { transform: translateX(3px); }
-    100% { transform: translateX(0); }
 }
 
 /* Результаты стрельбы */
@@ -900,17 +778,79 @@ body {
     touch-action: manipulation;
 }
 
-.stage-start-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 82, 82, 0.4);
-}
-
 .stage-start-btn:active {
     transform: translateY(0);
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
+    .game-title {
+        font-size: 2em;
+    }
+    
+    .race-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .menu-buttons {
+        gap: 10px;
+    }
+    
+    .menu-btn {
+        padding: 15px 20px;
+        font-size: 1em;
+    }
+    
+    .leaderboard-header {
+        padding: 10px 12px;
+        font-size: 11px;
+    }
+    
+    .header-pos { width: 35px; }
+    .header-flag { width: 40px; }
+    .header-gap { width: 70px; }
+    
+    .compact-row {
+        padding: 10px 12px;
+        font-size: 11px;
+        min-height: 40px;
+    }
+    
+    .compact-row .position { width: 35px; }
+    .compact-row .flag { width: 40px; font-size: 12px; }
+    .compact-row .gap { width: 70px; }
+    
+    .targets-container {
+        width: 65px;
+        height: 18px;
+        padding: 0 6px;
+        margin-left: 8px;
+    }
+    
+    .inline-target {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .inline-target.miss::before,
+    .inline-target.miss::after {
+        width: 6px;
+        height: 1px;
+    }
+    
+    .control-btn {
+        min-height: 60px;
+        padding: 12px 8px;
+    }
+    
+    .btn-icon {
+        font-size: 18px;
+    }
+    
+    .btn-label {
+        font-size: 11px;
+    }
+    
     .stage-container {
         padding: 20px;
         margin: 10px;
@@ -936,103 +876,36 @@ body {
     }
 }
 
-/* ФОН ДЛЯ ЭКРАНА ГОНКИ */
-#gameScreen {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+@media (max-height: 700px) {
+    .compact-row {
+        padding: 8px 12px;
+        min-height: 35px;
+    }
+    
+    .race-header {
+        padding: 12px 15px;
+    }
+    
+    .control-panel {
+        padding: 12px 15px;
+    }
+    
+    .stadium-background {
+        display: none;
+    }
+    
+    .menu-content {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
 }
 
-#gameScreen .app-container {
-    background: transparent !important;
-}
-
-/* ФОН ДЛЯ ЭКРАНА СТРЕЛЬБЫ */
-.shooting-screen {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
-}
-/* Стили для рамки с мишенями */
-.targets-container {
-    width: 70px;
-    height: 20px;
-    background: white;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 0 8px;
-    margin-left: 10px;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Анимация вспышки рамки при промахе */
-@keyframes flashRed {
-    0% { background-color: white; }
-    50% { background-color: #ff4444; }
-    100% { background-color: white; }
-}
-
-.targets-container.flash {
-    animation: flashRed 0.3s ease;
-}
-
-/* Стили для мишеней внутри рамки */
-.targets-inline {
-    display: flex;
-    gap: 3px;
-    align-items: center;
-    justify-content: space-around;
-    width: 100%;
-}
-
-.inline-target {
-    wwidth: 12px;
-    height: 12px;
-    background: black;
-    border-radius: 50%;
-    position: relative;
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-    box-sizing: border-box;
-}
-
-/* Попадание - белая мишень с черным бортом */
-.inline-target.hit {
-    background: white;
-    border: 2px solid black;
-    border-radius: 50%;
-}
-
-/* Промах - красный крестик на черной мишени */
-.inline-target.miss::before,
-.inline-target.miss::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 8px;
-    height: 1.5px;
-    background: #ff4444;
-    border-radius: 1px;
-}
-
-.inline-target.miss::before {
-    transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.inline-target.miss::after {
-    transform: translate(-50%, -50%) rotate(-45deg);
-}
-
-/* Анимация появления крестика */
-@keyframes showCross {
-    0% { opacity: 0; transform: scale(0.5); }
-    100% { opacity: 1; transform: scale(1); }
-}
-
-.inline-target.miss::before,
-.inline-target.miss::after {
-    animation: showCross 0.2s ease-out 0.3s forwards;
-    opacity: 0;
+/* Скрываем неиспользуемые элементы */
+.shooting-header,
+#shootingRoundName,
+.shooting-timer,
+.leaderboard-container-old,
+.leader-poster,
+.status-indicators,
+.race-time {
+    display: none !important;
 }
