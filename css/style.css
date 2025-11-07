@@ -490,7 +490,7 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 0 5px;
+    padding: 0 1px;
     text-align: left;
 }
 
