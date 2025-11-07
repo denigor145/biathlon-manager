@@ -49,6 +49,13 @@ class MainMenu {
             });
         }
         
+        const locationBtn = document.getElementById('locationBtn');
+        if (locationBtn) {
+            locationBtn.addEventListener('click', () => {
+                this.showLocationSelection();
+            });
+        }
+        
         console.log("Обработчики MainMenu установлены");
     }
     
@@ -131,6 +138,130 @@ class MainMenu {
         }
     }
     
+    showLocationSelection() {
+        console.log("Opening location selection...");
+        this.showLocationSelectionDialog();
+    }
+    
+    showLocationSelectionDialog() {
+        const locationHTML = `
+            <div class="location-dialog" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            ">
+                <div style="
+                    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+                    padding: 30px;
+                    border-radius: 20px;
+                    border: 3px solid #4FC3F7;
+                    max-width: 600px;
+                    width: 90%;
+                    text-align: center;
+                    color: white;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                ">
+                    <h2 style="color: #FFD700; margin-bottom: 20px;">🌍 Выбор локации</h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                        ${this.generateLocationCards()}
+                    </div>
+                    
+                    <button id="closeLocationSelection" style="
+                        background: linear-gradient(135deg, #4CAF50, #2E7D32);
+                        color: white;
+                        border: none;
+                        padding: 12px 25px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        width: 100%;
+                    ">Закрыть</button>
+                </div>
+            </div>
+        `;
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = locationHTML;
+        document.body.appendChild(tempDiv.firstElementChild);
+        
+        // Добавляем обработчики для выбора локации
+        tempDiv.firstElementChild.querySelectorAll('.location-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const locationId = parseInt(e.currentTarget.getAttribute('data-location'));
+                this.selectLocation(locationId);
+                tempDiv.firstElementChild.remove();
+            });
+        });
+        
+        const closeBtn = tempDiv.firstElementChild.querySelector('#closeLocationSelection');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                tempDiv.firstElementChild.remove();
+            });
+        }
+    }
+
+    // Генерация карточек локаций
+    generateLocationCards() {
+        if (!window.biathlonGame) return '';
+        
+        return window.biathlonGame.locations.map((location, index) => {
+            const playerLevel = window.playerProfile ? Math.max(
+                window.playerProfile.stats.runningSpeed,
+                window.playerProfile.stats.accuracy,
+                window.playerProfile.stats.shootingSpeed,
+                window.playerProfile.stats.stamina
+            ) : 0;
+            
+            const isLocked = playerLevel < location.minLevel;
+            const isCurrent = window.biathlonGame.currentLocation === index;
+            
+            return `
+                <div class="location-card ${isCurrent ? 'selected' : ''} ${isLocked ? 'locked' : ''}" 
+                     data-location="${index}"
+                     style="
+                         background: ${isLocked ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.15)'};
+                         border-radius: 15px;
+                         padding: 15px;
+                         cursor: ${isLocked ? 'not-allowed' : 'pointer'};
+                         border: 2px solid ${isCurrent ? '#FFD700' : (isLocked ? '#666' : '#4FC3F7')};
+                         opacity: ${isLocked ? 0.6 : 1};
+                     ">
+                    <h3 style="color: ${isLocked ? '#999' : '#4FC3F7'}; margin-bottom: 10px;">
+                        ${isLocked ? '🔒 ' : ''}${location.name}
+                    </h3>
+                    <p style="font-size: 12px; margin-bottom: 8px;">Уровни: ${location.minLevel}-${location.maxLevel}</p>
+                    <p style="font-size: 12px; margin-bottom: 8px;">Сложность: ${'⭐'.repeat(location.difficulty)}</p>
+                    ${isLocked ? 
+                        `<p style="font-size: 11px; color: #FF5252;">Требуется уровень: ${location.minLevel}+</p>` : 
+                        `<p style="font-size: 11px; color: #4CAF50;">Доступно</p>`
+                    }
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Выбор локации
+    selectLocation(locationId) {
+        if (window.biathlonGame) {
+            const success = window.biathlonGame.setLocation(locationId);
+            if (success) {
+                this.showMessage(`Локация изменена: ${window.biathlonGame.getCurrentLocation().name}`, "success");
+            } else {
+                this.showMessage("Ошибка при смене локации", "error");
+            }
+        }
+    }
+    
     showSettings() {
         this.showSettingsDialog();
     }
@@ -208,6 +339,50 @@ class MainMenu {
                 tempDiv.firstElementChild.remove();
             });
         }
+    }
+    
+    showMessage(message, type = 'info') {
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = message;
+        messageDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 10000;
+            transition: all 0.3s ease;
+            max-width: 80%;
+            text-align: center;
+        `;
+        
+        switch(type) {
+            case 'success':
+                messageDiv.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+                messageDiv.style.color = 'white';
+                break;
+            case 'error':
+                messageDiv.style.background = 'linear-gradient(135deg, #F44336, #C62828)';
+                messageDiv.style.color = 'white';
+                break;
+            default:
+                messageDiv.style.background = 'linear-gradient(135deg, #2196F3, #1565C0)';
+                messageDiv.style.color = 'white';
+        }
+        
+        document.body.appendChild(messageDiv);
+        
+        setTimeout(() => {
+            messageDiv.style.opacity = '0';
+            messageDiv.style.transform = 'translateX(-50%) translateY(-20px)';
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 300);
+        }, 3000);
     }
     
     show() {
