@@ -614,23 +614,4 @@ class BiathlonGame {
         console.log("Возврат в главное меню");
         return true;
     }
-    
-    showStartStage() {
-        if (window.gameScreen) {
-            window.gameScreen.showStartStage();
-        }
-    }
-    
-    updateShootingStep(step) {
-        this.shootingStep = step;
-        if (window.gameScreen) {
-            window.gameScreen.updateShootingStep(step);
-        }
-    }
-    
-    showShootingResults() {
-        if (window.gameScreen) {
-            window.gameScreen.updateDisplay();
-        }
-    }
 }
