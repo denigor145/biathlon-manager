@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Биатлон Менеджер</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/character.css">
 </head>
 <body>
     <!-- Главное меню -->
@@ -64,9 +65,124 @@
                         <button class="menu-btn secondary" id="settingsBtn">
                             ⚙️ Настройки
                         </button>
-                        <button class="menu-btn secondary" id="statsBtn">
-                            📊 Статистика
+                        <button class="menu-btn secondary" id="characterBtn">
+                            👤 Персонаж
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран характеристик персонажа -->
+    <div id="characterScreen" class="screen">
+        <div class="character-container">
+            <div class="character-header">
+                <h1 class="character-title">👤 Характеристики персонажа</h1>
+                <button class="back-btn" id="backToMenuBtn">← Назад</button>
+            </div>
+            
+            <div class="character-content">
+                <!-- Вкладки -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="stats">📊 Характеристики</button>
+                    <button class="tab-btn" data-tab="equipment">🎒 Экипировка</button>
+                </div>
+                
+                <!-- Контент вкладок -->
+                <div class="tab-content">
+                    <!-- Вкладка характеристик -->
+                    <div id="stats-tab" class="tab-pane active">
+                        <div class="stats-container">
+                            <div class="points-info">
+                                <div class="available-points">
+                                    Доступно очков: <span id="availablePoints">10</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stats-grid">
+                                <!-- Скорость бега -->
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <div class="stat-icon">🏃</div>
+                                        <div class="stat-info">
+                                            <h3>Скорость бега</h3>
+                                            <p>Влияет на базовую скорость в гонке</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-controls">
+                                        <button class="stat-btn minus" data-stat="runningSpeed">-</button>
+                                        <div class="stat-value" id="runningSpeedValue">5</div>
+                                        <button class="stat-btn plus" data-stat="runningSpeed">+</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Меткость -->
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <div class="stat-icon">🎯</div>
+                                        <div class="stat-info">
+                                            <h3>Меткость</h3>
+                                            <p>Вероятность попадания в мишень</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-controls">
+                                        <button class="stat-btn minus" data-stat="accuracy">-</button>
+                                        <div class="stat-value" id="accuracyValue">70%</div>
+                                        <button class="stat-btn plus" data-stat="accuracy">+</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Скорость стрельбы -->
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <div class="stat-icon">⚡</div>
+                                        <div class="stat-info">
+                                            <h3>Скорость стрельбы</h3>
+                                            <p>Время между выстрелами</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-controls">
+                                        <button class="stat-btn minus" data-stat="shootingSpeed">-</button>
+                                        <div class="stat-value" id="shootingSpeedValue">2.0</div>
+                                        <button class="stat-btn plus" data-stat="shootingSpeed">+</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Выносливость -->
+                                <div class="stat-card">
+                                    <div class="stat-header">
+                                        <div class="stat-icon">💪</div>
+                                        <div class="stat-info">
+                                            <h3>Выносливость</h3>
+                                            <p>Максимальный запас сил и восстановление</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-controls">
+                                        <button class="stat-btn minus" data-stat="stamina">-</button>
+                                        <div class="stat-value" id="staminaValue">100</div>
+                                        <button class="stat-btn plus" data-stat="stamina">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="stats-actions">
+                                <button class="reset-btn" id="resetStatsBtn">🔄 Сбросить</button>
+                                <button class="save-btn" id="saveStatsBtn">💾 Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Вкладка экипировки -->
+                    <div id="equipment-tab" class="tab-pane">
+                        <div class="equipment-container">
+                            <div class="equipment-placeholder">
+                                <div class="placeholder-icon">🎒</div>
+                                <h3>Система экипировки</h3>
+                                <p>В разработке...</p>
+                                <p>Скоро здесь можно будет улучшать лыжи, винтовку и снаряжение</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -265,16 +381,31 @@
         </div>
     </div>
 
-    <script src="js/game.js"></script>
-    <script src="js/ui.js"></script>
+    <!-- Подключение JavaScript файлов -->
+    <script src="js/core/game.js"></script>
+    <script src="js/core/player.js"></script>
+    <script src="js/screens/main-menu.js"></script>
+    <script src="js/screens/game-screen.js"></script>
+    <script src="js/screens/character-screen.js"></script>
+    <script src="js/components/race-manager.js"></script>
+    <script src="js/components/shooting-engine.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    <script src="js/utils/constants.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Загрузка игры...');
             
             try {
+                // Инициализация основных компонентов
                 window.biathlonGame = new BiathlonGame();
-                window.gameUI = new GameUI(window.biathlonGame);
+                window.playerProfile = new PlayerProfile();
+                
+                // Инициализация экранов
+                window.mainMenu = new MainMenu();
+                window.gameScreen = new GameScreen();
+                window.characterScreen = new CharacterScreen();
+                
                 console.log('Игра успешно загружена!');
             } catch (error) {
                 console.error('Ошибка загрузки:', error);
