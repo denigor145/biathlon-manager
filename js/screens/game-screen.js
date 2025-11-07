@@ -310,9 +310,6 @@ class GameScreen {
             }
         }).join('');
     }
-    
-    class GameScreen {
-    // [остальной код без изменений...]
 
     createNormalRow(competitor, shortName, gap) {
         // Отображаем уровень для всех участников
@@ -365,10 +362,7 @@ class GameScreen {
             </div>
         `;
     }
-
-    // [остальной код без изменений...]
-}
-    
+ 
     updateShootingStep(step) {
         this.updateDisplay();
     }
