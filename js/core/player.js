@@ -1,35 +1,35 @@
 class PlayerProfile {
     constructor() {
-        // Базовые характеристики игрока
+        // Базовые характеристики игрока - начинаем с 0
         this.stats = {
-            runningSpeed: 5,      // Базовая скорость бега
-            accuracy: 70,         // Меткость в процентах
-            shootingSpeed: 2.0,   // Скорость стрельбы (модификатор)
-            stamina: 100          // Выносливость
+            runningSpeed: 0,      // Уровень бега (0-60)
+            accuracy: 0,          // Уровень меткости (0-60)  
+            shootingSpeed: 0,     // Уровень скорости стрельбы (0-60)
+            stamina: 0            // Уровень выносливости (0-60)
         };
         
         // Очки для распределения
-        this.availablePoints = 10;
+        this.availablePoints = 60; // Достаточно для максимальной прокачки без экипировки
         
         // Минимальные и максимальные значения характеристик
         this.minValues = {
-            runningSpeed: 3,
-            accuracy: 50,
-            shootingSpeed: 1.0,
-            stamina: 60
+            runningSpeed: 0,
+            accuracy: 0,
+            shootingSpeed: 0,
+            stamina: 0
         };
         
         this.maxValues = {
-            runningSpeed: 8,
-            accuracy: 95,
-            shootingSpeed: 3.5,
-            stamina: 150
+            runningSpeed: 60,     // Максимум 60 уровней без экипировки
+            accuracy: 60,
+            shootingSpeed: 60, 
+            stamina: 60
         };
         
-        // Стоимость улучшения (сколько очков стоит увеличение на 1)
+        // Стоимость улучшения
         this.upgradeCosts = {
             runningSpeed: 1,
-            accuracy: 2,          // Меткость дороже, так как сильно влияет на игру
+            accuracy: 1,
             shootingSpeed: 1,
             stamina: 1
         };
@@ -61,40 +61,11 @@ class PlayerProfile {
             return false;
         }
         
-        // Увеличиваем характеристику
-        let newValue;
-        switch(statName) {
-            case 'runningSpeed':
-                newValue = currentValue + 0.5;
-                break;
-            case 'shootingSpeed':
-                newValue = currentValue + 0.1;
-                break;
-            case 'accuracy':
-                newValue = currentValue + 5;
-                break;
-            case 'stamina':
-                newValue = currentValue + 10;
-                break;
-            default:
-                newValue = currentValue + 1;
-        }
-        
-        // Ограничиваем максимальным значением
-        newValue = Math.min(newValue, maxValue);
-        
-        // Округляем для красивых значений
-        if (statName === 'runningSpeed' || statName === 'shootingSpeed') {
-            newValue = Math.round(newValue * 10) / 10;
-        } else {
-            newValue = Math.round(newValue);
-        }
-        
-        // Применяем изменения
-        this.stats[statName] = newValue;
+        // Увеличиваем характеристику на 1 уровень
+        this.stats[statName] = currentValue + 1;
         this.availablePoints -= cost;
         
-        console.log(`Улучшена ${statName}: ${currentValue} → ${newValue}, осталось очков: ${this.availablePoints}`);
+        console.log(`Улучшена ${statName}: ${currentValue} → ${this.stats[statName]}, осталось очков: ${this.availablePoints}`);
         
         // Сохраняем и обновляем UI
         this.saveToStorage();
@@ -115,40 +86,11 @@ class PlayerProfile {
         
         const cost = this.upgradeCosts[statName];
         
-        // Уменьшаем характеристику
-        let newValue;
-        switch(statName) {
-            case 'runningSpeed':
-                newValue = currentValue - 0.5;
-                break;
-            case 'shootingSpeed':
-                newValue = currentValue - 0.1;
-                break;
-            case 'accuracy':
-                newValue = currentValue - 5;
-                break;
-            case 'stamina':
-                newValue = currentValue - 10;
-                break;
-            default:
-                newValue = currentValue - 1;
-        }
-        
-        // Ограничиваем минимальным значением
-        newValue = Math.max(newValue, minValue);
-        
-        // Округляем для красивых значений
-        if (statName === 'runningSpeed' || statName === 'shootingSpeed') {
-            newValue = Math.round(newValue * 10) / 10;
-        } else {
-            newValue = Math.round(newValue);
-        }
-        
-        // Возвращаем очки
-        this.stats[statName] = newValue;
+        // Уменьшаем характеристику на 1 уровень
+        this.stats[statName] = currentValue - 1;
         this.availablePoints += cost;
         
-        console.log(`Уменьшена ${statName}: ${currentValue} → ${newValue}, доступно очков: ${this.availablePoints}`);
+        console.log(`Уменьшена ${statName}: ${currentValue} → ${this.stats[statName]}, доступно очков: ${this.availablePoints}`);
         
         // Сохраняем и обновляем UI
         this.saveToStorage();
@@ -160,24 +102,14 @@ class PlayerProfile {
     // Сбросить все характеристики
     resetStats() {
         const defaultStats = {
-            runningSpeed: 5,
-            accuracy: 70,
-            shootingSpeed: 2.0,
-            stamina: 100
+            runningSpeed: 0,
+            accuracy: 0,
+            shootingSpeed: 0,
+            stamina: 0
         };
         
-        // Возвращаем все потраченные очки
-        let spentPoints = 0;
-        for (const stat in this.stats) {
-            const diff = this.stats[stat] - defaultStats[stat];
-            if (diff > 0) {
-                // Рассчитываем возврат очков (упрощенно)
-                spentPoints += Math.abs(diff) * this.upgradeCosts[stat];
-            }
-        }
-        
         this.stats = { ...defaultStats };
-        this.availablePoints = 10; // Возвращаем базовые очки
+        this.availablePoints = 60; // Возвращаем базовые очки
         
         console.log("Характеристики сброшены, доступно очков:", this.availablePoints);
         
@@ -185,6 +117,15 @@ class PlayerProfile {
         this.updateUI();
         
         return true;
+    }
+    
+    // Получить реальную скорость стрельбы в секундах (от 10 до 3 секунд)
+    getActualShootingSpeed() {
+        const level = this.stats.shootingSpeed;
+        // Формула: от 10 секунд при уровне 0 до 3 секунд при уровне 100
+        // Без экипировки максимум 60 уровней = 5.8 секунд
+        const baseTime = 10 - (level * 7 / 100);
+        return Math.max(3, Math.min(10, baseTime));
     }
     
     // Получить значение характеристики
@@ -211,9 +152,8 @@ class PlayerProfile {
                 return value + '%';
             case 'runningSpeed':
             case 'shootingSpeed':
-                return value.toFixed(1);
             case 'stamina':
-                return value.toString();
+                return value + '/60'; // Показываем уровень из 60
             default:
                 return value.toString();
         }
@@ -274,22 +214,27 @@ class PlayerProfile {
     applyToGamePlayer(gamePlayer) {
         if (!gamePlayer) return;
         
-        // Применяем характеристики к игровому объекту
-        gamePlayer.speed = this.stats.runningSpeed;
-        gamePlayer.maxStamina = this.stats.stamina;
-        gamePlayer.stamina = this.stats.stamina; // Полное восстановление
+        // Беговая скорость: от 3 при уровне 0 до 8 при уровне 100
+        gamePlayer.speed = 3 + (this.stats.runningSpeed * 5 / 100);
         
-        // Меткость для разных положений стрельбы
-        const accuracyDecimal = this.stats.accuracy / 100;
+        // Выносливость: от 60 при уровне 0 до 150 при уровне 100
+        gamePlayer.maxStamina = 60 + (this.stats.stamina * 90 / 100);
+        gamePlayer.stamina = gamePlayer.maxStamina;
+        
+        // Меткость: от 10% при уровне 0 до 80% при уровне 100
+        const accuracyPercent = 10 + (this.stats.accuracy * 70 / 100);
+        const accuracyDecimal = accuracyPercent / 100;
+        
         gamePlayer.shooting = {
-            prone: Math.min(0.95, accuracyDecimal * 1.1),   // Лежа точнее
-            standing: Math.min(0.85, accuracyDecimal * 0.9) // Стоя сложнее
+            prone: Math.min(0.95, accuracyDecimal * 1.1),
+            standing: Math.min(0.85, accuracyDecimal * 0.9)
         };
         
         // Скорость стрельбы
-        gamePlayer.shootingSpeed = this.stats.shootingSpeed;
-        
-        console.log("Характеристики применены к игроку:", gamePlayer);
+        gamePlayer.shootingSpeed = this.getActualShootingSpeed();
+        gamePlayer.level = this.stats.shootingSpeed; // Уровень для отображения
+
+        console.log("Характеристики применены к игроку. Уровень скорости стрельбы:", this.stats.shootingSpeed);
     }
     
     // Получить описание характеристик
