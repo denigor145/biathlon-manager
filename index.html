@@ -62,14 +62,14 @@
                         <button class="menu-btn primary" id="startRace">
                             🎮 Начать гонку
                         </button>
-                        <button class="menu-btn secondary" id="settingsBtn">
-                            ⚙️ Настройки
+                        <button class="menu-btn secondary" id="characterBtn">
+                            👤 Персонаж
                         </button>
                         <button class="menu-btn secondary" id="locationBtn">
                             🌍 Выбор локации
                         </button>
-                        <button class="menu-btn secondary" id="characterBtn">
-                            👤 Персонаж
+                        <button class="menu-btn secondary" id="settingsBtn">
+                            ⚙️ Настройки
                         </button>
                     </div>
                 </div>
@@ -385,15 +385,11 @@
     </div>
 
     <!-- Подключение JavaScript файлов -->
-    <script src="js/core/game.js"></script>
     <script src="js/core/player.js"></script>
+    <script src="js/core/game.js"></script>
     <script src="js/screens/main-menu.js"></script>
     <script src="js/screens/game-screen.js"></script>
     <script src="js/screens/character-screen.js"></script>
-    <script src="js/components/race-manager.js"></script>
-    <script src="js/components/shooting-engine.js"></script>
-    <script src="js/utils/helpers.js"></script>
-    <script src="js/utils/constants.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -401,8 +397,8 @@
             
             try {
                 // Инициализация основных компонентов
-                window.biathlonGame = new BiathlonGame();
                 window.playerProfile = new PlayerProfile();
+                window.biathlonGame = new BiathlonGame();
                 
                 // Инициализация экранов
                 window.mainMenu = new MainMenu();
