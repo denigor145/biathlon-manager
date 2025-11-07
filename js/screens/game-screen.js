@@ -311,17 +311,25 @@ class GameScreen {
         }).join('');
     }
     
+    class GameScreen {
+    // [остальной код без изменений...]
+
     createNormalRow(competitor, shortName, gap) {
+        // Отображаем уровень для всех участников
+        const levelDisplay = competitor.isPlayer ? 
+            `Lv.${competitor.level || 0}` : 
+            `Lv.${competitor.level}`;
+
         return `
             <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
-                <div class="name">${shortName}</div>
+                <div class="name">${shortName} <span style="color: #4FC3F7; font-size: 10px;">${levelDisplay}</span></div>
                 <div class="gap">+${this.formatTime(gap)}</div>
             </div>
         `;
     }
-    
+
     createShootingRow(competitor, shortName, shootingResults, gap) {
         let targetsHTML = '<div class="targets-inline">';
         
@@ -341,17 +349,25 @@ class GameScreen {
         
         targetsHTML += '</div>';
 
+        // Отображаем уровень для всех участников
+        const levelDisplay = competitor.isPlayer ? 
+            `Lv.${competitor.level || 0}` : 
+            `Lv.${competitor.level}`;
+
         return `
             <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
-                <div class="name">${shortName}</div>
+                <div class="name">${shortName} <span style="color: #4FC3F7; font-size: 10px;">${levelDisplay}</span></div>
                 <div class="targets-container">
                     ${targetsHTML}
                 </div>
             </div>
         `;
     }
+
+    // [остальной код без изменений...]
+}
     
     updateShootingStep(step) {
         this.updateDisplay();
