@@ -32,11 +32,8 @@ body {
     display: block;
 }
 
-/* ФОН ДЛЯ ЭКРАНОВ */
-#gameScreen {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-}
-
+/* Общие стили фона для экранов */
+#gameScreen,
 #mainMenu {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
 }
@@ -67,7 +64,6 @@ body {
     width: 100%;
     height: 60%;
     background: 
-        /* Лыжня */
         repeating-linear-gradient(
             90deg,
             transparent,
@@ -75,7 +71,6 @@ body {
             rgba(255,255,255,0.3) 50px,
             rgba(255,255,255,0.3) 100px
         ),
-        /* Снег */
         linear-gradient(0deg, #FFFFFF 0%, #F0F8FF 100%);
 }
 
@@ -244,6 +239,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    position: relative;
+    z-index: 100;
 }
 
 .menu-btn {
@@ -367,8 +364,8 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    margin-top: 80px; /* Высота верхней панели */
-    margin-bottom: 100px; /* Высота нижней панели */
+    margin-top: 80px;
+    margin-bottom: 100px;
     padding: 10px;
     overflow: hidden;
 }
@@ -504,7 +501,7 @@ body {
     flex-shrink: 0;
 }
 
-/* Элементы стрельбы - ПРАВИЛЬНОЕ РАСПОЛОЖЕНИЕ */
+/* Элементы стрельбы */
 .targets-container {
     width: 80px;
     display: flex;
@@ -613,7 +610,7 @@ body {
     background: linear-gradient(135deg, #4CAF50, #2E7D32);
 }
 
-.menu-btn {
+.menu-btn-control {
     background: linear-gradient(135deg, #2196F3, #1565C0);
 }
 
@@ -625,186 +622,6 @@ body {
 .btn-label {
     font-weight: 500;
     font-size: 12px;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .game-title {
-        font-size: 2em;
-    }
-    
-    .race-cards {
-        grid-template-columns: 1fr;
-    }
-    
-    .menu-buttons {
-        gap: 10px;
-    }
-    
-    .menu-btn {
-        padding: 15px 20px;
-        font-size: 1em;
-    }
-    
-    .leaderboard-header {
-        padding: 10px 12px;
-        font-size: 11px;
-    }
-    
-    .header-pos { width: 35px; }
-    .header-flag { width: 40px; }
-    .header-gap { width: 70px; }
-    
-    .compact-row {
-        padding: 10px 12px;
-        font-size: 11px;
-        min-height: 40px;
-    }
-    
-    .compact-row .position { width: 35px; }
-    .compact-row .flag { width: 40px; font-size: 12px; }
-    .compact-row .gap { width: 70px; }
-    
-    .targets-container {
-        width: 70px;
-    }
-    
-    .inline-target {
-        width: 10px;
-        height: 10px;
-    }
-    
-    .inline-target.hit::before {
-        width: 6px;
-        height: 6px;
-    }
-    
-    .control-btn {
-        min-height: 60px;
-        padding: 12px 8px;
-    }
-    
-    .btn-icon {
-        font-size: 18px;
-    }
-    
-    .btn-label {
-        font-size: 11px;
-    }
-}
-
-@media (max-height: 700px) {
-    .compact-row {
-        padding: 8px 12px;
-        min-height: 35px;
-    }
-    
-    .race-header {
-        padding: 12px 15px;
-    }
-    
-    .control-panel {
-        padding: 12px 15px;
-    }
-}
-
-/* Исправления для мобильных устройств */
-@media (max-width: 768px) {
-    .menu-container {
-        height: 100vh;
-        overflow-y: auto;
-        padding: 10px;
-    }
-    
-    .menu-content {
-        padding: 10px;
-        justify-content: flex-start;
-        min-height: auto;
-    }
-    
-    .game-title {
-        font-size: 2em;
-        margin-bottom: 20px;
-    }
-    
-    .race-selection {
-        padding: 20px 15px;
-        margin-bottom: 15px;
-    }
-    
-    .race-cards {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .race-card {
-        padding: 15px;
-    }
-    
-    .menu-buttons {
-        position: sticky;
-        bottom: 0;
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        padding: 15px;
-        margin: 0 -15px -15px -15px;
-    }
-    
-    .menu-btn {
-        padding: 15px;
-        font-size: 1em;
-    }
-    
-    /* Убираем анимации для производительности */
-    .snow {
-        animation: none;
-    }
-    
-    .biathletes::before {
-        animation: none;
-    }
-}
-
-/* Гарантируем что кнопки всегда видны */
-.menu-buttons {
-    position: relative;
-    z-index: 100;
-}
-
-/* Упрощаем стадион для мобильных */
-@media (max-height: 700px) {
-    .stadium-background {
-        display: none;
-    }
-    
-    .menu-content {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    }
-}
-
-/* Основные исправления прокрутки */
-body {
-    overflow: hidden;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-}
-
-/* УБИРАЕМ НАДПИСЬ О СТРЕЛЬБЕ ИЗ ОСНОВНОГО ИНТЕРФЕЙСА */
-.shooting-header {
-    display: none !important;
-}
-
-#shootingRoundName,
-.shooting-timer {
-    display: none !important;
-}
-
-/* Убираем старые элементы которые не используются */
-.leaderboard-container-old,
-.leader-poster,
-.status-indicators,
-.race-time {
-    display: none !important;
 }
 
 /* Стили для экранов этапов */
@@ -979,6 +796,125 @@ body {
 
 /* Адаптивность */
 @media (max-width: 768px) {
+    .game-title {
+        font-size: 2em;
+    }
+    
+    .race-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .menu-buttons {
+        gap: 10px;
+    }
+    
+    .menu-btn {
+        padding: 15px 20px;
+        font-size: 1em;
+    }
+    
+    .leaderboard-header {
+        padding: 10px 12px;
+        font-size: 11px;
+    }
+    
+    .header-pos { width: 35px; }
+    .header-flag { width: 40px; }
+    .header-gap { width: 70px; }
+    
+    .compact-row {
+        padding: 10px 12px;
+        font-size: 11px;
+        min-height: 40px;
+    }
+    
+    .compact-row .position { width: 35px; }
+    .compact-row .flag { width: 40px; font-size: 12px; }
+    .compact-row .gap { width: 70px; }
+    
+    .targets-container {
+        width: 70px;
+    }
+    
+    .inline-target {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .inline-target.hit::before {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .control-btn {
+        min-height: 60px;
+        padding: 12px 8px;
+    }
+    
+    .btn-icon {
+        font-size: 18px;
+    }
+    
+    .btn-label {
+        font-size: 11px;
+    }
+
+    /* Мобильные исправления */
+    .menu-container {
+        height: 100vh;
+        overflow-y: auto;
+        padding: 10px;
+    }
+    
+    .menu-content {
+        padding: 10px;
+        justify-content: flex-start;
+        min-height: auto;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
+    
+    .game-title {
+        font-size: 2em;
+        margin-bottom: 20px;
+    }
+    
+    .race-selection {
+        padding: 20px 15px;
+        margin-bottom: 15px;
+    }
+    
+    .race-cards {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .race-card {
+        padding: 15px;
+    }
+    
+    .menu-buttons {
+        position: sticky;
+        bottom: 0;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        padding: 15px;
+        margin: 0 -15px -15px -15px;
+    }
+    
+    .menu-btn {
+        padding: 15px;
+        font-size: 1em;
+    }
+    
+    /* Убираем анимации для производительности */
+    .snow {
+        animation: none;
+    }
+    
+    .biathletes::before {
+        animation: none;
+    }
+    
+    /* Адаптивность для экранов этапов */
     .stage-container {
         padding: 20px;
         margin: 10px;
@@ -1002,4 +938,39 @@ body {
         padding: 15px 20px;
         font-size: 1.1em;
     }
+}
+
+@media (max-height: 700px) {
+    .compact-row {
+        padding: 8px 12px;
+        min-height: 35px;
+    }
+    
+    .race-header {
+        padding: 12px 15px;
+    }
+    
+    .control-panel {
+        padding: 12px 15px;
+    }
+    
+    /* Упрощаем стадион для низких экранов */
+    .stadium-background {
+        display: none;
+    }
+    
+    .menu-content {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
+}
+
+/* Скрываем неиспользуемые элементы */
+.shooting-header,
+#shootingRoundName,
+.shooting-timer,
+.leaderboard-container-old,
+.leader-poster,
+.status-indicators,
+.race-time {
+    display: none !important;
 }
