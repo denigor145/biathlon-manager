@@ -4,7 +4,6 @@ class MainMenu {
         
         console.log("MainMenu создан");
         
-        // Даем время на загрузку DOM
         setTimeout(() => {
             this.initialize();
         }, 100);
@@ -27,7 +26,6 @@ class MainMenu {
     }
     
     setupEventListeners() {
-        // Кнопка "Начать гонку"
         const startBtn = document.getElementById('startRace');
         if (startBtn) {
             startBtn.addEventListener('click', () => {
@@ -37,7 +35,6 @@ class MainMenu {
             console.error("Кнопка startRace не найдена!");
         }
         
-        // Кнопка "Настройки"
         const settingsBtn = document.getElementById('settingsBtn');
         if (settingsBtn) {
             settingsBtn.addEventListener('click', () => {
@@ -45,7 +42,6 @@ class MainMenu {
             });
         }
         
-        // Кнопка "Персонаж" (новая кнопка)
         const characterBtn = document.getElementById('characterBtn');
         if (characterBtn) {
             characterBtn.addEventListener('click', () => {
@@ -57,14 +53,12 @@ class MainMenu {
     }
     
     setupRaceSelection() {
-        // Выбор типа гонки
         document.querySelectorAll('.race-card').forEach(card => {
             card.addEventListener('click', () => {
                 this.handleRaceCardClick(card);
             });
         });
         
-        // Выбираем спринт по умолчанию
         const defaultRace = document.querySelector('.race-card[data-race="sprint"]');
         if (defaultRace) {
             this.handleRaceCardClick(defaultRace);
@@ -72,17 +66,14 @@ class MainMenu {
     }
     
     handleRaceCardClick(card) {
-        // Убираем выделение у всех карточек
         document.querySelectorAll('.race-card').forEach(c => {
             c.classList.remove('selected');
         });
         
-        // Выделяем выбранную карточку
         card.classList.add('selected');
         
         const raceType = card.getAttribute('data-race');
         
-        // Сохраняем выбранный тип гонки
         if (window.biathlonGame) {
             window.biathlonGame.selectRaceType(raceType);
             console.log(`Выбрана гонка: ${raceType}`);
@@ -113,21 +104,19 @@ class MainMenu {
     startGame() {
         console.log("Starting game...");
         
-        // Применяем характеристики игрока перед стартом гонки
         if (window.playerProfile && window.biathlonGame && window.biathlonGame.player) {
             window.playerProfile.applyToGamePlayer(window.biathlonGame.player);
             console.log("Характеристики игрока применены перед стартом гонки");
         }
         
-        // Запускаем гонку
         const success = window.biathlonGame.startRace();
         console.log("Race started:", success);
         
-        if (success && window.gameScreen) {
-            // Показываем стартовый экран гонки через gameScreen
-            window.biathlonGame.showStartStage();
+        if (success) {
+            this.hide();
         } else {
             console.error("Не удалось начать гонку");
+            alert("Ошибка при запуске гонки");
         }
     }
     
@@ -195,7 +184,7 @@ class MainMenu {
                     </div>
                     
                     <div style="display: flex; gap: 15px; justify-content: center;">
-                        <button onclick="this.closest('.settings-dialog').remove()" style="
+                        <button id="closeSettings" style="
                             background: linear-gradient(135deg, #4CAF50, #2E7D32);
                             color: white;
                             border: none;
@@ -204,175 +193,23 @@ class MainMenu {
                             cursor: pointer;
                             font-weight: bold;
                         ">Понятно</button>
-                        
-                        <button onclick="this.showAdvancedSettings()" style="
-                            background: rgba(255,255,255,0.15);
-                            color: white;
-                            border: 2px solid rgba(255,255,255,0.3);
-                            padding: 12px 25px;
-                            border-radius: 10px;
-                            cursor: pointer;
-                            font-weight: bold;
-                        ">Дополнительно</button>
                     </div>
-                </div>
-            </div>
-        `;
-        
-        // Добавляем диалог в DOM
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = settingsHTML;
-        document.body.appendChild(tempDiv.firstElementChild);
-        
-        // Добавляем обработчик для дополнительных настроек
-        tempDiv.firstElementChild.querySelector('button:last-child').onclick = () => {
-            this.showAdvancedSettings();
-        };
-    }
-    
-    showAdvancedSettings() {
-        // Удаляем предыдущий диалог
-        const existingDialog = document.querySelector('.settings-dialog');
-        if (existingDialog) {
-            existingDialog.remove();
-        }
-        
-        const advancedHTML = `
-            <div class="settings-dialog" style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.8);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 10000;
-            ">
-                <div style="
-                    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-                    padding: 30px;
-                    border-radius: 20px;
-                    border: 3px solid #4FC3F7;
-                    max-width: 500px;
-                    width: 90%;
-                    text-align: center;
-                    color: white;
-                ">
-                    <h2 style="color: #FFD700; margin-bottom: 20px;">🔧 Дополнительные настройки</h2>
-                    
-                    <div style="text-align: left; margin-bottom: 25px;">
-                        <div style="margin-bottom: 15px;">
-                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">Управление данными</h3>
-                            <button onclick="this.exportData()" style="
-                                background: linear-gradient(135deg, #2196F3, #1565C0);
-                                color: white;
-                                border: none;
-                                padding: 10px 15px;
-                                border-radius: 8px;
-                                cursor: pointer;
-                                margin-right: 10px;
-                                margin-bottom: 10px;
-                                width: 100%;
-                            ">📤 Экспорт данных</button>
-                            
-                            <button onclick="this.importData()" style="
-                                background: linear-gradient(135deg, #FF9800, #F57C00);
-                                color: white;
-                                border: none;
-                                padding: 10px 15px;
-                                border-radius: 8px;
-                                cursor: pointer;
-                                margin-bottom: 10px;
-                                width: 100%;
-                            ">📥 Импорт данных</button>
-                            
-                            <button onclick="this.clearData()" style="
-                                background: linear-gradient(135deg, #F44336, #C62828);
-                                color: white;
-                                border: none;
-                                padding: 10px 15px;
-                                border-radius: 8px;
-                                cursor: pointer;
-                                width: 100%;
-                            ">🗑️ Очистить данные</button>
-                        </div>
-                        
-                        <div style="margin-bottom: 15px;">
-                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">Отладочная информация</h3>
-                            <p>Версия игры: 1.0</p>
-                            <p>Характеристики: ${window.playerProfile ? 'Загружены' : 'Не загружены'}</p>
-                            <p>Игровая система: ${window.biathlonGame ? 'Готова' : 'Не готова'}</p>
-                        </div>
-                    </div>
-                    
-                    <button onclick="this.closest('.settings-dialog').remove()" style="
-                        background: linear-gradient(135deg, #4CAF50, #2E7D32);
-                        color: white;
-                        border: none;
-                        padding: 12px 25px;
-                        border-radius: 10px;
-                        cursor: pointer;
-                        font-weight: bold;
-                        width: 100%;
-                    ">Закрыть</button>
                 </div>
             </div>
         `;
         
         const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = advancedHTML;
+        tempDiv.innerHTML = settingsHTML;
         document.body.appendChild(tempDiv.firstElementChild);
         
-        // Добавляем обработчики для кнопок управления данными
-        const dialog = tempDiv.firstElementChild;
-        dialog.querySelector('button:nth-child(1)').onclick = () => this.exportData();
-        dialog.querySelector('button:nth-child(2)').onclick = () => this.importData();
-        dialog.querySelector('button:nth-child(3)').onclick = () => this.clearData();
-    }
-    
-    exportData() {
-        if (window.playerProfile) {
-            const data = {
-                playerProfile: {
-                    stats: window.playerProfile.getAllStats(),
-                    availablePoints: window.playerProfile.getAvailablePoints()
-                },
-                exportDate: new Date().toISOString(),
-                version: '1.0'
-            };
-            
-            const dataStr = JSON.stringify(data, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'biathlon_manager_save.json';
-            a.click();
-            
-            URL.revokeObjectURL(url);
-            alert('Данные успешно экспортированы!');
+        const closeBtn = tempDiv.firstElementChild.querySelector('#closeSettings');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                tempDiv.firstElementChild.remove();
+            });
         }
     }
     
-    importData() {
-        alert('Функция импорта будет реализована в будущих версиях');
-    }
-    
-    clearData() {
-        if (confirm('ВНИМАНИЕ: Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.')) {
-            localStorage.removeItem('biathlonPlayerProfile');
-            if (window.playerProfile) {
-                window.playerProfile.resetStats();
-            }
-            alert('Данные очищены. Страница будет перезагружена.');
-            location.reload();
-        }
-    }
-    
-    // Показать главное меню
     show() {
         const mainMenu = document.getElementById('mainMenu');
         if (mainMenu) {
@@ -384,12 +221,18 @@ class MainMenu {
         }
     }
     
-    // Проверить инициализацию
+    hide() {
+        const mainMenu = document.getElementById('mainMenu');
+        if (mainMenu) {
+            mainMenu.classList.remove('active');
+            console.log("MainMenu скрыт");
+        }
+    }
+    
     isReady() {
         return this.isInitialized;
     }
     
-    // Получить выбранный тип гонки
     getSelectedRaceType() {
         const selectedCard = document.querySelector('.race-card.selected');
         return selectedCard ? selectedCard.getAttribute('data-race') : 'sprint';
