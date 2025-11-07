@@ -66,59 +66,139 @@ class BiathlonGame {
         // Ветер
         this.windConditions = ["Слабый ветер", "Умеренный ветер", "Сильный ветер"];
         
-        // Игрок
+        // Система локаций с прогрессией
+        this.locations = [
+            { id: 0, name: "Новичковый стадион", minLevel: 0, maxLevel: 9, difficulty: 1 },
+            { id: 1, name: "Горный курорт", minLevel: 10, maxLevel: 19, difficulty: 2 },
+            { id: 2, name: "Лесная трасса", minLevel: 20, maxLevel: 29, difficulty: 3 },
+            { id: 3, name: "Альпийский центр", minLevel: 30, maxLevel: 39, difficulty: 4 },
+            { id: 4, name: "Северный полюс", minLevel: 40, maxLevel: 49, difficulty: 5 },
+            { id: 5, name: "Олимпийский комплекс", minLevel: 50, maxLevel: 59, difficulty: 6 },
+            { id: 6, name: "Мировой кубок", minLevel: 60, maxLevel: 69, difficulty: 7 },
+            { id: 7, name: "Чемпионат мира", minLevel: 70, maxLevel: 79, difficulty: 8 },
+            { id: 8, name: "Элитная лига", minLevel: 80, maxLevel: 89, difficulty: 9 },
+            { id: 9, name: "Легендарная арена", minLevel: 90, maxLevel: 99, difficulty: 10 }
+        ];
+        
+        this.currentLocation = 0;
+        this.currentCup = 0;
+        
+        // Игрок (базовые значения, будут перезаписаны характеристиками)
         this.player = {
             name: "Вы",
             flag: "🎯",
-            speed: 5,
-            stamina: 100,
-            maxStamina: 100,
+            speed: 3,
+            stamina: 60,
+            maxStamina: 60,
             pulse: 120,
             position: 4,
             time: 18.3,
             isPlayer: true,
             shooting: {
-                prone: 0.8,
-                standing: 0.6
+                prone: 0.1,
+                standing: 0.1
             },
             aggression: 0.7,
             consistency: 0.8,
-            shootingSpeed: 2.0
+            shootingSpeed: 10,
+            level: 0
         };
         
-        this.opponents = this.generateOpponents(15);
+        // Генерируем соперников для текущей локации
+        this.opponents = this.generateCupOpponents(this.currentLocation, 0);
         this.allCompetitors = [this.player, ...this.opponents];
         
-        console.log("Биатлон Менеджер инициализирован!");
+        console.log("Биатлон Менеджер инициализирован с системой локаций!");
     }
     
-    generateOpponents(count) {
+    // Генерация соперников для кубка с учетом прогрессии локаций
+    generateCupOpponents(locationId, cupLevel) {
+        const location = this.locations[locationId];
+        const opponents = [];
+        
+        // Распределение по уровням внутри локации
+        const levelDistribution = {};
+        const levelRange = location.maxLevel - location.minLevel + 1;
+        const levelsPerGroup = Math.ceil(levelRange / 3);
+        
+        // Создаем группы уровней внутри локации
+        for (let group = 0; group < 3; group++) {
+            const startLevel = location.minLevel + group * levelsPerGroup;
+            const endLevel = Math.min(location.minLevel + (group + 1) * levelsPerGroup - 1, location.maxLevel);
+            const count = group === 0 ? 2 : 3; // В первой группе 2 соперника, в остальных по 3
+            
+            for (let level = startLevel; level <= endLevel; level++) {
+                levelDistribution[level] = (levelDistribution[level] || 0) + count;
+            }
+        }
+
+        // Генерируем соперников согласно распределению
+        for (let level = location.minLevel; level <= location.maxLevel; level++) {
+            const count = levelDistribution[level] || 0;
+            for (let i = 0; i < count; i++) {
+                const opponent = this.generateOpponentByLevel(level, locationId, cupLevel);
+                opponents.push(opponent);
+            }
+        }
+
+        return opponents;
+    }
+
+    // Генерация одного соперника по уровню с прогрессивными характеристиками
+    generateOpponentByLevel(level, locationId, cupLevel) {
         const names = ["Йоханссон", "Мюллер", "Мартен", "Ларссон", "Хубер", "Бё", "Фуркад"];
         const flags = ["🇳🇴", "🇩🇪", "🇫🇷", "🇸🇪", "🇦🇹", "🇫🇮", "🇮🇹"];
         
-        return Array.from({length: count}, (_, i) => {
-            const baseSpeed = 4 + Math.random() * 3;
-            const baseStamina = 80 + Math.random() * 20;
-            
-            return {
-                name: names[i % names.length],
-                flag: flags[i % flags.length],
-                speed: baseSpeed,
-                stamina: baseStamina,
-                maxStamina: baseStamina,
-                pulse: 110 + Math.random() * 30,
-                position: i + 1,
-                time: i * 2.5,
-                isPlayer: false,
-                shooting: {
-                    prone: 0.6 + Math.random() * 0.3,
-                    standing: 0.4 + Math.random() * 0.3
-                },
-                aggression: Math.random(),
-                consistency: 0.7 + Math.random() * 0.3,
-                shootingSpeed: 1.5 + Math.random() * 1.5
-            };
-        });
+        // Прогрессия характеристик от уровня 0 до 99
+        // Скорость: от 3 (уровень 0) до 8 (уровень 99)
+        const speed = 3 + (level * 5 / 99);
+        
+        // Выносливость: от 60 (уровень 0) до 150 (уровень 99)
+        const stamina = 60 + (level * 90 / 99);
+        
+        // Меткость: от 10% (уровень 0) до 80% (уровень 99)
+        const accuracy = 10 + (level * 70 / 99);
+        
+        // Скорость стрельбы: от 10 секунд (уровень 0) до 3 секунд (уровень 99)
+        const shootingSpeed = 10 - (level * 7 / 99);
+
+        return {
+            name: `${names[level % names.length]} Lv.${level}`,
+            flag: flags[level % flags.length],
+            speed: speed,
+            stamina: stamina,
+            maxStamina: stamina,
+            pulse: 110 + Math.random() * 30,
+            position: 0,
+            time: level * 1.5, // Более сильные соперники начинают с лучшим временем
+            isPlayer: false,
+            shooting: {
+                prone: Math.min(0.95, accuracy / 100 * 1.1),
+                standing: Math.min(0.85, accuracy / 100 * 0.9)
+            },
+            aggression: Math.random(),
+            consistency: 0.7 + Math.random() * 0.3,
+            shootingSpeed: shootingSpeed,
+            level: level,
+            location: locationId
+        };
+    }
+
+    // Метод для смены локации
+    setLocation(locationId) {
+        if (locationId >= 0 && locationId < this.locations.length) {
+            this.currentLocation = locationId;
+            this.opponents = this.generateCupOpponents(this.currentLocation, 0);
+            this.allCompetitors = [this.player, ...this.opponents];
+            console.log(`Переключена локация: ${this.locations[locationId].name}`);
+            return true;
+        }
+        return false;
+    }
+
+    // Получить текущую локацию
+    getCurrentLocation() {
+        return this.locations[this.currentLocation];
     }
     
     getCurrentLap() {
@@ -306,7 +386,7 @@ class BiathlonGame {
     }
     
     startCompetitorShooting(competitor) {
-        console.log(`🎯 ${competitor.name} начинает стрельбу (скорость: ${competitor.shootingSpeed})`);
+        console.log(`🎯 ${competitor.name} начинает стрельбу (уровень скорости: ${competitor.shootingSpeed}с)`);
         
         let shotCount = 0;
         
@@ -316,19 +396,22 @@ class BiathlonGame {
                 shotCount++;
                 
                 if (shotCount < 5) {
-                    const baseTime = 3000;
-                    const speedModifier = competitor.shootingSpeed;
+                    // Базовое время = shootingSpeed в секундах (от 3 до 10)
+                    const baseTime = competitor.shootingSpeed * 1000; // Переводим в миллисекунды
+                    // Случайное отклонение ±0.5 секунды
                     const randomVariation = (Math.random() - 0.5) * 1000;
-                    const nextShotTime = (baseTime / speedModifier) + randomVariation;
+                    const nextShotTime = baseTime + randomVariation;
                     
                     setTimeout(makeShot, nextShotTime);
                 } else {
+                    // Завершили стрельбу
                     console.log(`🎯 ${competitor.name} завершил стрельбу`);
                     this.checkShootingCompletion();
                 }
             }
         };
         
+        // Запускаем первый выстрел сразу
         setTimeout(makeShot, 100);
     }
     
@@ -477,7 +560,7 @@ class BiathlonGame {
         console.log("Спринт активирован!");
         
         setTimeout(() => {
-            this.player.speed = Math.max(5, this.player.speed - 2);
+            this.player.speed = Math.max(3, this.player.speed - 2);
         }, 6000);
         
         return true;
