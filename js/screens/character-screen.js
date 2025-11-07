@@ -5,7 +5,6 @@ class CharacterScreen {
         
         console.log("CharacterScreen создан");
         
-        // Даем время на загрузку DOM
         setTimeout(() => {
             this.initialize();
         }, 100);
@@ -29,7 +28,6 @@ class CharacterScreen {
     }
     
     setupEventListeners() {
-        // Кнопка назад в меню
         const backBtn = document.getElementById('backToMenuBtn');
         if (backBtn) {
             backBtn.addEventListener('click', () => {
@@ -37,7 +35,6 @@ class CharacterScreen {
             });
         }
         
-        // Кнопки увеличения характеристик
         document.querySelectorAll('.stat-btn.plus').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const stat = e.target.closest('.stat-btn').getAttribute('data-stat');
@@ -45,7 +42,6 @@ class CharacterScreen {
             });
         });
         
-        // Кнопки уменьшения характеристик
         document.querySelectorAll('.stat-btn.minus').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const stat = e.target.closest('.stat-btn').getAttribute('data-stat');
@@ -53,7 +49,6 @@ class CharacterScreen {
             });
         });
         
-        // Кнопка сброса
         const resetBtn = document.getElementById('resetStatsBtn');
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
@@ -61,7 +56,6 @@ class CharacterScreen {
             });
         }
         
-        // Кнопка сохранения
         const saveBtn = document.getElementById('saveStatsBtn');
         if (saveBtn) {
             saveBtn.addEventListener('click', () => {
@@ -84,7 +78,6 @@ class CharacterScreen {
     }
     
     switchTab(tabName) {
-        // Убираем активный класс у всех кнопок и вкладок
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
@@ -93,7 +86,6 @@ class CharacterScreen {
             pane.classList.remove('active');
         });
         
-        // Активируем выбранную вкладку
         const activeTabBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
         const activeTabPane = document.getElementById(`${tabName}-tab`);
         
@@ -142,10 +134,8 @@ class CharacterScreen {
         const valueElement = document.getElementById(`${statName}Value`);
         if (!valueElement) return;
         
-        // Добавляем класс анимации
         valueElement.classList.add(direction === 'increase' ? 'increased' : 'decreased');
         
-        // Убираем класс после анимации
         setTimeout(() => {
             valueElement.classList.remove('increased', 'decreased');
         }, 300);
@@ -157,12 +147,10 @@ class CharacterScreen {
             return;
         }
         
-        // Обновляем доступные очки
         const pointsElement = document.getElementById('availablePoints');
         if (pointsElement) {
             pointsElement.textContent = window.playerProfile.getAvailablePoints();
             
-            // Меняем цвет если очков мало
             if (window.playerProfile.getAvailablePoints() === 0) {
                 pointsElement.style.color = '#FF5252';
             } else {
@@ -170,7 +158,6 @@ class CharacterScreen {
             }
         }
         
-        // Обновляем значения характеристик
         const stats = window.playerProfile.getAllStats();
         
         for (const statName in stats) {
@@ -180,7 +167,6 @@ class CharacterScreen {
             }
         }
         
-        // Обновляем состояния кнопок
         this.updateButtonStates();
         
         console.log("Статистика обновлена в UI");
@@ -189,20 +175,16 @@ class CharacterScreen {
     updateButtonStates() {
         if (!window.playerProfile) return;
         
-        // Обновляем все кнопки +/-
         document.querySelectorAll('.stat-btn').forEach(btn => {
             const statName = btn.getAttribute('data-stat');
             const isPlus = btn.classList.contains('plus');
             
             if (isPlus) {
-                // Кнопка "+"
                 btn.disabled = !window.playerProfile.canIncrease(statName);
             } else {
-                // Кнопка "-"
                 btn.disabled = !window.playerProfile.canDecrease(statName);
             }
             
-            // Визуальная обратная связь для disabled кнопок
             if (btn.disabled) {
                 btn.style.opacity = '0.5';
                 btn.style.cursor = 'not-allowed';
@@ -226,10 +208,8 @@ class CharacterScreen {
     saveStats() {
         if (!window.playerProfile) return;
         
-        // Сохраняем в localStorage (уже делается автоматически)
         window.playerProfile.saveToStorage();
         
-        // Применяем характеристики к текущему игроку
         if (window.biathlonGame && window.biathlonGame.player) {
             window.playerProfile.applyToGamePlayer(window.biathlonGame.player);
         }
@@ -238,7 +218,6 @@ class CharacterScreen {
     }
     
     showMessage(message, type = 'info') {
-        // Создаем временное уведомление
         const messageDiv = document.createElement('div');
         messageDiv.textContent = message;
         messageDiv.style.cssText = `
@@ -255,7 +234,6 @@ class CharacterScreen {
             text-align: center;
         `;
         
-        // Стили в зависимости от типа сообщения
         switch(type) {
             case 'success':
                 messageDiv.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
@@ -272,7 +250,6 @@ class CharacterScreen {
         
         document.body.appendChild(messageDiv);
         
-        // Автоматически скрываем через 3 секунды
         setTimeout(() => {
             messageDiv.style.opacity = '0';
             messageDiv.style.transform = 'translateX(-50%) translateY(-20px)';
@@ -285,7 +262,6 @@ class CharacterScreen {
     }
     
     show() {
-        // Показываем экран характеристик
         const characterScreen = document.getElementById('characterScreen');
         const mainMenu = document.getElementById('mainMenu');
         
@@ -293,7 +269,6 @@ class CharacterScreen {
             mainMenu.classList.remove('active');
             characterScreen.classList.add('active');
             
-            // Обновляем отображение статистики
             this.updateStatsDisplay();
             
             console.log("CharacterScreen показан");
@@ -303,7 +278,6 @@ class CharacterScreen {
     }
     
     hide() {
-        // Возвращаемся в главное меню
         const characterScreen = document.getElementById('characterScreen');
         const mainMenu = document.getElementById('mainMenu');
         
@@ -315,17 +289,14 @@ class CharacterScreen {
         }
     }
     
-    // Метод для обновления при изменении данных
     refresh() {
         this.updateStatsDisplay();
     }
     
-    // Получить текущую активную вкладку
     getCurrentTab() {
         return this.currentTab;
     }
     
-    // Проверить инициализацию
     isReady() {
         return this.isInitialized;
     }
