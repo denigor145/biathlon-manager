@@ -2,14 +2,14 @@ class PlayerProfile {
     constructor() {
         // Базовые характеристики игрока - начинаем с 0
         this.stats = {
-            runningSpeed: 0,      // Уровень бега (0-60)
-            accuracy: 0,          // Уровень меткости (0-60)  
-            shootingSpeed: 0,     // Уровень скорости стрельбы (0-60)
-            stamina: 0            // Уровень выносливости (0-60)
+            runningSpeed: 0,
+            accuracy: 0,  
+            shootingSpeed: 0,
+            stamina: 0
         };
         
         // Очки для распределения
-        this.availablePoints = 60; // Достаточно для максимальной прокачки без экипировки
+        this.availablePoints = 60;
         
         // Минимальные и максимальные значения характеристик
         this.minValues = {
@@ -20,7 +20,7 @@ class PlayerProfile {
         };
         
         this.maxValues = {
-            runningSpeed: 60,     // Максимум 60 уровней без экипировки
+            runningSpeed: 60,
             accuracy: 60,
             shootingSpeed: 60, 
             stamina: 60
@@ -42,6 +42,11 @@ class PlayerProfile {
     
     // Увеличить характеристику
     increaseStat(statName) {
+        if (!this.stats.hasOwnProperty(statName)) {
+            console.error("Неизвестная характеристика:", statName);
+            return false;
+        }
+        
         if (this.availablePoints <= 0) {
             console.log("Недостаточно очков для улучшения");
             return false;
@@ -76,6 +81,11 @@ class PlayerProfile {
     
     // Уменьшить характеристику
     decreaseStat(statName) {
+        if (!this.stats.hasOwnProperty(statName)) {
+            console.error("Неизвестная характеристика:", statName);
+            return false;
+        }
+        
         const currentValue = this.stats[statName];
         const minValue = this.minValues[statName];
         
@@ -101,15 +111,14 @@ class PlayerProfile {
     
     // Сбросить все характеристики
     resetStats() {
-        const defaultStats = {
+        this.stats = {
             runningSpeed: 0,
             accuracy: 0,
             shootingSpeed: 0,
             stamina: 0
         };
         
-        this.stats = { ...defaultStats };
-        this.availablePoints = 60; // Возвращаем базовые очки
+        this.availablePoints = 60;
         
         console.log("Характеристики сброшены, доступно очков:", this.availablePoints);
         
@@ -153,7 +162,7 @@ class PlayerProfile {
             case 'runningSpeed':
             case 'shootingSpeed':
             case 'stamina':
-                return value + '/60'; // Показываем уровень из 60
+                return value + '/60';
             default:
                 return value.toString();
         }
@@ -172,7 +181,7 @@ class PlayerProfile {
     
     // Обновить интерфейс
     updateUI() {
-        if (typeof window.characterScreen !== 'undefined') {
+        if (window.characterScreen && typeof window.characterScreen.updateStatsDisplay === 'function') {
             window.characterScreen.updateStatsDisplay();
         }
     }
@@ -235,26 +244,5 @@ class PlayerProfile {
         gamePlayer.level = this.stats.shootingSpeed; // Уровень для отображения
 
         console.log("Характеристики применены к игроку. Уровень скорости стрельбы:", this.stats.shootingSpeed);
-    }
-    
-    // Получить описание характеристик
-    getStatDescription(statName) {
-        const descriptions = {
-            runningSpeed: "Базовая скорость передвижения по трассе. Влияет на время прохождения кругов.",
-            accuracy: "Вероятность попадания в мишень. Более высокая меткость уменьшает количество промахов.",
-            shootingSpeed: "Скорость выполнения выстрелов. Быстрая стрельба позволяет раньше продолжить гонку.",
-            stamina: "Максимальный запас выносливости. Влияет на возможность использовать спринт и восстановление."
-        };
-        
-        return descriptions[statName] || "Описание характеристики";
-    }
-    
-    // Получить текущий прогресс характеристики (для визуализации)
-    getStatProgress(statName) {
-        const current = this.stats[statName];
-        const min = this.minValues[statName];
-        const max = this.maxValues[statName];
-        
-        return (current - min) / (max - min);
     }
 }
