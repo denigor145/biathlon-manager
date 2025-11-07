@@ -1,0 +1,332 @@
+class CharacterScreen {
+    constructor() {
+        this.currentTab = 'stats';
+        this.isInitialized = false;
+        
+        console.log("CharacterScreen создан");
+        
+        // Даем время на загрузку DOM
+        setTimeout(() => {
+            this.initialize();
+        }, 100);
+    }
+    
+    initialize() {
+        if (this.isInitialized) return;
+        
+        console.log("Инициализация CharacterScreen...");
+        
+        try {
+            this.setupEventListeners();
+            this.setupTabs();
+            this.updateStatsDisplay();
+            this.isInitialized = true;
+            
+            console.log("CharacterScreen успешно инициализирован");
+        } catch (error) {
+            console.error("Ошибка инициализации CharacterScreen:", error);
+        }
+    }
+    
+    setupEventListeners() {
+        // Кнопка назад в меню
+        const backBtn = document.getElementById('backToMenuBtn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                this.hide();
+            });
+        }
+        
+        // Кнопки увеличения характеристик
+        document.querySelectorAll('.stat-btn.plus').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const stat = e.target.closest('.stat-btn').getAttribute('data-stat');
+                this.increaseStat(stat);
+            });
+        });
+        
+        // Кнопки уменьшения характеристик
+        document.querySelectorAll('.stat-btn.minus').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const stat = e.target.closest('.stat-btn').getAttribute('data-stat');
+                this.decreaseStat(stat);
+            });
+        });
+        
+        // Кнопка сброса
+        const resetBtn = document.getElementById('resetStatsBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetStats();
+            });
+        }
+        
+        // Кнопка сохранения
+        const saveBtn = document.getElementById('saveStatsBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                this.saveStats();
+            });
+        }
+        
+        console.log("Обработчики CharacterScreen установлены");
+    }
+    
+    setupTabs() {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tabName = e.target.getAttribute('data-tab');
+                this.switchTab(tabName);
+            });
+        });
+    }
+    
+    switchTab(tabName) {
+        // Убираем активный класс у всех кнопок и вкладок
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.remove('active');
+        });
+        
+        // Активируем выбранную вкладку
+        const activeTabBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+        const activeTabPane = document.getElementById(`${tabName}-tab`);
+        
+        if (activeTabBtn && activeTabPane) {
+            activeTabBtn.classList.add('active');
+            activeTabPane.classList.add('active');
+            this.currentTab = tabName;
+            
+            console.log(`Переключена вкладка: ${tabName}`);
+        }
+    }
+    
+    increaseStat(statName) {
+        if (!window.playerProfile) {
+            console.error("PlayerProfile не найден");
+            return;
+        }
+        
+        const success = window.playerProfile.increaseStat(statName);
+        
+        if (success) {
+            this.animateStatChange(statName, 'increase');
+            this.updateButtonStates();
+        } else {
+            this.showMessage("Недостаточно очков для улучшения!", "error");
+        }
+    }
+    
+    decreaseStat(statName) {
+        if (!window.playerProfile) {
+            console.error("PlayerProfile не найден");
+            return;
+        }
+        
+        const success = window.playerProfile.decreaseStat(statName);
+        
+        if (success) {
+            this.animateStatChange(statName, 'decrease');
+            this.updateButtonStates();
+        } else {
+            this.showMessage("Характеристика уже минимальная!", "error");
+        }
+    }
+    
+    animateStatChange(statName, direction) {
+        const valueElement = document.getElementById(`${statName}Value`);
+        if (!valueElement) return;
+        
+        // Добавляем класс анимации
+        valueElement.classList.add(direction === 'increase' ? 'increased' : 'decreased');
+        
+        // Убираем класс после анимации
+        setTimeout(() => {
+            valueElement.classList.remove('increased', 'decreased');
+        }, 300);
+    }
+    
+    updateStatsDisplay() {
+        if (!window.playerProfile) {
+            console.error("PlayerProfile не найден для обновления UI");
+            return;
+        }
+        
+        // Обновляем доступные очки
+        const pointsElement = document.getElementById('availablePoints');
+        if (pointsElement) {
+            pointsElement.textContent = window.playerProfile.getAvailablePoints();
+            
+            // Меняем цвет если очков мало
+            if (window.playerProfile.getAvailablePoints() === 0) {
+                pointsElement.style.color = '#FF5252';
+            } else {
+                pointsElement.style.color = '#FFD700';
+            }
+        }
+        
+        // Обновляем значения характеристик
+        const stats = window.playerProfile.getAllStats();
+        
+        for (const statName in stats) {
+            const valueElement = document.getElementById(`${statName}Value`);
+            if (valueElement) {
+                valueElement.textContent = window.playerProfile.getFormattedStat(statName);
+            }
+        }
+        
+        // Обновляем состояния кнопок
+        this.updateButtonStates();
+        
+        console.log("Статистика обновлена в UI");
+    }
+    
+    updateButtonStates() {
+        if (!window.playerProfile) return;
+        
+        // Обновляем все кнопки +/-
+        document.querySelectorAll('.stat-btn').forEach(btn => {
+            const statName = btn.getAttribute('data-stat');
+            const isPlus = btn.classList.contains('plus');
+            
+            if (isPlus) {
+                // Кнопка "+"
+                btn.disabled = !window.playerProfile.canIncrease(statName);
+            } else {
+                // Кнопка "-"
+                btn.disabled = !window.playerProfile.canDecrease(statName);
+            }
+            
+            // Визуальная обратная связь для disabled кнопок
+            if (btn.disabled) {
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        });
+    }
+    
+    resetStats() {
+        if (!window.playerProfile) return;
+        
+        if (confirm("Вы уверены, что хотите сбросить все характеристики? Все распределенные очки будут возвращены.")) {
+            window.playerProfile.resetStats();
+            this.updateStatsDisplay();
+            this.showMessage("Характеристики сброшены!", "success");
+        }
+    }
+    
+    saveStats() {
+        if (!window.playerProfile) return;
+        
+        // Сохраняем в localStorage (уже делается автоматически)
+        window.playerProfile.saveToStorage();
+        
+        // Применяем характеристики к текущему игроку
+        if (window.biathlonGame && window.biathlonGame.player) {
+            window.playerProfile.applyToGamePlayer(window.biathlonGame.player);
+        }
+        
+        this.showMessage("Характеристики сохранены и применены!", "success");
+    }
+    
+    showMessage(message, type = 'info') {
+        // Создаем временное уведомление
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = message;
+        messageDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 10000;
+            transition: all 0.3s ease;
+            max-width: 80%;
+            text-align: center;
+        `;
+        
+        // Стили в зависимости от типа сообщения
+        switch(type) {
+            case 'success':
+                messageDiv.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+                messageDiv.style.color = 'white';
+                break;
+            case 'error':
+                messageDiv.style.background = 'linear-gradient(135deg, #F44336, #C62828)';
+                messageDiv.style.color = 'white';
+                break;
+            default:
+                messageDiv.style.background = 'linear-gradient(135deg, #2196F3, #1565C0)';
+                messageDiv.style.color = 'white';
+        }
+        
+        document.body.appendChild(messageDiv);
+        
+        // Автоматически скрываем через 3 секунды
+        setTimeout(() => {
+            messageDiv.style.opacity = '0';
+            messageDiv.style.transform = 'translateX(-50%) translateY(-20px)';
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 300);
+        }, 3000);
+    }
+    
+    show() {
+        // Показываем экран характеристик
+        const characterScreen = document.getElementById('characterScreen');
+        const mainMenu = document.getElementById('mainMenu');
+        
+        if (characterScreen && mainMenu) {
+            mainMenu.classList.remove('active');
+            characterScreen.classList.add('active');
+            
+            // Обновляем отображение статистики
+            this.updateStatsDisplay();
+            
+            console.log("CharacterScreen показан");
+        } else {
+            console.error("Не удалось найти элементы экрана характеристик");
+        }
+    }
+    
+    hide() {
+        // Возвращаемся в главное меню
+        const characterScreen = document.getElementById('characterScreen');
+        const mainMenu = document.getElementById('mainMenu');
+        
+        if (characterScreen && mainMenu) {
+            characterScreen.classList.remove('active');
+            mainMenu.classList.add('active');
+            
+            console.log("CharacterScreen скрыт");
+        }
+    }
+    
+    // Метод для обновления при изменении данных
+    refresh() {
+        this.updateStatsDisplay();
+    }
+    
+    // Получить текущую активную вкладку
+    getCurrentTab() {
+        return this.currentTab;
+    }
+    
+    // Проверить инициализацию
+    isReady() {
+        return this.isInitialized;
+    }
+}
