@@ -1,14 +1,13 @@
 class BiathlonGame {
     constructor() {
-        // Типы гонок
+        // Типы гонок с обновленными параметрами
         this.raceTypes = {
             sprint: {
                 name: "Спринт",
-                distance: "3 км",
-                trackLength: 150,
+                distance: "7.65 км",
                 totalLaps: 3,
-                segmentsPerLap: 6,
-                totalSegments: 18,
+                segmentsPerLap: 17,
+                totalSegments: 51,
                 shootingRounds: [
                     { afterLap: 1, position: "prone", name: "Стрельба лёжа" },
                     { afterLap: 2, position: "standing", name: "Стрельба стоя" }
@@ -16,12 +15,11 @@ class BiathlonGame {
                 description: "Короткая быстрая гонка с 2 стрельбами"
             },
             pursuit: {
-                name: "Гонка преследования", 
-                distance: "5 км",
-                trackLength: 150,
-                totalLaps: 5,
-                segmentsPerLap: 6,
-                totalSegments: 30,
+                name: "Гонка преследования",
+                distance: "8.4 км",
+                totalLaps: 4,
+                segmentsPerLap: 14,
+                totalSegments: 56,
                 shootingRounds: [
                     { afterLap: 1, position: "prone", name: "Стрельба лёжа 1" },
                     { afterLap: 2, position: "prone", name: "Стрельба лёжа 2" },
@@ -30,13 +28,12 @@ class BiathlonGame {
                 ],
                 description: "Средняя дистанция с 4 стрельбами"
             },
-            individual: {
-                name: "Индивидуальная гонка",
-                distance: "6 км", 
-                trackLength: 150,
-                totalLaps: 4,
-                segmentsPerLap: 10,
-                totalSegments: 40,
+            mass: {
+                name: "Масс-старт",
+                distance: "12.75 км",
+                totalLaps: 5,
+                segmentsPerLap: 17,
+                totalSegments: 85,
                 shootingRounds: [
                     { afterLap: 1, position: "prone", name: "Стрельба лёжа 1" },
                     { afterLap: 2, position: "prone", name: "Стрельба лёжа 2" },
@@ -44,29 +41,35 @@ class BiathlonGame {
                     { afterLap: 4, position: "standing", name: "Стрельба стоя 2" }
                 ],
                 description: "Длинная дистанция с 4 стрельбами"
+            },
+            individual: {
+                name: "Индивидуальная гонка",
+                distance: "15 км",
+                totalLaps: 5,
+                segmentsPerLap: 20,
+                totalSegments: 100,
+                shootingRounds: [
+                    { afterLap: 1, position: "prone", name: "Стрельба лёжа 1" },
+                    { afterLap: 2, position: "standing", name: "Стрельба стоя 1" },
+                    { afterLap: 3, position: "prone", name: "Стрельба лёжа 2" },
+                    { afterLap: 4, position: "standing", name: "Стрельба стоя 2" }
+                ],
+                description: "Самая длинная дистанция с 4 стрельбами"
             }
         };
 
         // Текущее состояние игры
         this.selectedRaceType = "sprint";
         this.currentRaceType = "sprint";
-        this.currentSegment = 1;
-        this.totalTime = 0;
         this.isRacing = false;
         this.isShooting = false;
-        this.currentShootingRound = null;
         this.raceInterval = null;
-        this.shootingInterval = null;
         
-        // Состояние стрельбы
-        this.shootingStep = 0;
-        this.allShootingResults = new Map();
-        this.currentShootingIndex = 0;
+        // Состояние гонки
+        this.raceStartTime = 0;
+        this.realTimeElapsed = 0;
         
-        // Ветер
-        this.windConditions = ["Слабый ветер", "Умеренный ветер", "Сильный ветер"];
-        
-        // Система локаций с прогрессией
+        // Система локаций
         this.locations = [
             { id: 0, name: "Новичковый стадион", minLevel: 0, maxLevel: 9, difficulty: 1 },
             { id: 1, name: "Горный курорт", minLevel: 10, maxLevel: 19, difficulty: 2 },
@@ -81,136 +84,118 @@ class BiathlonGame {
         ];
         
         this.currentLocation = 0;
-        this.currentCup = 0;
         
-        // Игрок (базовые значения, будут перезаписаны характеристиками)
-        this.player = {
+        // Инициализация игрока (базовые значения)
+        this.player = this.createPlayer();
+        
+        // Генерируем соперников
+        this.opponents = this.generateOpponents(16);
+        this.allCompetitors = [this.player, ...this.opponents];
+        
+        // Состояние стрельбы
+        this.shootingParticipants = new Map();
+        this.allShootingResults = new Map();
+        
+        console.log("Биатлон Менеджер инициализирован с новой системой!");
+    }
+    
+    // Создание игрока
+    createPlayer() {
+        return {
+            id: 'player',
             name: "Вы",
             flag: "🎯",
-            speed: 3,
+            speedMps: 2.78, // Будет перезаписано характеристиками
             stamina: 60,
             maxStamina: 60,
             pulse: 120,
-            position: 4,
-            time: 18.3,
+            position: 1,
+            totalGameTime: 0,
+            completedSegments: 0,
+            currentLap: 1,
+            completedSegmentsInCurrentLap: 0,
             isPlayer: true,
+            isRacing: false,
+            isShooting: false,
             shooting: {
                 prone: 0.1,
                 standing: 0.1
             },
-            aggression: 0.7,
-            consistency: 0.8,
-            shootingSpeed: 10,
-            level: 0
+            shootingSpeed: 6,
+            level: 0,
+            // Система штрафов
+            penaltyMinutes: 0,
+            extraSegmentsPerLap: {},
+            // Текущая стрельба
+            currentShooting: null,
+            shootingResults: [],
+            shotsFired: 0,
+            shootingStartTime: 0
         };
-        
-        // Генерируем соперников для текущей локации
-        this.opponents = this.generateCupOpponents(this.currentLocation, 0);
-        this.allCompetitors = [this.player, ...this.opponents];
-        
-        console.log("Биатлон Менеджер инициализирован с системой локаций!");
     }
     
-    // Генерация соперников для кубка с учетом прогрессии локаций
-    generateCupOpponents(locationId, cupLevel) {
-        const location = this.locations[locationId];
+    // Генерация соперников
+    generateOpponents(count) {
         const opponents = [];
+        const names = [
+            "Йоханссон", "Мюллер", "Мартен", "Ларссон", "Хубер", 
+            "Бё", "Фуркад", "Самуэльссон", "Семёнов", "Пидно",
+            "Уле", "Бьорндален", "Ландертингер", "Ферри", "Вайдель", "Логинов"
+        ];
+        const flags = ["🇳🇴", "🇩🇪", "🇫🇷", "🇸🇪", "🇦🇹", "🇫🇮", "🇮🇹", "🇨🇭", "🇷🇺", "🇺🇦", "🇨🇿", "🇸🇰", "🇧🇾", "🇰🇿", "🇨🇦", "🇺🇸"];
         
-        // Распределение по уровням внутри локации
-        const levelDistribution = {};
-        const levelRange = location.maxLevel - location.minLevel + 1;
-        const levelsPerGroup = Math.ceil(levelRange / 3);
-        
-        // Создаем группы уровней внутри локации
-        for (let group = 0; group < 3; group++) {
-            const startLevel = location.minLevel + group * levelsPerGroup;
-            const endLevel = Math.min(location.minLevel + (group + 1) * levelsPerGroup - 1, location.maxLevel);
-            const count = group === 0 ? 2 : 3; // В первой группе 2 соперника, в остальных по 3
+        for (let i = 0; i < count; i++) {
+            const level = Math.floor(Math.random() * 60); // Уровень от 0 до 59
             
-            for (let level = startLevel; level <= endLevel; level++) {
-                levelDistribution[level] = (levelDistribution[level] || 0) + count;
-            }
+            // Скорость от 2.78 до 5 м/с в зависимости от уровня
+            const speedMps = 2.78 + (level * (5 - 2.78) / 60);
+            
+            // Точность от 10% до 80%
+            const accuracy = 0.1 + (level * 0.7 / 60);
+            
+            // Скорость стрельбы от 6 до 3 секунд
+            const shootingSpeed = 6 - (level * 3 / 60);
+            
+            opponents.push({
+                id: 'ai_' + i,
+                name: `${names[i]} Lv.${level}`,
+                flag: flags[i % flags.length],
+                speedMps: speedMps,
+                stamina: 60 + (level * 90 / 60),
+                maxStamina: 60 + (level * 90 / 60),
+                pulse: 110 + Math.random() * 30,
+                position: i + 2,
+                totalGameTime: i * 2, // Разное стартовое время
+                completedSegments: 0,
+                currentLap: 1,
+                completedSegmentsInCurrentLap: 0,
+                isPlayer: false,
+                isRacing: false,
+                isShooting: false,
+                shooting: {
+                    prone: Math.min(0.95, accuracy * 1.1),
+                    standing: Math.min(0.85, accuracy * 0.9)
+                },
+                shootingSpeed: shootingSpeed,
+                level: level,
+                // Система штрафов
+                penaltyMinutes: 0,
+                extraSegmentsPerLap: {},
+                // Текущая стрельба
+                currentShooting: null,
+                shootingResults: [],
+                shotsFired: 0,
+                shootingStartTime: 0,
+                // Характеристики AI
+                aggression: 0.5 + Math.random() * 0.5,
+                consistency: 0.7 + Math.random() * 0.3
+            });
         }
-
-        // Генерируем соперников согласно распределению
-        for (let level = location.minLevel; level <= location.maxLevel; level++) {
-            const count = levelDistribution[level] || 0;
-            for (let i = 0; i < count; i++) {
-                const opponent = this.generateOpponentByLevel(level, locationId, cupLevel);
-                opponents.push(opponent);
-            }
-        }
-
+        
         return opponents;
     }
-
-    // Генерация одного соперника по уровню с прогрессивными характеристиками
-    generateOpponentByLevel(level, locationId, cupLevel) {
-        const names = ["Йоханссон", "Мюллер", "Мартен", "Ларссон", "Хубер", "Бё", "Фуркад"];
-        const flags = ["🇳🇴", "🇩🇪", "🇫🇷", "🇸🇪", "🇦🇹", "🇫🇮", "🇮🇹"];
-        
-        // Прогрессия характеристик от уровня 0 до 99
-        // Скорость: от 3 (уровень 0) до 8 (уровень 99)
-        const speed = 3 + (level * 5 / 99);
-        
-        // Выносливость: от 60 (уровень 0) до 150 (уровень 99)
-        const stamina = 60 + (level * 90 / 99);
-        
-        // Меткость: от 10% (уровень 0) до 80% (уровень 99)
-        const accuracy = 10 + (level * 70 / 99);
-        
-        // Скорость стрельбы: от 10 секунд (уровень 0) до 3 секунд (уровень 99)
-        const shootingSpeed = 10 - (level * 7 / 99);
-
-        return {
-            name: `${names[level % names.length]} Lv.${level}`,
-            flag: flags[level % flags.length],
-            speed: speed,
-            stamina: stamina,
-            maxStamina: stamina,
-            pulse: 110 + Math.random() * 30,
-            position: 0,
-            time: level * 1.5, // Более сильные соперники начинают с лучшим временем
-            isPlayer: false,
-            shooting: {
-                prone: Math.min(0.95, accuracy / 100 * 1.1),
-                standing: Math.min(0.85, accuracy / 100 * 0.9)
-            },
-            aggression: Math.random(),
-            consistency: 0.7 + Math.random() * 0.3,
-            shootingSpeed: shootingSpeed,
-            level: level,
-            location: locationId
-        };
-    }
-
-    // Метод для смены локации
-    setLocation(locationId) {
-        if (locationId >= 0 && locationId < this.locations.length) {
-            this.currentLocation = locationId;
-            this.opponents = this.generateCupOpponents(this.currentLocation, 0);
-            this.allCompetitors = [this.player, ...this.opponents];
-            console.log(`Переключена локация: ${this.locations[locationId].name}`);
-            return true;
-        }
-        return false;
-    }
-
-    // Получить текущую локацию
-    getCurrentLocation() {
-        return this.locations[this.currentLocation];
-    }
     
-    getCurrentLap() {
-        const race = this.getCurrentRace();
-        return Math.ceil(this.currentSegment / race.segmentsPerLap);
-    }
-
-    getCurrentSegmentInLap() {
-        const race = this.getCurrentRace();
-        return this.currentSegment % race.segmentsPerLap || race.segmentsPerLap;
-    }
-    
+    // Выбор типа гонки
     selectRaceType(raceType) {
         if (this.raceTypes[raceType]) {
             this.selectedRaceType = raceType;
@@ -228,21 +213,21 @@ class BiathlonGame {
         return this.raceTypes[this.currentRaceType];
     }
     
-    getAllRaceTypes() {
-        return this.raceTypes;
-    }
-    
-    getRandomWind() {
-        return this.windConditions[Math.floor(Math.random() * this.windConditions.length)];
-    }
-    
-    applyPlayerCharacteristics() {
-        if (window.playerProfile && this.player) {
-            window.playerProfile.applyToGamePlayer(this.player);
-            console.log("Характеристики игрока применены:", this.player);
+    // Установка локации
+    setLocation(locationId) {
+        if (locationId >= 0 && locationId < this.locations.length) {
+            this.currentLocation = locationId;
+            console.log(`Переключена локация: ${this.locations[locationId].name}`);
+            return true;
         }
+        return false;
     }
     
+    getCurrentLocation() {
+        return this.locations[this.currentLocation];
+    }
+    
+    // Запуск гонки
     startRace(raceType = null) {
         console.log("=== START RACE ===");
         
@@ -251,26 +236,18 @@ class BiathlonGame {
         }
         
         this.currentRaceType = this.selectedRaceType;
-        this.currentSegment = 1;
-        this.totalTime = 0;
         this.isRacing = false;
         this.isShooting = false;
-        this.currentShootingRound = null;
-        this.shootingStep = 0;
-        this.currentShootingIndex = 0;
-        this.allShootingResults.clear();
+        this.raceStartTime = 0;
+        this.realTimeElapsed = 0;
         
-        console.log("Параметры гонки установлены");
-        console.log("Тип гонки:", this.currentRaceType);
+        console.log("Параметры гонки установлены:", this.currentRaceType);
         
+        // Применяем характеристики игрока
         this.applyPlayerCharacteristics();
         
-        this.allCompetitors.forEach((competitor, index) => {
-            competitor.time = index * 0.5;
-            competitor.position = index + 1;
-            competitor.stamina = competitor.maxStamina;
-            competitor.pulse = 120;
-        });
+        // Сбрасываем состояние всех участников
+        this.resetCompetitors();
         
         if (window.gameScreen) {
             window.gameScreen.showStartStage();
@@ -278,9 +255,43 @@ class BiathlonGame {
         
         return true;
     }
-
+    
+    // Применение характеристик игрока
+    applyPlayerCharacteristics() {
+        if (window.playerProfile && this.player) {
+            window.playerProfile.applyToGamePlayer(this.player);
+        }
+    }
+    
+    // Сброс состояния участников
+    resetCompetitors() {
+        this.allCompetitors.forEach((competitor, index) => {
+            competitor.totalGameTime = index * 0.5; // Разное стартовое время
+            competitor.completedSegments = 0;
+            competitor.currentLap = 1;
+            competitor.completedSegmentsInCurrentLap = 0;
+            competitor.isRacing = false;
+            competitor.isShooting = false;
+            competitor.penaltyMinutes = 0;
+            competitor.extraSegmentsPerLap = {};
+            competitor.currentShooting = null;
+            competitor.shootingResults = [];
+            competitor.shotsFired = 0;
+            competitor.shootingStartTime = 0;
+            competitor.position = index + 1;
+            competitor.stamina = competitor.maxStamina;
+            competitor.pulse = 120;
+        });
+        
+        // Сортируем по времени
+        this.allCompetitors.sort((a, b) => a.totalGameTime - b.totalGameTime);
+        this.updatePositions();
+    }
+    
+    // Запуск гонки после экрана старта
     startRaceAfterStage() {
         this.isRacing = true;
+        this.raceStartTime = Date.now();
         this.startRaceInterval();
         console.log("Гонка началась!");
         
@@ -289,296 +300,284 @@ class BiathlonGame {
             window.gameScreen.showScreen('gameScreen');
         }
     }
-
+    
+    // Запуск интервала гонки
     startRaceInterval() {
         this.raceInterval = setInterval(() => {
             this.updateRace();
-        }, 2000);
+        }, 1000); // Обновление каждую секунду
     }
     
+    // Основное обновление гонки
     updateRace() {
-        if (this.isShooting) {
-            console.log("Стрельба в процессе, пропускаем обновление гонки");
-            return;
-        }
+        if (!this.isRacing) return;
         
-        const race = this.getCurrentRace();
+        this.realTimeElapsed = (Date.now() - this.raceStartTime) / 1000;
         
-        console.log(`Сегмент: ${this.currentSegment}/${race.totalSegments}, Круг: ${this.getCurrentLap()}/${race.totalLaps}`);
+        // Обновляем всех участников
+        this.allCompetitors.forEach(competitor => {
+            if (competitor.isRacing && !competitor.isShooting) {
+                this.updateCompetitorMovement(competitor);
+            }
+        });
         
+        // Обновляем позиции
+        this.updatePositions();
+        
+        // Обновляем отображение
         if (window.gameScreen) {
             window.gameScreen.updateDisplay();
         }
         
-        const currentLap = this.getCurrentLap();
-        const isEndOfLap = this.currentSegment % race.segmentsPerLap === 0;
+        // Проверяем завершение гонки
+        this.checkRaceCompletion();
+    }
+    
+    // Обновление движения участника
+    updateCompetitorMovement(competitor) {
+        const race = this.getCurrentRace();
         
-        console.log(`Проверка стрельбы: круг ${currentLap}, конец круга: ${isEndOfLap}`);
+        // Добавляем игровое время для текущего отрезка
+        const segmentGameTime = this.calculateSegmentGameTime(competitor);
+        competitor.totalGameTime += segmentGameTime;
         
-        const shootingRound = race.shootingRounds.find(round => 
-            round.afterLap === currentLap && isEndOfLap
+        // Увеличиваем счетчик отрезков
+        competitor.completedSegments++;
+        competitor.completedSegmentsInCurrentLap++;
+        
+        // Проверяем, достигли ли стрельбища
+        this.checkShootingPoint(competitor);
+        
+        // Проверяем завершение круга
+        this.checkLapCompletion(competitor);
+        
+        // Обновляем физиологические показатели
+        this.updatePhysiology(competitor);
+    }
+    
+    // Расчет игрового времени для отрезка
+    calculateSegmentGameTime(competitor) {
+        // Базовое время = 150 / скорость (м/с)
+        const baseTime = 150 / competitor.speedMps;
+        
+        // Случайное отклонение от -1 до +2 км/ч
+        const randomVariation = (Math.random() * 3 - 1) / 3.6; // Переводим в м/с
+        const variedSpeed = competitor.speedMps + randomVariation;
+        
+        // Финальное время с учетом случайного отклонения
+        return 150 / Math.max(2.5, variedSpeed); // Минимальная скорость 2.5 м/с
+    }
+    
+    // Проверка точки стрельбы
+    checkShootingPoint(competitor) {
+        const race = this.getCurrentRace();
+        const currentLap = competitor.currentLap;
+        
+        // Ищем стрельбу для текущего круга
+        const shootingRound = race.shootingRounds.find(round => round.afterLap === currentLap);
+        
+        if (shootingRound) {
+            // Определяем общее количество отрезков в этом круге
+            const totalSegmentsInLap = race.segmentsPerLap + (competitor.extraSegmentsPerLap[currentLap] || 0);
+            
+            // Если участник прошел все отрезки круга - начинаем стрельбу
+            if (competitor.completedSegmentsInCurrentLap >= totalSegmentsInLap) {
+                this.startShooting(competitor, shootingRound);
+            }
+        }
+    }
+    
+    // Проверка завершения круга
+    checkLapCompletion(competitor) {
+        const race = this.getCurrentRace();
+        const currentLap = competitor.currentLap;
+        
+        // Если это не последний круг и участник прошел все отрезки
+        if (currentLap < race.totalLaps && 
+            competitor.completedSegmentsInCurrentLap >= race.segmentsPerLap + (competitor.extraSegmentsPerLap[currentLap] || 0)) {
+            
+            // Переходим на следующий круг
+            competitor.currentLap++;
+            competitor.completedSegmentsInCurrentLap = 0;
+            
+            console.log(`${competitor.name} перешел на круг ${competitor.currentLap}`);
+        }
+    }
+    
+    // Обновление физиологических показателей
+    updatePhysiology(competitor) {
+        // Уменьшаем выносливость
+        competitor.stamina = Math.max(0, competitor.stamina - 0.5);
+        
+        // Увеличиваем пульс
+        competitor.pulse = Math.min(180, competitor.pulse + 0.3);
+        
+        // Восстановление выносливости при низком темпе
+        if (competitor.speedMps < 3.5) {
+            competitor.stamina = Math.min(competitor.maxStamina, competitor.stamina + 0.2);
+            competitor.pulse = Math.max(100, competitor.pulse - 0.1);
+        }
+    }
+    
+    // Начало стрельбы
+    startShooting(competitor, shootingRound) {
+        competitor.isShooting = true;
+        competitor.isRacing = false;
+        competitor.currentShooting = shootingRound;
+        competitor.shootingResults = [];
+        competitor.shotsFired = 0;
+        competitor.shootingStartTime = Date.now();
+        
+        console.log(`${competitor.name} начинает стрельбу: ${shootingRound.name}`);
+        
+        // Запускаем процесс стрельбы
+        this.processShooting(competitor);
+        
+        // Обновляем отображение
+        if (window.gameScreen) {
+            window.gameScreen.updateDisplay();
+        }
+    }
+    
+    // Процесс стрельбы
+    processShooting(competitor) {
+        if (competitor.shotsFired < 5 && competitor.isShooting) {
+            // Делаем выстрел
+            const isHit = this.makeShot(competitor);
+            competitor.shootingResults.push(isHit);
+            competitor.shotsFired++;
+            
+            console.log(`${competitor.name}: выстрел ${competitor.shotsFired} - ${isHit ? 'ПОПАДАНИЕ' : 'ПРОМАХ'}`);
+            
+            // Обновляем отображение
+            if (window.gameScreen) {
+                window.gameScreen.updateDisplay();
+            }
+            
+            if (competitor.shotsFired < 5) {
+                // Ждем перед следующим выстрелом
+                const shotInterval = competitor.shootingSpeed * 1000; // в миллисекундах
+                setTimeout(() => {
+                    this.processShooting(competitor);
+                }, shotInterval);
+            } else {
+                // Завершаем стрельбу
+                setTimeout(() => {
+                    this.finishShooting(competitor);
+                }, 500); // Небольшая задержка перед завершением
+            }
+        }
+    }
+    
+    // Совершение выстрела
+    makeShot(competitor) {
+        const shootingRound = competitor.currentShooting;
+        const accuracy = competitor.shooting[shootingRound.position];
+        
+        // Случайное отклонение based on консистенции
+        const consistency = competitor.consistency || 0.8;
+        const effectiveAccuracy = accuracy * consistency;
+        
+        // Шанс попадания
+        return Math.random() < effectiveAccuracy;
+    }
+    
+    // Завершение стрельбы
+    finishShooting(competitor) {
+        if (!competitor.isShooting) return;
+        
+        competitor.isShooting = false;
+        competitor.isRacing = true;
+        
+        // Рассчитываем реальное время стрельбы
+        const shootingRealTime = (Date.now() - competitor.shootingStartTime) / 1000;
+        competitor.totalGameTime += shootingRealTime;
+        
+        // Подсчитываем промахи
+        const misses = competitor.shootingResults.filter(result => !result).length;
+        
+        // Применяем штрафы
+        this.applyShootingPenalty(competitor, misses);
+        
+        console.log(`${competitor.name} завершил стрельбу: ${5 - misses}/5, промахов: ${misses}`);
+        
+        // Сбрасываем состояние стрельбы
+        competitor.currentShooting = null;
+        competitor.shootingResults = [];
+        competitor.shotsFired = 0;
+        competitor.shootingStartTime = 0;
+        
+        // Переходим на следующий круг
+        competitor.currentLap++;
+        competitor.completedSegmentsInCurrentLap = 0;
+        
+        // Обновляем отображение
+        if (window.gameScreen) {
+            window.gameScreen.updateDisplay();
+        }
+    }
+    
+    // Применение штрафов за стрельбу
+    applyShootingPenalty(competitor, misses) {
+        const race = this.getCurrentRace();
+        
+        if (this.currentRaceType === 'individual') {
+            // Индивидуальная гонка: +1 минута за промах
+            competitor.penaltyMinutes += misses;
+            console.log(`${competitor.name}: +${misses} минут штрафа`);
+        } else {
+            // Остальные гонки: +1 отрезок за промах к следующему кругу
+            const nextLap = competitor.currentLap;
+            competitor.extraSegmentsPerLap[nextLap] = (competitor.extraSegmentsPerLap[nextLap] || 0) + misses;
+            console.log(`${competitor.name}: +${misses} отрезков в круге ${nextLap}`);
+        }
+    }
+    
+    // Обновление позиций
+    updatePositions() {
+        // Сортируем по общему игровому времени
+        this.allCompetitors.sort((a, b) => a.totalGameTime - b.totalGameTime);
+        
+        // Обновляем позиции
+        this.allCompetitors.forEach((competitor, index) => {
+            competitor.position = index + 1;
+        });
+    }
+    
+    // Получение текущего круга участника
+    getCurrentLap(competitor) {
+        return competitor.currentLap;
+    }
+    
+    // Получение текущего сегмента в круге
+    getCurrentSegmentInLap(competitor) {
+        return competitor.completedSegmentsInCurrentLap;
+    }
+    
+    // Проверка завершения гонки
+    checkRaceCompletion() {
+        const race = this.getCurrentRace();
+        const allFinished = this.allCompetitors.every(competitor => 
+            competitor.completedSegments >= race.totalSegments
         );
         
-        if (shootingRound && !this.isShooting) {
-            console.log(`🚨 Найдена стрельба: ${shootingRound.name}`);
-            this.prepareShooting(shootingRound);
-            return;
-        }
-        
-        if (this.currentSegment >= race.totalSegments) {
-            this.finishRace();
-            return;
-        }
-        
-        this.updateCompetitors();
-        
-        this.currentSegment++;
-        this.totalTime += 2;
-        
-        console.log(`Переход к сегменту: ${this.currentSegment}`);
-    }
-    
-    prepareShooting(shootingRound) {
-        this.isShooting = true;
-        this.currentShootingRound = shootingRound;
-        
-        clearInterval(this.raceInterval);
-        
-        console.log(`🚨 Подготовка к стрельбе: ${shootingRound.name}`);
-        
-        if (window.gameScreen) {
-            window.gameScreen.showPreShootingStage(shootingRound);
-        }
-    }
-    
-    startShootingAfterStage() {
-        console.log("🎯 Начало стрельбы после экрана подготовки");
-        
-        this.shootingStep = 0;
-        
-        this.allCompetitors.forEach(competitor => {
-            this.allShootingResults.set(competitor, {
-                hits: 0,
-                misses: 0,
-                shots: [null, null, null, null, null],
-                finished: false
-            });
-        });
-        
-        if (window.gameScreen) {
-            window.gameScreen.showShootingInProgress();
-        }
-        
-        this.startIndividualShooting();
-    }
-    
-    startIndividualShooting() {
-        console.log("🎯 Запуск индивидуальной стрельбы");
-        this.shootingStep = 0;
-        
-        if (window.gameScreen) {
-            window.gameScreen.updateDisplay();
-        }
-        
-        this.allCompetitors.forEach(competitor => {
-            this.startCompetitorShooting(competitor);
-        });
-    }
-    
-    startCompetitorShooting(competitor) {
-        console.log(`🎯 ${competitor.name} начинает стрельбу (уровень скорости: ${competitor.shootingSpeed}с)`);
-        
-        let shotCount = 0;
-        
-        const makeShot = () => {
-            if (shotCount < 5 && this.isShooting) {
-                this.processCompetitorShot(competitor, shotCount);
-                shotCount++;
-                
-                if (shotCount < 5) {
-                    // Базовое время = shootingSpeed в секундах (от 3 до 10)
-                    const baseTime = competitor.shootingSpeed * 1000; // Переводим в миллисекунды
-                    // Случайное отклонение ±0.5 секунды
-                    const randomVariation = (Math.random() - 0.5) * 1000;
-                    const nextShotTime = baseTime + randomVariation;
-                    
-                    setTimeout(makeShot, nextShotTime);
-                } else {
-                    // Завершили стрельбу
-                    console.log(`🎯 ${competitor.name} завершил стрельбу`);
-                    this.checkShootingCompletion();
-                }
-            }
-        };
-        
-        // Запускаем первый выстрел сразу
-        setTimeout(makeShot, 100);
-    }
-    
-    processCompetitorShot(competitor, shotIndex) {
-        const round = this.currentShootingRound;
-        const accuracy = competitor.shooting[round.position];
-        const effectiveAccuracy = accuracy * competitor.consistency;
-        const isHit = Math.random() < effectiveAccuracy;
-        
-        const results = this.allShootingResults.get(competitor);
-        results.shots[shotIndex] = isHit;
-        
-        if (isHit) {
-            results.hits++;
-        } else {
-            results.misses++;
-        }
-        
-        console.log(`${competitor.name}: выстрел ${shotIndex + 1} - ${isHit ? 'ПОПАДАНИЕ!' : 'ПРОМАХ'} (скорость: ${competitor.shootingSpeed.toFixed(1)})`);
-        
-        if (window.gameScreen) {
-            window.gameScreen.updateDisplay();
-        }
-        
-        this.checkShootingCompletion();
-    }
-    
-    checkShootingCompletion() {
-        let allFinished = true;
-        
-        for (const [competitor, results] of this.allShootingResults) {
-            const hasPendingShots = results.shots.some(shot => shot === null);
-            if (hasPendingShots) {
-                allFinished = false;
-                break;
-            }
-        }
-        
         if (allFinished) {
-            console.log("🎯 ВСЕ УЧАСТНИКИ ЗАВЕРШИЛИ СТРЕЛЬБУ");
-            this.finishShooting();
-        }
-    }
-    
-    clearAllShootingTimers() {
-        this.isShooting = false;
-    }
-    
-    finishShooting() {
-        this.clearAllShootingTimers();
-        
-        console.log("🎯 ВСЕ УЧАСТНИКИ ЗАВЕРШИЛИ СТРЕЛЬБУ");
-        
-        this.allCompetitors.forEach(competitor => {
-            const results = this.allShootingResults.get(competitor);
-            const penaltyTime = results.misses * 10;
-            competitor.time += penaltyTime;
-            results.finished = true;
-            
-            console.log(`${competitor.name}: ${results.hits}/5, штраф: +${penaltyTime}сек, скорость стрельбы: ${competitor.shootingSpeed.toFixed(1)}`);
-        });
-        
-        if (window.gameScreen) {
-            window.gameScreen.showPostShootingStage();
-        }
-    }
-
-    continueAfterShooting() {
-        console.log("Продолжение гонки после стрельбы");
-        
-        this.isShooting = false;
-        this.currentShootingRound = null;
-        this.currentShootingIndex++;
-        
-        if (window.gameScreen) {
-            window.gameScreen.hideShooting();
-        }
-        
-        const race = this.getCurrentRace();
-        if (this.currentSegment < race.totalSegments) {
-            this.currentSegment++;
-        }
-        
-        this.allCompetitors.sort((a, b) => a.time - b.time);
-        this.allCompetitors.forEach((competitor, index) => {
-            competitor.position = index + 1;
-        });
-        
-        this.startRaceInterval();
-        
-        console.log(`Стрельба завершена, переходим к сегменту: ${this.currentSegment}`);
-        
-        if (this.currentSegment >= race.totalSegments) {
             this.finishRace();
         }
     }
     
-    getShootingResults(competitor) {
-        return this.allShootingResults.get(competitor);
-    }
-    
-    getShootingStep() {
-        return this.shootingStep;
-    }
-    
-    isShootingInProgress() {
-        return this.isShooting;
-    }
-    
-    getPlayerGap() {
-        const leader = this.allCompetitors[0];
-        return this.player.time - leader.time;
-    }
-    
-    updateCompetitors() {
-        this.allCompetitors.forEach(competitor => {
-            if (!competitor.isPlayer) {
-                const baseTimeChange = (10 / competitor.speed);
-                const variation = (Math.random() * 0.4 - 0.2) * competitor.consistency;
-                const aggressionBonus = competitor.aggression * 0.1;
-                
-                const timeChange = baseTimeChange + variation - aggressionBonus;
-                competitor.time = Math.max(0, competitor.time + timeChange);
-                
-                competitor.stamina = Math.max(0, competitor.stamina - 0.5);
-                competitor.pulse = Math.min(180, competitor.pulse + 0.3);
-            }
-        });
-        
-        this.allCompetitors.sort((a, b) => a.time - b.time);
-        
-        this.allCompetitors.forEach((competitor, index) => {
-            competitor.position = index + 1;
-        });
-    }
-    
-    activateSprint() {
-        if (this.player.stamina < 20) {
-            return false;
-        }
-        
-        this.player.speed += 2;
-        this.player.stamina -= 15;
-        this.player.pulse = Math.min(180, this.player.pulse + 20);
-        
-        console.log("Спринт активирован!");
-        
-        setTimeout(() => {
-            this.player.speed = Math.max(3, this.player.speed - 2);
-        }, 6000);
-        
-        return true;
-    }
-    
-    activateSlowPace() {
-        this.player.speed = Math.max(3, this.player.speed - 1);
-        this.player.stamina = Math.min(this.player.maxStamina, this.player.stamina + 10);
-        this.player.pulse = Math.max(100, this.player.pulse - 10);
-        
-        console.log("Темп снижен");
-        return true;
-    }
-    
+    // Завершение гонки
     finishRace() {
         clearInterval(this.raceInterval);
-        this.clearAllShootingTimers();
         this.isRacing = false;
+        
+        // Для индивидуальной гонки добавляем штрафные минуты
+        if (this.currentRaceType === 'individual') {
+            this.allCompetitors.forEach(competitor => {
+                competitor.totalGameTime += competitor.penaltyMinutes * 60;
+            });
+            this.updatePositions();
+        }
         
         const playerPosition = this.player.position;
         let message = `Гонка завершена! Ваше место: ${playerPosition}`;
@@ -597,21 +596,77 @@ class BiathlonGame {
             if (window.mainMenu) {
                 window.mainMenu.show();
             }
-        }, 3000);
+        }, 5000);
         
         return playerPosition;
     }
     
+    // Активация спринта
+    activateSprint() {
+        if (this.player.stamina < 20) {
+            return false;
+        }
+        
+        this.player.speedMps += 1; // Увеличиваем скорость
+        this.player.stamina -= 15;
+        this.player.pulse = Math.min(180, this.player.pulse + 20);
+        
+        console.log("Спринт активирован!");
+        
+        // Спринт длится 6 секунд
+        setTimeout(() => {
+            this.player.speedMps = Math.max(2.78, this.player.speedMps - 1);
+        }, 6000);
+        
+        return true;
+    }
+    
+    // Активация медленного темпа
+    activateSlowPace() {
+        this.player.speedMps = Math.max(2.78, this.player.speedMps - 0.5);
+        this.player.stamina = Math.min(this.player.maxStamina, this.player.stamina + 10);
+        this.player.pulse = Math.max(100, this.player.pulse - 10);
+        
+        console.log("Темп снижен");
+        return true;
+    }
+    
+    // Получение отставания игрока
+    getPlayerGap() {
+        const leader = this.allCompetitors[0];
+        return this.player.totalGameTime - leader.totalGameTime;
+    }
+    
+    // Получение результатов стрельбы
+    getShootingResults(competitor) {
+        return {
+            hits: competitor.shootingResults.filter(result => result).length,
+            misses: competitor.shootingResults.filter(result => !result).length,
+            shots: [...competitor.shootingResults],
+            finished: !competitor.isShooting && competitor.shootingResults.length === 5
+        };
+    }
+    
+    // Проверка, идет ли стрельба
+    isShootingInProgress() {
+        return this.allCompetitors.some(competitor => competitor.isShooting);
+    }
+    
+    // Возврат в меню
     returnToMenu() {
         if (this.isRacing) {
             clearInterval(this.raceInterval);
-            this.clearAllShootingTimers();
             this.isRacing = false;
         }
         this.isShooting = false;
-        this.currentShootingRound = null;
         
         console.log("Возврат в главное меню");
         return true;
+    }
+    
+    // Получение случайного ветра
+    getRandomWind() {
+        const windConditions = ["Слабый ветер", "Умеренный ветер", "Сильный ветер"];
+        return windConditions[Math.floor(Math.random() * windConditions.length)];
     }
 }
