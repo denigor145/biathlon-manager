@@ -95,6 +95,10 @@ class GameScreen {
     handleStartRaceStage() {
         console.log("Starting race after stage screen");
         if (window.biathlonGame) {
+            // Запускаем гонку для всех участников
+            window.biathlonGame.allCompetitors.forEach(competitor => {
+                competitor.isRacing = true;
+            });
             window.biathlonGame.startRaceAfterStage();
             this.hideStageScreen('startStageScreen');
         }
@@ -121,18 +125,19 @@ class GameScreen {
         
         const race = window.biathlonGame.getCurrentRace();
         let message = `🏁 ${race.name}\n`;
-        message += `📊 Сегмент: ${window.biathlonGame.currentSegment}/${race.totalSegments}\n`;
+        message += `📊 Сегмент: ${window.biathlonGame.player.completedSegments}/${race.totalSegments}\n`;
         message += `🏅 Позиция: ${window.biathlonGame.player.position}\n`;
         message += `💪 Выносливость: ${Math.round(window.biathlonGame.player.stamina)}%\n`;
-        message += `❤️ Пульс: ${Math.round(window.biathlonGame.player.pulse)}\n\n`;
+        message += `❤️ Пульс: ${Math.round(window.biathlonGame.player.pulse)}\n`;
+        message += `⏱️ Общее время: ${this.formatTime(window.biathlonGame.player.totalGameTime)}\n\n`;
         
         if (window.playerProfile) {
             const stats = window.playerProfile.getAllStats();
             message += `📈 Характеристики:\n`;
-            message += `🏃 Скорость: ${stats.runningSpeed}\n`;
-            message += `🎯 Меткость: ${stats.accuracy}%\n`;
-            message += `⚡ Стрельба: ${stats.shootingSpeed}\n`;
-            message += `💪 Выносливость: ${stats.stamina}`;
+            message += `🏃 Скорость: ${window.playerProfile.getFormattedStat('runningSpeed')}\n`;
+            message += `🎯 Меткость: ${window.playerProfile.getFormattedStat('accuracy')}\n`;
+            message += `⚡ Стрельба: ${window.playerProfile.getFormattedStat('shootingSpeed')}\n`;
+            message += `💪 Выносливость: ${window.playerProfile.getFormattedStat('stamina')}`;
         }
         
         alert(message);
@@ -195,13 +200,49 @@ class GameScreen {
         this.updateElement('startPosition', window.biathlonGame.player.position);
         this.updateElement('startStamina', Math.round(window.biathlonGame.player.stamina) + '%');
         
+        // Показываем характеристики игрока
+        if (window.playerProfile) {
+            const stats = window.playerProfile.getAllStats();
+            const playerStats = `
+                <div class="player-stats-preview">
+                    <div>🏃 Скорость: ${window.playerProfile.getFormattedStat('runningSpeed')}</div>
+                    <div>🎯 Меткость: ${window.playerProfile.getFormattedStat('accuracy')}</div>
+                    <div>⚡ Стрельба: ${window.playerProfile.getFormattedStat('shootingSpeed')}</div>
+                    <div>💪 Выносливость: ${window.playerProfile.getFormattedStat('stamina')}</div>
+                </div>
+            `;
+            
+            const statsContainer = document.getElementById('startStageScreen');
+            if (statsContainer) {
+                const existingStats = statsContainer.querySelector('.player-stats-preview');
+                if (existingStats) {
+                    existingStats.remove();
+                }
+                
+                const statsDiv = document.createElement('div');
+                statsDiv.className = 'player-stats-preview';
+                statsDiv.style.cssText = `
+                    background: rgba(255,255,255,0.1);
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin: 15px 0;
+                    text-align: left;
+                    font-size: 14px;
+                `;
+                statsDiv.innerHTML = playerStats;
+                
+                const stageStats = statsContainer.querySelector('.stage-stats');
+                if (stageStats) {
+                    stageStats.appendChild(statsDiv);
+                }
+            }
+        }
+        
         this.showStageScreen('startStageScreen');
     }
     
     showPreShootingStage(shootingRound) {
         if (!window.biathlonGame) return;
-        
-        const race = window.biathlonGame.getCurrentRace();
         
         this.updateElement('preShootingTitle', `🎯 ${shootingRound.name}`);
         this.updateElement('preShootingPosition', window.biathlonGame.player.position);
@@ -219,13 +260,19 @@ class GameScreen {
     showPostShootingStage() {
         if (!window.biathlonGame) return;
         
-        const shootingRound = window.biathlonGame.currentShootingRound;
-        const results = window.biathlonGame.getShootingResults(window.biathlonGame.player);
+        const player = window.biathlonGame.player;
+        const results = window.biathlonGame.getShootingResults(player);
         
-        this.updateElement('postShootingSubtitle', shootingRound.name + ' завершена');
+        this.updateElement('postShootingSubtitle', 'Стрельба завершена');
         this.updateElement('postShootingHits', `${results.hits}/5`);
         this.updateElement('postShootingMisses', results.misses);
-        this.updateElement('postShootingPenalty', `+${results.misses * 10} сек`);
+        
+        // Определяем штраф в зависимости от типа гонки
+        if (window.biathlonGame.currentRaceType === 'individual') {
+            this.updateElement('postShootingPenalty', `+${results.misses} мин штрафа`);
+        } else {
+            this.updateElement('postShootingPenalty', `+${results.misses} отрезков в след. круге`);
+        }
         
         this.updateShootingTargetsPreview(results);
         
@@ -237,13 +284,47 @@ class GameScreen {
         if (!container) return;
         
         container.innerHTML = '';
+        container.style.cssText = `
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        `;
         
         for (let i = 0; i < 5; i++) {
             const target = document.createElement('div');
             target.className = 'preview-target';
+            target.style.cssText = `
+                width: 25px;
+                height: 25px;
+                background: white;
+                border-radius: 50%;
+                border: 2px solid #333;
+                position: relative;
+            `;
             
             if (results.shots[i] !== null) {
-                target.classList.add(results.shots[i] ? 'hit' : 'miss');
+                if (results.shots[i]) {
+                    target.classList.add('hit');
+                    target.style.cssText += `
+                        background: white;
+                    `;
+                    target.innerHTML = `<div style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        width: 15px;
+                        height: 15px;
+                        background: black;
+                        border-radius: 50%;
+                        transform: translate(-50%, -50%);
+                    "></div>`;
+                } else {
+                    target.classList.add('miss');
+                    target.style.cssText += `
+                        background: #e74c3c;
+                    `;
+                }
             }
             
             container.appendChild(target);
@@ -264,19 +345,67 @@ class GameScreen {
         if (!window.biathlonGame) return;
 
         const race = window.biathlonGame.getCurrentRace();
+        const player = window.biathlonGame.player;
         
-        const currentLap = window.biathlonGame.getCurrentLap();
-        const currentSegmentInLap = window.biathlonGame.getCurrentSegmentInLap();
-        
-        this.updateElement('currentLap', currentLap);
+        // Обновляем информацию о кругах и сегментах
+        this.updateElement('currentLap', player.currentLap);
         this.updateElement('totalLaps', race.totalLaps);
-        this.updateElement('currentSegmentInLap', currentSegmentInLap);
-        this.updateElement('totalSegmentsPerLap', race.segmentsPerLap);
+        this.updateElement('currentSegmentInLap', player.completedSegmentsInCurrentLap);
         
-        this.updateElement('pulseValue', Math.round(window.biathlonGame.player.pulse));
-        this.updateElement('staminaValue', Math.round(window.biathlonGame.player.stamina) + '%');
+        // Определяем общее количество сегментов в текущем круге
+        const totalSegmentsInLap = race.segmentsPerLap + (player.extraSegmentsPerLap[player.currentLap] || 0);
+        this.updateElement('totalSegmentsPerLap', totalSegmentsInLap);
         
+        // Обновляем физиологические показатели
+        this.updateElement('pulseValue', Math.round(player.pulse));
+        this.updateElement('staminaValue', Math.round(player.stamina) + '%');
+        
+        // Обновляем таблицу лидеров
         this.updateCompetitorsList();
+        
+        // Обновляем информацию о стрельбе, если она идет
+        this.updateShootingInfo();
+    }
+    
+    updateShootingInfo() {
+        if (!window.biathlonGame) return;
+        
+        const shootingCompetitors = window.biathlonGame.allCompetitors.filter(c => c.isShooting);
+        
+        if (shootingCompetitors.length > 0) {
+            // Показываем информацию о стрельбе
+            const shootingContainer = document.getElementById('shootingScreen');
+            if (shootingContainer) {
+                shootingContainer.style.display = 'block';
+                
+                // Обновляем информацию о текущей стрельбе
+                shootingCompetitors.forEach(competitor => {
+                    if (competitor.isPlayer) {
+                        const results = window.biathlonGame.getShootingResults(competitor);
+                        this.updateElement('shootingRoundName', competitor.currentShooting?.name || 'Стрельба');
+                        this.updateElement('shootingTimer', `Выстрелов: ${competitor.shotsFired}/5`);
+                        
+                        // Прогресс стрельбы
+                        const progress = (competitor.shotsFired / 5) * 100;
+                        const progressFill = document.getElementById('shootingProgress');
+                        const progressText = document.getElementById('shootingProgressText');
+                        
+                        if (progressFill) {
+                            progressFill.style.width = progress + '%';
+                        }
+                        if (progressText) {
+                            progressText.textContent = `${competitor.shotsFired}/5 выстрелов`;
+                        }
+                    }
+                });
+            }
+        } else {
+            // Скрываем информацию о стрельбе
+            const shootingContainer = document.getElementById('shootingScreen');
+            if (shootingContainer) {
+                shootingContainer.style.display = 'none';
+            }
+        }
     }
     
     updateElement(id, value) {
@@ -296,15 +425,13 @@ class GameScreen {
         if (!window.biathlonGame) return;
         
         const leader = window.biathlonGame.allCompetitors[0];
-        const isShooting = window.biathlonGame.isShootingInProgress();
         
         competitorsList.innerHTML = window.biathlonGame.allCompetitors.map(competitor => {
-            const gap = competitor.time - leader.time;
+            const gap = competitor.totalGameTime - leader.totalGameTime;
             const shortName = this.formatShortName(competitor.name);
             
-            if (isShooting) {
-                const shootingResults = window.biathlonGame.getShootingResults(competitor);
-                return this.createShootingRow(competitor, shortName, shootingResults, gap);
+            if (competitor.isShooting) {
+                return this.createShootingRow(competitor, shortName, gap);
             } else {
                 return this.createNormalRow(competitor, shortName, gap);
             }
@@ -312,52 +439,54 @@ class GameScreen {
     }
 
     createNormalRow(competitor, shortName, gap) {
+        const race = window.biathlonGame.getCurrentRace();
+        const totalSegmentsInLap = race.segmentsPerLap + (competitor.extraSegmentsPerLap[competitor.currentLap] || 0);
+        
         // Отображаем уровень для всех участников
-        const levelDisplay = competitor.isPlayer ? 
-            `Lv.${competitor.level || 0}` : 
-            `Lv.${competitor.level}`;
+        const levelDisplay = `Lv.${competitor.level || 0}`;
 
         return `
             <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
                 <div class="name">${shortName} <span style="color: #4FC3F7; font-size: 10px;">${levelDisplay}</span></div>
+                <div class="lap-info" style="font-size: 10px; color: #4FC3F7; width: 40px; text-align: center;">
+                    ${competitor.currentLap}/${race.totalLaps}
+                </div>
                 <div class="gap">+${this.formatTime(gap)}</div>
             </div>
         `;
     }
 
-    createShootingRow(competitor, shortName, shootingResults, gap) {
+    createShootingRow(competitor, shortName, gap) {
+        const results = window.biathlonGame.getShootingResults(competitor);
         let targetsHTML = '<div class="targets-inline">';
         
-        if (shootingResults) {
-            for (let i = 0; i < 5; i++) {
-                let targetClass = 'inline-target';
-                if (shootingResults.shots[i] !== null) {
-                    targetClass += shootingResults.shots[i] ? ' hit' : ' miss';
-                }
-                targetsHTML += `<div class="${targetClass}"></div>`;
+        for (let i = 0; i < 5; i++) {
+            let targetClass = 'inline-target';
+            if (i < competitor.shotsFired) {
+                targetClass += results.shots[i] ? ' hit' : ' miss';
+            } else {
+                targetClass += ' pending';
             }
-        } else {
-            for (let i = 0; i < 5; i++) {
-                targetsHTML += '<div class="inline-target"></div>';
-            }
+            targetsHTML += `<div class="${targetClass}"></div>`;
         }
         
         targetsHTML += '</div>';
 
         // Отображаем уровень для всех участников
-        const levelDisplay = competitor.isPlayer ? 
-            `Lv.${competitor.level || 0}` : 
-            `Lv.${competitor.level}`;
+        const levelDisplay = `Lv.${competitor.level || 0}`;
 
         return `
-            <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
+            <div class="compact-row ${competitor.isPlayer ? 'player' : 'shooting'}">
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
                 <div class="name">${shortName} <span style="color: #4FC3F7; font-size: 10px;">${levelDisplay}</span></div>
                 <div class="targets-container">
                     ${targetsHTML}
+                </div>
+                <div class="shooting-status" style="font-size: 10px; color: #FFA500; width: 60px; text-align: center;">
+                    Стрельба
                 </div>
             </div>
         `;
@@ -376,9 +505,11 @@ class GameScreen {
     }
     
     formatTime(seconds) {
+        if (seconds < 0) return '0:00.0';
+        
         const mins = Math.floor(seconds / 60);
         const secs = (seconds % 60).toFixed(1);
-        return `${mins.toString().padStart(2, '0')}:${secs.padStart(4, '0')}`;
+        return `${mins}:${secs.padStart(4, '0')}`;
     }
     
     showMessage(message, type = 'info') {
