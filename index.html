@@ -26,33 +26,44 @@
                             <div class="race-card selected" data-race="sprint">
                                 <div class="race-icon">⚡</div>
                                 <h3>Спринт</h3>
-                                <p>3 км • 2 стрельбы</p>
+                                <p>7.65 км • 2 стрельбы</p>
                                 <div class="race-stats">
-                                    <span>📏 3km</span>
+                                    <span>📏 7.65km</span>
                                     <span>🎯 2x</span>
-                                    <span>⏱️ 25min</span>
+                                    <span>⏱️ 3 круга</span>
                                 </div>
                             </div>
                             
                             <div class="race-card" data-race="pursuit">
                                 <div class="race-icon">🏃</div>
                                 <h3>Гонка преследования</h3>
-                                <p>5 км • 4 стрельбы</p>
+                                <p>8.4 км • 4 стрельбы</p>
                                 <div class="race-stats">
-                                    <span>📏 5km</span>
+                                    <span>📏 8.4km</span>
                                     <span>🎯 4x</span>
-                                    <span>⏱️ 35min</span>
+                                    <span>⏱️ 4 круга</span>
+                                </div>
+                            </div>
+                            
+                            <div class="race-card" data-race="mass">
+                                <div class="race-icon">👥</div>
+                                <h3>Масс-старт</h3>
+                                <p>12.75 км • 4 стрельбы</p>
+                                <div class="race-stats">
+                                    <span>📏 12.75km</span>
+                                    <span>🎯 4x</span>
+                                    <span>⏱️ 5 кругов</span>
                                 </div>
                             </div>
                             
                             <div class="race-card" data-race="individual">
                                 <div class="race-icon">👤</div>
                                 <h3>Индивидуальная</h3>
-                                <p>6 км • 4 стрельбы</p>
+                                <p>15 км • 4 стрельбы</p>
                                 <div class="race-stats">
-                                    <span>📏 6km</span>
+                                    <span>📏 15km</span>
                                     <span>🎯 4x</span>
-                                    <span>⏱️ 45min</span>
+                                    <span>⏱️ 5 кругов</span>
                                 </div>
                             </div>
                         </div>
@@ -226,17 +237,13 @@
             </header>
 
             <!-- Блок стрельбы -->
-            <div id="shootingScreen" class="shooting-screen">
+            <div id="shootingScreen" class="shooting-screen" style="display: none;">
                 <div class="shooting-container">
                     <div class="shooting-header">
                         <h2 id="shootingRoundName">Стрельба лёжа</h2>
                         <div class="shooting-timer" id="shootingTimer">
                             Ожидание стрельбы...
                         </div>
-                    </div>
-                    
-                    <div class="shooting-competitors" id="shootingCompetitors">
-                        <!-- Список участников с мишенями будет заполняться динамически -->
                     </div>
                     
                     <div class="shooting-progress">
@@ -256,6 +263,7 @@
                             <span class="header-pos">ПОЗ</span>
                             <span class="header-flag">СТРАНА</span>
                             <span class="header-name">БИАТЛОНИСТ</span>
+                            <span class="header-lap">КРУГ</span>
                             <span class="header-gap">ОТСТАВАНИЕ</span>
                         </div>
                         <div class="leaderboard-content" id="competitorsList">
@@ -290,13 +298,13 @@
         <div class="stage-container">
             <div class="stage-header">
                 <h2 class="stage-title">🏁 Старт гонки</h2>
-                <div class="stage-subtitle" id="startRaceName">Спринт - 3 км</div>
+                <div class="stage-subtitle" id="startRaceName">Спринт - 7.65 км</div>
             </div>
             
             <div class="stage-stats">
                 <div class="stat-row">
                     <span class="stat-label">Дистанция:</span>
-                    <span class="stat-value" id="startDistance">3 км</span>
+                    <span class="stat-value" id="startDistance">7.65 км</span>
                 </div>
                 <div class="stat-row">
                     <span class="stat-label">Стрельбы:</span>
@@ -341,7 +349,7 @@
                 </div>
                 <div class="wind-indicator">
                     <span class="wind-icon">💨</span>
-                    <span class="wind-value">Умеренный ветер</span>
+                    <span class="wind-value" id="preShootingWind">Умеренный ветер</span>
                 </div>
             </div>
             
@@ -369,7 +377,7 @@
                     <span class="stat-value" id="postShootingMisses">1</span>
                 </div>
                 <div class="stat-row">
-                    <span class="stat-label">Штрафное время:</span>
+                    <span class="stat-label">Штраф:</span>
                     <span class="stat-value" id="postShootingPenalty">+10 сек</span>
                 </div>
                 
@@ -385,6 +393,8 @@
     </div>
 
     <!-- Подключение JavaScript файлов -->
+    <script src="js/utils/constants.js"></script>
+    <script src="js/utils/helpers.js"></script>
     <script src="js/core/player.js"></script>
     <script src="js/core/game.js"></script>
     <script src="js/screens/main-menu.js"></script>
