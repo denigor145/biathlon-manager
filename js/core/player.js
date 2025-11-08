@@ -2,10 +2,10 @@ class PlayerProfile {
     constructor() {
         // Базовые характеристики игрока - начинаем с 0
         this.stats = {
-            runningSpeed: 0,
-            accuracy: 0,  
-            shootingSpeed: 0,
-            stamina: 0
+            runningSpeed: 0,    // Влияет на скорость в м/с
+            accuracy: 0,        // Влияет на точность стрельбы
+            shootingSpeed: 0,   // Влияет на время между выстрелами
+            stamina: 0          // Влияет на максимальную выносливость
         };
         
         // Очки для распределения
@@ -22,7 +22,7 @@ class PlayerProfile {
         this.maxValues = {
             runningSpeed: 60,
             accuracy: 60,
-            shootingSpeed: 60, 
+            shootingSpeed: 60,
             stamina: 60
         };
         
@@ -128,13 +128,38 @@ class PlayerProfile {
         return true;
     }
     
-    // Получить реальную скорость стрельбы в секундах (от 10 до 3 секунд)
-    getActualShootingSpeed() {
+    // Получить скорость в м/с (от 2.78 до 5 м/с)
+    getSpeedMps() {
+        const level = this.stats.runningSpeed;
+        // От 10 км/ч (2.78 м/с) до 18 км/ч (5 м/с)
+        return 2.78 + (level * (5 - 2.78) / 60);
+    }
+    
+    // Получить время между выстрелами в секундах (от 6 до 3 секунд)
+    getShotInterval() {
         const level = this.stats.shootingSpeed;
-        // Формула: от 10 секунд при уровне 0 до 3 секунд при уровне 100
-        // Без экипировки максимум 60 уровней = 5.8 секунд
-        const baseTime = 10 - (level * 7 / 100);
-        return Math.max(3, Math.min(10, baseTime));
+        // От 6 секунд до 3 секунд
+        return 6 - (level * (6 - 3) / 60);
+    }
+    
+    // Получить точность стрельбы (от 0.1 до 0.95)
+    getShootingAccuracy(position) {
+        const level = this.stats.accuracy;
+        const baseAccuracy = 0.1 + (level * (0.95 - 0.1) / 60);
+        
+        // Модификатор для разных положений
+        if (position === 'prone') {
+            return Math.min(0.95, baseAccuracy * 1.1); // +10% к точности лёжа
+        } else { // standing
+            return Math.min(0.85, baseAccuracy * 0.9); // -10% к точности стоя
+        }
+    }
+    
+    // Получить максимальную выносливость
+    getMaxStamina() {
+        const level = this.stats.stamina;
+        // От 60 до 150
+        return 60 + (level * (150 - 60) / 60);
     }
     
     // Получить значение характеристики
@@ -158,11 +183,16 @@ class PlayerProfile {
         
         switch(statName) {
             case 'accuracy':
-                return value + '%';
+                return Math.round(this.getShootingAccuracy('prone') * 100) + '%';
             case 'runningSpeed':
+                const speedMps = this.getSpeedMps();
+                const speedKmh = (speedMps * 3.6).toFixed(1);
+                return speedKmh + ' км/ч';
             case 'shootingSpeed':
+                const interval = this.getShotInterval();
+                return interval.toFixed(1) + 'с';
             case 'stamina':
-                return value + '/60';
+                return this.getMaxStamina().toFixed(0);
             default:
                 return value.toString();
         }
@@ -223,26 +253,36 @@ class PlayerProfile {
     applyToGamePlayer(gamePlayer) {
         if (!gamePlayer) return;
         
-        // Беговая скорость: от 3 при уровне 0 до 8 при уровне 100
-        gamePlayer.speed = 3 + (this.stats.runningSpeed * 5 / 100);
+        // Скорость в м/с
+        gamePlayer.speedMps = this.getSpeedMps();
         
-        // Выносливость: от 60 при уровне 0 до 150 при уровне 100
-        gamePlayer.maxStamina = 60 + (this.stats.stamina * 90 / 100);
+        // Выносливость
+        gamePlayer.maxStamina = this.getMaxStamina();
         gamePlayer.stamina = gamePlayer.maxStamina;
         
-        // Меткость: от 10% при уровне 0 до 80% при уровне 100
-        const accuracyPercent = 10 + (this.stats.accuracy * 70 / 100);
-        const accuracyDecimal = accuracyPercent / 100;
-        
+        // Меткость для разных положений
         gamePlayer.shooting = {
-            prone: Math.min(0.95, accuracyDecimal * 1.1),
-            standing: Math.min(0.85, accuracyDecimal * 0.9)
+            prone: this.getShootingAccuracy('prone'),
+            standing: this.getShootingAccuracy('standing')
         };
         
         // Скорость стрельбы
-        gamePlayer.shootingSpeed = this.getActualShootingSpeed();
-        gamePlayer.level = this.stats.shootingSpeed; // Уровень для отображения
+        gamePlayer.shootingSpeed = this.getShotInterval();
+        
+        // Уровень для отображения
+        gamePlayer.level = Math.max(
+            this.stats.runningSpeed,
+            this.stats.accuracy, 
+            this.stats.shootingSpeed,
+            this.stats.stamina
+        );
 
-        console.log("Характеристики применены к игроку. Уровень скорости стрельбы:", this.stats.shootingSpeed);
+        console.log("Характеристики применены к игроку:", {
+            speed: gamePlayer.speedMps + ' м/с',
+            shootingSpeed: gamePlayer.shootingSpeed + 'с',
+            accuracyProne: (gamePlayer.shooting.prone * 100).toFixed(1) + '%',
+            accuracyStanding: (gamePlayer.shooting.standing * 100).toFixed(1) + '%',
+            stamina: gamePlayer.stamina
+        });
     }
 }
