@@ -360,11 +360,11 @@ class BiathlonGame {
         competitor.completedSegments++;
         competitor.completedSegmentsInCurrentLap++;
         
-        // Проверяем завершение круга (учитывая штрафные отрезки) - ВАЖНО: сначала проверка круга
-        this.checkLapCompletion(competitor);
+        console.log(`${competitor.name} движение: круг ${competitor.currentLap}, отрезок ${competitor.completedSegmentsInCurrentLap}`);
         
-        // Проверяем, достигли ли стрельбища (только базовые отрезки)
+        // ВАЖНО: сначала проверяем стрельбу, потом завершение круга
         this.checkShootingPoint(competitor);
+        this.checkLapCompletion(competitor);
         
         // Обновляем физиологические показатели
         this.updatePhysiology(competitor);
@@ -395,10 +395,13 @@ class BiathlonGame {
             // Стрельба происходит после прохождения БАЗОВОГО количества отрезков (без учета штрафных)
             const baseSegmentsInLap = race.segmentsPerLap;
             
+            console.log(`${competitor.name} проверка стрельбы: круг ${currentLap}, отрезков в круге: ${competitor.completedSegmentsInCurrentLap}, базовых: ${baseSegmentsInLap}, стрелял в круге: ${competitor.hasShotThisLap}`);
+            
             if (competitor.completedSegmentsInCurrentLap >= baseSegmentsInLap) {
                 // Останавливаем движение и начинаем стрельбу
                 competitor.isRacing = false;
                 competitor.hasShotThisLap = true; // Предотвращаем повторную стрельбу
+                console.log(`${competitor.name} начинает стрельбу после ${baseSegmentsInLap} отрезков в круге ${currentLap}`);
                 this.startShooting(competitor, shootingRound);
             }
         }
@@ -409,17 +412,26 @@ class BiathlonGame {
         const race = this.getCurrentRace();
         const currentLap = competitor.currentLap;
         
+        console.log(`${competitor.name} проверка перехода на следующий круг: круг ${currentLap}, отрезков: ${competitor.completedSegmentsInCurrentLap}, всего нужно: ${race.segmentsPerLap + (competitor.extraSegmentsPerLap[currentLap] || 0)}`);
+        
         // Если это не последний круг и участник прошел все отрезки (базовые + штрафные)
         if (currentLap <= race.totalLaps) {
             const totalSegmentsInLap = race.segmentsPerLap + (competitor.extraSegmentsPerLap[currentLap] || 0);
             
             if (competitor.completedSegmentsInCurrentLap >= totalSegmentsInLap) {
-                // Переходим на следующий круг
-                competitor.currentLap++;
-                competitor.completedSegmentsInCurrentLap = 0;
-                competitor.hasShotThisLap = false; // Сбрасываем флаг стрельбы для нового круга
-                
-                console.log(`${competitor.name} перешел на круг ${competitor.currentLap}`);
+                if (currentLap < race.totalLaps) {
+                    // Переходим на следующий круг
+                    competitor.currentLap++;
+                    competitor.completedSegmentsInCurrentLap = 0;
+                    competitor.hasShotThisLap = false; // Сбрасываем флаг стрельбы для нового круга
+                    
+                    console.log(`${competitor.name} перешел на круг ${competitor.currentLap}`);
+                } else {
+                    // Финишируем на последнем круге
+                    competitor.finished = true;
+                    competitor.isRacing = false;
+                    console.log(`${competitor.name} финишировал!`);
+                }
             }
         }
     }
@@ -608,7 +620,7 @@ class BiathlonGame {
         
         // Проверяем, завершили ли все участники гонку
         const allFinished = this.allCompetitors.every(competitor => 
-            competitor.currentLap > race.totalLaps
+            competitor.finished || competitor.currentLap > race.totalLaps
         );
         
         if (allFinished) {
