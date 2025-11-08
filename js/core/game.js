@@ -360,7 +360,7 @@ class BiathlonGame {
         competitor.completedSegments++;
         competitor.completedSegmentsInCurrentLap++;
         
-        // Проверяем завершение круга (учитывая штрафные отрезки)
+        // Проверяем завершение круга (учитывая штрафные отрезки) - ВАЖНО: сначала проверка круга
         this.checkLapCompletion(competitor);
         
         // Проверяем, достигли ли стрельбища (только базовые отрезки)
