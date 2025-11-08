@@ -158,7 +158,7 @@ class BiathlonGame {
             
             opponents.push({
                 id: 'ai_' + i,
-                name: `${names[i]} Lv.${level}`,
+                name: `${names[i]}`,
                 flag: flags[i % flags.length],
                 speedMps: speedMps,
                 stamina: 60 + (level * 90 / 60),
@@ -295,17 +295,22 @@ class BiathlonGame {
         this.startRaceInterval();
         console.log("Гонка началась!");
         
+        // Запускаем всех участников
+        this.allCompetitors.forEach(competitor => {
+            competitor.isRacing = true;
+        });
+        
         if (window.gameScreen) {
             window.gameScreen.hideStageScreen('startStageScreen');
             window.gameScreen.showScreen('gameScreen');
         }
     }
     
-    // Запуск интервала гонки
+    // Запуск интервала гонки (2 секунды)
     startRaceInterval() {
         this.raceInterval = setInterval(() => {
             this.updateRace();
-        }, 1000); // Обновление каждую секунду
+        }, 2000); // Обновление каждые 2 секунды
     }
     
     // Основное обновление гонки
@@ -314,7 +319,7 @@ class BiathlonGame {
         
         this.realTimeElapsed = (Date.now() - this.raceStartTime) / 1000;
         
-        // Обновляем всех участников
+        // Обновляем всех участников, которые бегут (не стреляют)
         this.allCompetitors.forEach(competitor => {
             if (competitor.isRacing && !competitor.isShooting) {
                 this.updateCompetitorMovement(competitor);
@@ -337,6 +342,13 @@ class BiathlonGame {
     updateCompetitorMovement(competitor) {
         const race = this.getCurrentRace();
         
+        // Проверяем, не завершил ли участник гонку
+        if (competitor.currentLap > race.totalLaps) {
+            competitor.isRacing = false;
+            competitor.finished = true;
+            return;
+        }
+        
         // Добавляем игровое время для текущего отрезка
         const segmentGameTime = this.calculateSegmentGameTime(competitor);
         competitor.totalGameTime += segmentGameTime;
@@ -345,10 +357,10 @@ class BiathlonGame {
         competitor.completedSegments++;
         competitor.completedSegmentsInCurrentLap++;
         
-        // Проверяем, достигли ли стрельбища
+        // Проверяем, достигли ли стрельбища (только базовые отрезки)
         this.checkShootingPoint(competitor);
         
-        // Проверяем завершение круга
+        // Проверяем завершение круга (учитывая штрафные отрезки)
         this.checkLapCompletion(competitor);
         
         // Обновляем физиологические показатели
@@ -368,7 +380,7 @@ class BiathlonGame {
         return 150 / Math.max(2.5, variedSpeed); // Минимальная скорость 2.5 м/с
     }
     
-    // Проверка точки стрельбы
+    // Проверка точки стрельбы (между кругами)
     checkShootingPoint(competitor) {
         const race = this.getCurrentRace();
         const currentLap = competitor.currentLap;
@@ -376,12 +388,13 @@ class BiathlonGame {
         // Ищем стрельбу для текущего круга
         const shootingRound = race.shootingRounds.find(round => round.afterLap === currentLap);
         
-        if (shootingRound) {
-            // Определяем общее количество отрезков в этом круге
-            const totalSegmentsInLap = race.segmentsPerLap + (competitor.extraSegmentsPerLap[currentLap] || 0);
+        if (shootingRound && !competitor.isShooting) {
+            // Стрельба происходит после прохождения БАЗОВОГО количества отрезков (без учета штрафных)
+            const baseSegmentsInLap = race.segmentsPerLap;
             
-            // Если участник прошел все отрезки круга - начинаем стрельбу
-            if (competitor.completedSegmentsInCurrentLap >= totalSegmentsInLap) {
+            if (competitor.completedSegmentsInCurrentLap >= baseSegmentsInLap) {
+                // Останавливаем движение и начинаем стрельбу
+                competitor.isRacing = false;
                 this.startShooting(competitor, shootingRound);
             }
         }
@@ -392,15 +405,17 @@ class BiathlonGame {
         const race = this.getCurrentRace();
         const currentLap = competitor.currentLap;
         
-        // Если это не последний круг и участник прошел все отрезки
-        if (currentLap < race.totalLaps && 
-            competitor.completedSegmentsInCurrentLap >= race.segmentsPerLap + (competitor.extraSegmentsPerLap[currentLap] || 0)) {
+        // Если это не последний круг и участник прошел все отрезки (базовые + штрафные)
+        if (currentLap <= race.totalLaps) {
+            const totalSegmentsInLap = race.segmentsPerLap + (competitor.extraSegmentsPerLap[currentLap] || 0);
             
-            // Переходим на следующий круг
-            competitor.currentLap++;
-            competitor.completedSegmentsInCurrentLap = 0;
-            
-            console.log(`${competitor.name} перешел на круг ${competitor.currentLap}`);
+            if (competitor.completedSegmentsInCurrentLap >= totalSegmentsInLap) {
+                // Переходим на следующий круг
+                competitor.currentLap++;
+                competitor.completedSegmentsInCurrentLap = 0;
+                
+                console.log(`${competitor.name} перешел на круг ${competitor.currentLap}`);
+            }
         }
     }
     
@@ -422,7 +437,6 @@ class BiathlonGame {
     // Начало стрельбы
     startShooting(competitor, shootingRound) {
         competitor.isShooting = true;
-        competitor.isRacing = false;
         competitor.currentShooting = shootingRound;
         competitor.shootingResults = [];
         competitor.shotsFired = 0;
@@ -462,9 +476,7 @@ class BiathlonGame {
                 }, shotInterval);
             } else {
                 // Завершаем стрельбу
-                setTimeout(() => {
-                    this.finishShooting(competitor);
-                }, 500); // Небольшая задержка перед завершением
+                this.finishShooting(competitor);
             }
         }
     }
@@ -486,11 +498,12 @@ class BiathlonGame {
     finishShooting(competitor) {
         if (!competitor.isShooting) return;
         
-        competitor.isShooting = false;
-        competitor.isRacing = true;
-        
         // Рассчитываем реальное время стрельбы
         const shootingRealTime = (Date.now() - competitor.shootingStartTime) / 1000;
+        
+        console.log(`${competitor.name} завершил стрельбу за ${shootingRealTime.toFixed(1)} секунд`);
+        
+        // Добавляем реальное время стрельбы к общему времени
         competitor.totalGameTime += shootingRealTime;
         
         // Подсчитываем промахи
@@ -499,17 +512,18 @@ class BiathlonGame {
         // Применяем штрафы
         this.applyShootingPenalty(competitor, misses);
         
-        console.log(`${competitor.name} завершил стрельбу: ${5 - misses}/5, промахов: ${misses}`);
+        console.log(`${competitor.name}: ${5 - misses}/5, промахов: ${misses}`);
         
         // Сбрасываем состояние стрельбы
+        competitor.isShooting = false;
+        competitor.isRacing = true; // Возобновляем движение после стрельбы
         competitor.currentShooting = null;
         competitor.shootingResults = [];
         competitor.shotsFired = 0;
         competitor.shootingStartTime = 0;
         
-        // Переходим на следующий круг
-        competitor.currentLap++;
-        competitor.completedSegmentsInCurrentLap = 0;
+        // Обновляем позиции после добавления времени стрельбы
+        this.updatePositions();
         
         // Обновляем отображение
         if (window.gameScreen) {
@@ -533,15 +547,32 @@ class BiathlonGame {
         }
     }
     
-    // Обновление позиций
+    // Обновление позиций с учетом стрельбы
     updatePositions() {
+        // Создаем временный массив для сортировки
+        const tempCompetitors = [...this.allCompetitors];
+        
         // Сортируем по общему игровому времени
-        this.allCompetitors.sort((a, b) => a.totalGameTime - b.totalGameTime);
+        tempCompetitors.sort((a, b) => {
+            // Сначала сравниваем по общему времени
+            if (a.totalGameTime !== b.totalGameTime) {
+                return a.totalGameTime - b.totalGameTime;
+            }
+            
+            // Если время одинаковое, стреляющие участники идут после бегущих
+            if (a.isShooting && !b.isShooting) return 1;
+            if (!a.isShooting && b.isShooting) return -1;
+            
+            return 0;
+        });
         
         // Обновляем позиции
-        this.allCompetitors.forEach((competitor, index) => {
+        tempCompetitors.forEach((competitor, index) => {
             competitor.position = index + 1;
         });
+        
+        // Сохраняем обратно в allCompetitors
+        this.allCompetitors = tempCompetitors;
     }
     
     // Получение текущего круга участника
@@ -557,12 +588,15 @@ class BiathlonGame {
     // Проверка завершения гонки
     checkRaceCompletion() {
         const race = this.getCurrentRace();
+        
+        // Проверяем, завершили ли все участники гонку
         const allFinished = this.allCompetitors.every(competitor => 
-            competitor.completedSegments >= race.totalSegments
+            competitor.currentLap > race.totalLaps
         );
         
         if (allFinished) {
             this.finishRace();
+            return;
         }
     }
     
@@ -570,6 +604,7 @@ class BiathlonGame {
     finishRace() {
         clearInterval(this.raceInterval);
         this.isRacing = false;
+        this.raceFinished = true;
         
         // Для индивидуальной гонки добавляем штрафные минуты
         if (this.currentRaceType === 'individual') {
