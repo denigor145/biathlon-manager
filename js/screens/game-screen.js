@@ -105,6 +105,7 @@ class GameScreen {
         if (window.biathlonGame) {
             window.biathlonGame.startShootingAfterStage();
             this.hideStageScreen('preShootingScreen');
+            this.showScreen('gameScreen');
         }
     }
     
@@ -113,6 +114,7 @@ class GameScreen {
         if (window.biathlonGame) {
             window.biathlonGame.continueAfterShooting();
             this.hideStageScreen('postShootingScreen');
+            this.showScreen('gameScreen');
         }
     }
     
