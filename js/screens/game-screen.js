@@ -95,10 +95,6 @@ class GameScreen {
     handleStartRaceStage() {
         console.log("Starting race after stage screen");
         if (window.biathlonGame) {
-            // Запускаем гонку для всех участников
-            window.biathlonGame.allCompetitors.forEach(competitor => {
-                competitor.isRacing = true;
-            });
             window.biathlonGame.startRaceAfterStage();
             this.hideStageScreen('startStageScreen');
         }
@@ -199,44 +195,6 @@ class GameScreen {
         this.updateElement('startShootings', race.shootingRounds.length);
         this.updateElement('startPosition', window.biathlonGame.player.position);
         this.updateElement('startStamina', Math.round(window.biathlonGame.player.stamina) + '%');
-        
-        // Показываем характеристики игрока
-        if (window.playerProfile) {
-            const stats = window.playerProfile.getAllStats();
-            const playerStats = `
-                <div class="player-stats-preview">
-                    <div>🏃 Скорость: ${window.playerProfile.getFormattedStat('runningSpeed')}</div>
-                    <div>🎯 Меткость: ${window.playerProfile.getFormattedStat('accuracy')}</div>
-                    <div>⚡ Стрельба: ${window.playerProfile.getFormattedStat('shootingSpeed')}</div>
-                    <div>💪 Выносливость: ${window.playerProfile.getFormattedStat('stamina')}</div>
-                </div>
-            `;
-            
-            const statsContainer = document.getElementById('startStageScreen');
-            if (statsContainer) {
-                const existingStats = statsContainer.querySelector('.player-stats-preview');
-                if (existingStats) {
-                    existingStats.remove();
-                }
-                
-                const statsDiv = document.createElement('div');
-                statsDiv.className = 'player-stats-preview';
-                statsDiv.style.cssText = `
-                    background: rgba(255,255,255,0.1);
-                    border-radius: 10px;
-                    padding: 15px;
-                    margin: 15px 0;
-                    text-align: left;
-                    font-size: 14px;
-                `;
-                statsDiv.innerHTML = playerStats;
-                
-                const stageStats = statsContainer.querySelector('.stage-stats');
-                if (stageStats) {
-                    stageStats.appendChild(statsDiv);
-                }
-            }
-        }
         
         this.showStageScreen('startStageScreen');
     }
@@ -381,9 +339,9 @@ class GameScreen {
                 // Обновляем информацию о текущей стрельбе
                 shootingCompetitors.forEach(competitor => {
                     if (competitor.isPlayer) {
-                        const results = window.biathlonGame.getShootingResults(competitor);
+                        const elapsedTime = ((Date.now() - competitor.shootingStartTime) / 1000).toFixed(1);
                         this.updateElement('shootingRoundName', competitor.currentShooting?.name || 'Стрельба');
-                        this.updateElement('shootingTimer', `Выстрелов: ${competitor.shotsFired}/5`);
+                        this.updateElement('shootingTimer', `Время: ${elapsedTime}с`);
                         
                         // Прогресс стрельбы
                         const progress = (competitor.shotsFired / 5) * 100;
@@ -439,20 +397,11 @@ class GameScreen {
     }
 
     createNormalRow(competitor, shortName, gap) {
-        const race = window.biathlonGame.getCurrentRace();
-        const totalSegmentsInLap = race.segmentsPerLap + (competitor.extraSegmentsPerLap[competitor.currentLap] || 0);
-        
-        // Отображаем уровень для всех участников
-        const levelDisplay = `Lv.${competitor.level || 0}`;
-
         return `
             <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
-                <div class="name">${shortName} <span style="color: #4FC3F7; font-size: 10px;">${levelDisplay}</span></div>
-                <div class="lap-info" style="font-size: 10px; color: #4FC3F7; width: 40px; text-align: center;">
-                    ${competitor.currentLap}/${race.totalLaps}
-                </div>
+                <div class="name">${shortName}</div>
                 <div class="gap">+${this.formatTime(gap)}</div>
             </div>
         `;
@@ -474,19 +423,13 @@ class GameScreen {
         
         targetsHTML += '</div>';
 
-        // Отображаем уровень для всех участников
-        const levelDisplay = `Lv.${competitor.level || 0}`;
-
         return `
             <div class="compact-row ${competitor.isPlayer ? 'player' : 'shooting'}">
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
-                <div class="name">${shortName} <span style="color: #4FC3F7; font-size: 10px;">${levelDisplay}</span></div>
+                <div class="name">${shortName}</div>
                 <div class="targets-container">
                     ${targetsHTML}
-                </div>
-                <div class="shooting-status" style="font-size: 10px; color: #FFA500; width: 60px; text-align: center;">
-                    Стрельба
                 </div>
             </div>
         `;
