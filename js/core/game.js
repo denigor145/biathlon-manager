@@ -430,8 +430,15 @@ class BiathlonGame {
         const race = this.getCurrentRace();
         const segmentDistance = 150; // 150 метров на отрезок
         
-        // Расчет времени прохождения отрезка на основе скорости
-        const segmentGameTime = segmentDistance / competitor.speedMps;
+        // Базовое время прохождения отрезка
+        const baseSegmentTime = segmentDistance / competitor.speedMps;
+        
+        // Случайная вариация времени от -1 до +1 секунды
+        const timeVariation = (Math.random() * 2) - 1; // от -1 до +1 секунды
+        const variedSegmentTime = Math.max(1, baseSegmentTime + timeVariation); // Минимум 1 секунда
+        
+        // Расчет итогового времени прохождения отрезка
+        const segmentGameTime = variedSegmentTime;
         
         // Увеличиваем гоночное время
         competitor.raceGameTime += segmentGameTime;
@@ -441,7 +448,11 @@ class BiathlonGame {
         competitor.completedSegments++;
         competitor.completedSegmentsInCurrentLap++;
         
-        console.log(`${competitor.name}: круг ${competitor.currentLap}, отрезок ${competitor.completedSegmentsInCurrentLap}, дистанция: ${competitor.distanceCovered}м`);
+        // Расчет фактической скорости для отображения
+        const actualSpeedMps = segmentDistance / variedSegmentTime;
+        const actualSpeedKmh = (actualSpeedMps * 3.6).toFixed(1);
+        
+        console.log(`${competitor.name}: круг ${competitor.currentLap}, отрезок ${competitor.completedSegmentsInCurrentLap}, скорость: ${actualSpeedKmh} км/ч, время: ${variedSegmentTime.toFixed(1)}с`);
         
         // Проверяем точку стрельбы только если это не возвращение после стрельбы
         if (!competitor.justReturnedFromShooting) {
@@ -481,8 +492,15 @@ class BiathlonGame {
     updatePenaltyLoopState(competitor) {
         const penaltySegmentDistance = 150; // 150 метров на штрафной отрезок
         
-        // Расчет времени прохождения штрафного отрезка
-        const segmentGameTime = penaltySegmentDistance / competitor.speedMps;
+        // Базовое время прохождения отрезка
+        const baseSegmentTime = penaltySegmentDistance / competitor.speedMps;
+        
+        // Случайная вариация времени от -1 до +1 секунды
+        const timeVariation = (Math.random() * 2) - 1; // от -1 до +1 секунды
+        const variedSegmentTime = Math.max(1, baseSegmentTime + timeVariation); // Минимум 1 секунда
+        
+        // Расчет итогового времени прохождения отрезка
+        const segmentGameTime = variedSegmentTime;
         
         // Увеличиваем время штрафных кругов
         competitor.penaltyGameTime += segmentGameTime;
@@ -490,7 +508,11 @@ class BiathlonGame {
         // Увеличиваем пройденную дистанцию в штрафных кругах
         competitor.penaltyDistanceCovered += penaltySegmentDistance;
         
-        console.log(`${competitor.name}: штрафной круг, пройдено: ${competitor.penaltyDistanceCovered}м`);
+        // Расчет фактической скорости для отображения
+        const actualSpeedMps = penaltySegmentDistance / variedSegmentTime;
+        const actualSpeedKmh = (actualSpeedMps * 3.6).toFixed(1);
+        
+        console.log(`${competitor.name}: штрафной круг, скорость: ${actualSpeedKmh} км/ч, время: ${variedSegmentTime.toFixed(1)}с, пройдено: ${competitor.penaltyDistanceCovered}м`);
         
         // Проверяем завершение штрафных кругов
         if (competitor.penaltyDistanceCovered >= competitor.penaltyLoops * 150) {
@@ -692,6 +714,28 @@ class BiathlonGame {
         this.allCompetitors = tempCompetitors;
     }
     
+    // Получение отставания от лидера для участника
+    getGapFromLeader(competitor) {
+        if (this.allCompetitors.length === 0) return 0;
+        
+        const leader = this.allCompetitors[0];
+        
+        // Если участник - лидер, отставание 0
+        if (competitor.position === 1) return 0;
+        
+        // Для индивидуальной гонки учитываем штрафные минуты
+        if (this.currentRaceType === 'individual') {
+            return competitor.totalGameTime - leader.totalGameTime;
+        }
+        
+        // Для других гонок учитываем только гоночное время и время штрафных кругов
+        // Не включаем время стрельбы в расчет отставания
+        const competitorEffectiveTime = competitor.raceGameTime + competitor.penaltyGameTime;
+        const leaderEffectiveTime = leader.raceGameTime + leader.penaltyGameTime;
+        
+        return competitorEffectiveTime - leaderEffectiveTime;
+    }
+    
     // Получение текущего круга участника
     getCurrentLap(competitor) {
         return competitor.currentLap;
@@ -797,8 +841,7 @@ class BiathlonGame {
     
     // Получение отставания игрока
     getPlayerGap() {
-        const leader = this.allCompetitors[0];
-        return this.player.totalGameTime - leader.totalGameTime;
+        return this.getGapFromLeader(this.player);
     }
     
     // Получение результатов стрельбы
