@@ -162,6 +162,16 @@ class PlayerProfile {
         return 60 + (level * (150 - 60) / 60);
     }
     
+    // Получить общий уровень игрока
+    getPlayerLevel() {
+        return Math.max(
+            this.stats.runningSpeed,
+            this.stats.accuracy,
+            this.stats.shootingSpeed,
+            this.stats.stamina
+        );
+    }
+    
     // Получить значение характеристики
     getStat(statName) {
         return this.stats[statName] || 0;
@@ -270,19 +280,15 @@ class PlayerProfile {
         gamePlayer.shootingSpeed = this.getShotInterval();
         
         // Уровень для отображения
-        gamePlayer.level = Math.max(
-            this.stats.runningSpeed,
-            this.stats.accuracy, 
-            this.stats.shootingSpeed,
-            this.stats.stamina
-        );
+        gamePlayer.level = this.getPlayerLevel();
 
         console.log("Характеристики применены к игроку:", {
             speed: gamePlayer.speedMps + ' м/с',
             shootingSpeed: gamePlayer.shootingSpeed + 'с',
             accuracyProne: (gamePlayer.shooting.prone * 100).toFixed(1) + '%',
             accuracyStanding: (gamePlayer.shooting.standing * 100).toFixed(1) + '%',
-            stamina: gamePlayer.stamina
+            stamina: gamePlayer.stamina,
+            playerLevel: gamePlayer.level
         });
     }
 }
