@@ -145,7 +145,8 @@ class BiathlonGame {
             completedShootingRounds: [],
             
             isPlayer: true,
-            level: 0
+            level: 0,
+            justReturnedFromShooting: false
         };
     }
     
@@ -220,7 +221,8 @@ class BiathlonGame {
                 isPlayer: false,
                 level: level,
                 aggression: 0.5 + Math.random() * 0.5,
-                consistency: 0.7 + Math.random() * 0.3
+                consistency: 0.7 + Math.random() * 0.3,
+                justReturnedFromShooting: false
             });
         }
         
@@ -353,6 +355,9 @@ class BiathlonGame {
             competitor.penaltyLoops = 0;
             competitor.totalMisses = 0;
             
+            // Сбрасываем флаг возвращения со стрельбы
+            competitor.justReturnedFromShooting = false;
+            
             // Восстанавливаем стамину
             competitor.stamina = competitor.maxStamina;
             competitor.pulse = 120;
@@ -438,8 +443,12 @@ class BiathlonGame {
         
         console.log(`${competitor.name}: круг ${competitor.currentLap}, отрезок ${competitor.completedSegmentsInCurrentLap}, дистанция: ${competitor.distanceCovered}м`);
         
-        // Проверяем точку стрельбы
-        this.checkShootingPoint(competitor);
+        // Проверяем точку стрельбы только если это не возвращение после стрельбы
+        if (!competitor.justReturnedFromShooting) {
+            this.checkShootingPoint(competitor);
+        } else {
+            competitor.justReturnedFromShooting = false;
+        }
         
         // Проверяем завершение круга
         this.checkLapCompletion(competitor);
@@ -619,6 +628,14 @@ class BiathlonGame {
             console.log(`${competitor.name} переходит к штрафным кругам: ${competitor.penaltyLoops} кругов`);
         } else {
             competitor.currentState = 'racing';
+            competitor.justReturnedFromShooting = true;
+            
+            // После стрельбы продолжаем с того же места на трассе
+            // Увеличиваем счетчик сегментов, чтобы продолжить с правильной позиции
+            if (competitor.completedSegmentsInCurrentLap === 0) {
+                competitor.completedSegmentsInCurrentLap = 1;
+            }
+            
             console.log(`${competitor.name} возвращается к гонке`);
         }
         
@@ -636,7 +653,7 @@ class BiathlonGame {
             competitor.penaltyMinutes += misses;
             console.log(`${competitor.name}: +${misses} минут штрафа (всего: ${competitor.penaltyMinutes} минут)`);
         } else {
-            // Для других гонок - штрафные круги
+            // Для других гонки - штрафные круги
             competitor.penaltyLoops += misses;
             console.log(`${competitor.name}: +${misses} штрафных кругов (всего: ${competitor.penaltyLoops} кругов)`);
         }
@@ -650,6 +667,14 @@ class BiathlonGame {
             // Сначала финишировавшие
             if (a.finished && !b.finished) return -1;
             if (!a.finished && b.finished) return 1;
+            
+            // Участники на трассе имеют приоритет над теми, кто на стрельбе
+            if (a.currentState === 'racing' && b.currentState === 'shooting') return -1;
+            if (a.currentState === 'shooting' && b.currentState === 'racing') return 1;
+            
+            // Участники на штрафных кругах имеют приоритет над теми, кто на стрельбе
+            if (a.currentState === 'penalty_loop' && b.currentState === 'shooting') return -1;
+            if (a.currentState === 'shooting' && b.currentState === 'penalty_loop') return 1;
             
             // Затем по дистанции (больше = лучше)
             if (a.distanceCovered !== b.distanceCovered) {
