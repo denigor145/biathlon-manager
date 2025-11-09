@@ -1,181 +1,140 @@
 class ShootingEngine {
     constructor() {
         this.isActive = false;
-        this.currentRound = null;
-        this.participants = [];
-        this.results = new Map();
-        this.windConditions = [];
+        this.currentShooter = null;
+        this.shotCallbacks = new Map();
         
         console.log("ShootingEngine инициализирован");
     }
     
-    // Инициализация стрельбы
-    initializeShooting(round, participants, windConditions = []) {
-        this.currentRound = round;
-        this.participants = participants;
-        this.windConditions = windConditions;
+    // Начать стрельбу для участника
+    startShooting(competitor, shootingRound) {
+        if (this.isActive) {
+            console.error("Стрельба уже активна для другого участника");
+            return false;
+        }
+        
         this.isActive = true;
-        this.results.clear();
+        this.currentShooter = competitor;
+        competitor.isShooting = true;
+        competitor.currentShootingRound = shootingRound;
+        competitor.shotsFired = 0;
+        competitor.shootingResults = [];
         
-        // Инициализируем результаты для всех участников
-        participants.forEach(participant => {
-            this.results.set(participant, {
-                hits: 0,
-                misses: 0,
-                shots: [null, null, null, null, null],
-                finished: false,
-                totalTime: 0,
-                shootingTime: 0
-            });
-        });
+        console.log(`${competitor.name} начинает стрельбу: ${shootingRound.name}`);
         
-        console.log(`Стрельба инициализирована: ${round.name}, участников: ${participants.length}`);
+        // Запускаем процесс стрельбы
+        this.processShooting(competitor);
+        
+        return true;
     }
     
-    // Рассчитать модификатор точности от ветра
-    calculateWindModifier() {
-        if (this.windConditions.length === 0) return 1.0;
+    // Процесс стрельбы
+    processShooting(competitor) {
+        if (!this.isActive || !competitor.isShooting) return;
         
-        const wind = this.windConditions[Math.floor(Math.random() * this.windConditions.length)];
-        
-        switch(wind) {
-            case "Сильный ветер":
-                return 0.8; // -20% к точности
-            case "Умеренный ветер":
-                return 0.9; // -10% к точности
-            case "Слабый ветер":
-                return 0.95; // -5% к точности
-            default:
-                return 1.0;
+        if (competitor.shotsFired < 5) {
+            // Делаем выстрел
+            setTimeout(() => {
+                if (this.isActive && competitor.isShooting) {
+                    this.makeShot(competitor);
+                    this.processShooting(competitor); // Рекурсивно продолжаем
+                }
+            }, competitor.shootingInterval * 1000);
+        } else {
+            // Завершаем стрельбу
+            this.finishShooting(competitor);
         }
     }
     
-    // Рассчитать время стрельбы для участника
-    calculateShootingTime(participant) {
-        const baseTime = 15000; // 15 секунд базовое время для 5 выстрелов
-        const speedModifier = participant.shootingSpeed || 2.0;
+    // Совершение выстрела
+    makeShot(competitor) {
+        const shootingRound = competitor.currentShootingRound;
+        const accuracy = competitor.shooting[shootingRound.position];
+        const consistency = competitor.consistency || 0.8;
         
-        // Случайный разброс ±20%
-        const randomVariation = 1 + (Math.random() - 0.5) * 0.4;
-        
-        return (baseTime / speedModifier) * randomVariation;
-    }
-    
-    // Симуляция выстрела
-    simulateShot(participant, shotIndex) {
-        const round = this.currentRound;
-        const baseAccuracy = participant.shooting[round.position] || 0.7;
-        const consistency = participant.consistency || 0.8;
-        const windModifier = this.calculateWindModifier();
-        
-        // Эффективная точность с учетом всех модификаторов
-        const effectiveAccuracy = baseAccuracy * consistency * windModifier;
-        
-        // Шанс попадания
+        // Эффективная точность с учетом консистентности
+        const effectiveAccuracy = accuracy * consistency;
         const isHit = Math.random() < effectiveAccuracy;
         
-        // Обновляем результаты
-        const results = this.results.get(participant);
-        results.shots[shotIndex] = isHit;
+        competitor.shootingResults.push(isHit);
+        competitor.shotsFired++;
         
-        if (isHit) {
-            results.hits++;
-        } else {
-            results.misses++;
+        console.log(`${competitor.name}: выстрел ${competitor.shotsFired} - ${isHit ? 'ПОПАДАНИЕ' : 'ПРОМАХ'} (точность: ${Math.round(effectiveAccuracy * 100)}%)`);
+        
+        // Вызываем callback выстрела, если есть
+        if (this.shotCallbacks.has(competitor.id)) {
+            this.shotCallbacks.get(competitor.id)(competitor.shotsFired - 1, isHit);
         }
         
-        console.log(`${participant.name}: выстрел ${shotIndex + 1} - ${isHit ? 'ПОПАДАНИЕ' : 'ПРОМАХ'} (точность: ${Math.round(effectiveAccuracy * 100)}%)`);
-        
-        return isHit;
-    }
-    
-    // Запуск стрельбы для всех участников
-    startShooting() {
-        if (!this.isActive) {
-            console.error("Стрельба не инициализирована");
-            return;
-        }
-        
-        console.log("Запуск стрельбы для всех участников...");
-        
-        this.participants.forEach(participant => {
-            this.startParticipantShooting(participant);
-        });
-    }
-    
-    // Запуск стрельбы для конкретного участника
-    startParticipantShooting(participant) {
-        const shootingTime = this.calculateShootingTime(participant);
-        const shotInterval = shootingTime / 5; // Время между выстрелами
-        
-        console.log(`${participant.name}: время стрельбы ${(shootingTime/1000).toFixed(1)}с, интервал ${(shotInterval/1000).toFixed(1)}с`);
-        
-        let shotCount = 0;
-        
-        const shoot = () => {
-            if (shotCount < 5 && this.isActive) {
-                this.simulateShot(participant, shotCount);
-                shotCount++;
-                
-                // Запускаем следующий выстрел
-                if (shotCount < 5) {
-                    setTimeout(shoot, shotInterval);
-                } else {
-                    // Завершаем стрельбу для этого участника
-                    this.finishParticipantShooting(participant);
-                }
-            }
-        };
-        
-        // Запускаем первый выстрел
-        setTimeout(shoot, shotInterval);
-    }
-    
-    // Завершение стрельбы для участника
-    finishParticipantShooting(participant) {
-        const results = this.results.get(participant);
-        results.finished = true;
-        results.shootingTime = this.calculateShootingTime(participant);
-        
-        console.log(`${participant.name} завершил стрельбу: ${results.hits}/5`);
-        
-        // Проверяем, все ли завершили
-        this.checkAllFinished();
-    }
-    
-    // Проверка завершения стрельбы всеми участниками
-    checkAllFinished() {
-        const allFinished = Array.from(this.results.values()).every(result => result.finished);
-        
-        if (allFinished) {
-            console.log("Все участники завершили стрельбу");
-            this.isActive = false;
-            
-            // Вызываем callback завершения
-            if (this.onShootingFinished) {
-                this.onShootingFinished(this.results);
-            }
+        // Обновляем UI
+        if (window.gameScreen) {
+            window.gameScreen.updateDisplay();
         }
     }
     
-    // Получить результаты стрельбы
-    getResults() {
-        return this.results;
-    }
-    
-    // Получить результаты конкретного участника
-    getParticipantResults(participant) {
-        return this.results.get(participant);
+    // Завершение стрельбы
+    finishShooting(competitor) {
+        this.isActive = false;
+        competitor.isShooting = false;
+        
+        const misses = competitor.shootingResults.filter(result => !result).length;
+        console.log(`${competitor.name} завершил стрельбу: ${5 - misses}/5`);
+        
+        // Вызываем callback завершения стрельбы, если есть
+        if (this.shotCallbacks.has(competitor.id)) {
+            this.shotCallbacks.get(competitor.id)(null, null, true);
+        }
+        
+        this.currentShooter = null;
     }
     
     // Остановить стрельбу
     stopShooting() {
+        if (this.isActive && this.currentShooter) {
+            this.currentShooter.isShooting = false;
+            this.currentShooter.shotsFired = 0;
+            this.currentShooter.shootingResults = [];
+        }
+        
         this.isActive = false;
+        this.currentShooter = null;
         console.log("Стрельба остановлена");
     }
     
-    // Установить callback завершения стрельбы
-    setFinishCallback(callback) {
-        this.onShootingFinished = callback;
+    // Установить callback для выстрелов
+    setShotCallback(competitorId, callback) {
+        this.shotCallbacks.set(competitorId, callback);
+    }
+    
+    // Удалить callback
+    removeShotCallback(competitorId) {
+        this.shotCallbacks.delete(competitorId);
+    }
+    
+    // Получить текущего стрелка
+    getCurrentShooter() {
+        return this.currentShooter;
+    }
+    
+    // Проверить, активна ли стрельба
+    isShootingActive() {
+        return this.isActive;
+    }
+    
+    // Получить прогресс стрельбы в процентах
+    getShootingProgress(competitor) {
+        if (!competitor.isShooting) return 100;
+        return (competitor.shotsFired / 5) * 100;
+    }
+    
+    // Получить результаты стрельбы
+    getShootingResults(competitor) {
+        return {
+            hits: competitor.shootingResults.filter(result => result).length,
+            misses: competitor.shootingResults.filter(result => !result).length,
+            shots: [...competitor.shootingResults],
+            finished: !competitor.isShooting && competitor.shootingResults.length === 5
+        };
     }
 }
