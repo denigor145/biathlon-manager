@@ -171,6 +171,7 @@ class CharacterScreen {
         
         this.updateButtonStates();
         this.updateLocationRecommendations();
+        this.updateProgressInfo();
         
         console.log("Статистика обновлена в UI");
     }
@@ -219,6 +220,62 @@ class CharacterScreen {
         console.log("Рекомендации по локациям обновлены. Уровень игрока:", playerLevel);
     }
     
+    // Обновление информации о прогрессе
+    updateProgressInfo() {
+        if (!window.playerProfile) return;
+        
+        const progressInfo = window.playerProfile.getProgressInfo();
+        
+        // Создаем или обновляем блок с информацией о прогрессе
+        let progressContainer = document.getElementById('progressInfoContainer');
+        if (!progressContainer) {
+            progressContainer = document.createElement('div');
+            progressContainer.id = 'progressInfoContainer';
+            progressContainer.style.cssText = `
+                background: rgba(255,255,255,0.05);
+                border-radius: 10px;
+                padding: 15px;
+                margin-top: 20px;
+                border: 1px solid rgba(255,255,255,0.1);
+            `;
+            
+            const statsContainer = document.querySelector('.stats-container');
+            if (statsContainer) {
+                statsContainer.appendChild(progressContainer);
+            }
+        }
+        
+        progressContainer.innerHTML = `
+            <h4 style="color: #4FC3F7; margin-bottom: 10px; text-align: center;">📊 Расчетные показатели</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em;">
+                <div style="text-align: center;">
+                    <div style="color: #FFD700; font-weight: bold;">${progressInfo.speed}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Скорость</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #FFD700; font-weight: bold;">${progressInfo.segmentTime}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Время отрезка</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #FFD700; font-weight: bold;">${progressInfo.shootingTime}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Время стрельбы</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #FFD700; font-weight: bold;">${progressInfo.totalLevel}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Общий уровень</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #FFD700; font-weight: bold;">${progressInfo.accuracyProne}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Меткость лёжа</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #FFD700; font-weight: bold;">${progressInfo.accuracyStanding}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Меткость стоя</div>
+                </div>
+            </div>
+        `;
+    }
+    
     resetStats() {
         if (!window.playerProfile) return;
         
@@ -256,6 +313,15 @@ class CharacterScreen {
         } else {
             recommendationMessage += `💪  Вы переросли эту локацию! Попробуйте более сложные.`;
         }
+        
+        // Показываем рекомендации по характеристикам
+        const progressInfo = window.playerProfile.getProgressInfo();
+        recommendationMessage += `\n\n📊 Ваши текущие показатели:\n`;
+        recommendationMessage += `• Скорость: ${progressInfo.speed}\n`;
+        recommendationMessage += `• Время отрезка: ${progressInfo.segmentTime}\n`;
+        recommendationMessage += `• Время стрельбы: ${progressInfo.shootingTime}\n`;
+        recommendationMessage += `• Меткость лёжа: ${progressInfo.accuracyProne}\n`;
+        recommendationMessage += `• Меткость стоя: ${progressInfo.accuracyStanding}`;
         
         setTimeout(() => {
             if (confirm(recommendationMessage + "\n\nХотите перейти к выбору локаций?")) {
