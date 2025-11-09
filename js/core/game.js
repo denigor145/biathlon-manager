@@ -451,7 +451,7 @@ class BiathlonGame {
         }
     }
     
-    // Начало стрельбы - ИСПРАВЛЕННАЯ ВЕРСИЯ
+    // Начало стрельбы - ИСПРАВЛЕННАЯ ВЕРСИЯ (убраны экраны)
     startShooting(competitor, shootingRound) {
         competitor.isShooting = true;
         competitor.currentShooting = shootingRound;
@@ -461,13 +461,9 @@ class BiathlonGame {
         
         console.log(`${competitor.name} начинает стрельбу: ${shootingRound.name}`);
         
-        // Показываем экран стрельбы для игрока
-        if (competitor.isPlayer && window.gameScreen) {
-            window.gameScreen.showPreShootingStage(shootingRound);
-        } else {
-            // Для AI сразу начинаем процесс стрельбы
-            this.processShooting(competitor);
-        }
+        // УДАЛЕНО: показ экрана предстрельбы для игрока
+        // Для всех участников сразу начинаем процесс стрельбы
+        this.processShooting(competitor);
         
         // Обновляем отображение
         if (window.gameScreen) {
@@ -518,7 +514,7 @@ class BiathlonGame {
         return Math.random() < effectiveAccuracy;
     }
     
-    // Завершение стрельбы - ИСПРАВЛЕННАЯ ВЕРСИЯ
+    // Завершение стрельбы - ИСПРАВЛЕННАЯ ВЕРСИЯ (убраны экраны)
     finishShooting(competitor) {
         if (!competitor.isShooting) return;
         
@@ -546,17 +542,15 @@ class BiathlonGame {
         competitor.shotsFired = 0;
         competitor.shootingStartTime = 0;
         
-        // Для игрока показываем экран результатов стрельбы
-        if (competitor.isPlayer && window.gameScreen) {
-            window.gameScreen.showPostShootingStage();
-        } else {
-            // Обновляем позиции после добавления времени стрельбы
-            this.updatePositions();
-            
-            // Обновляем отображение
-            if (window.gameScreen) {
-                window.gameScreen.updateDisplay();
-            }
+        // УДАЛЕНО: показ экрана результатов стрельбы для игрока
+        // Для всех участников просто продолжаем гонку
+        
+        // Обновляем позиции после добавления времени стрельбы
+        this.updatePositions();
+        
+        // Обновляем отображение
+        if (window.gameScreen) {
+            window.gameScreen.updateDisplay();
         }
     }
     
@@ -732,22 +726,5 @@ class BiathlonGame {
     getRandomWind() {
         const windConditions = ["Слабый ветер", "Умеренный ветер", "Сильный ветер"];
         return windConditions[Math.floor(Math.random() * windConditions.length)];
-    }
-    
-    // Методы для экранов этапов
-    startShootingAfterStage() {
-        const player = this.player;
-        if (player && player.isShooting && player.currentShooting) {
-            // Запускаем процесс стрельбы для игрока
-            this.processShooting(player);
-        }
-    }
-    
-    continueAfterShooting() {
-        const player = this.player;
-        if (player) {
-            // Обновляем позиции после стрельбы
-            this.updatePositions();
-        }
     }
 }
