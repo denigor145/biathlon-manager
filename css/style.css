@@ -429,6 +429,13 @@ body {
     flex-shrink: 0;
 }
 
+.header-penalty { 
+    width: 40px; 
+    text-align: center; 
+    flex-shrink: 0;
+    color: #FF5252;
+}
+
 /* Контент таблицы с прокруткой */
 .leaderboard-content {
     flex: 1;
@@ -506,6 +513,16 @@ body {
     color: rgba(255, 255, 255, 0.8);
     font-size: 11px;
     flex-shrink: 0;
+}
+
+.compact-row .penalty {
+    width: 40px;
+    text-align: center;
+    color: #FF5252;
+    font-weight: bold;
+    font-size: 12px;
+    flex-shrink: 0;
+    text-shadow: 0 0 3px rgba(255, 82, 82, 0.5);
 }
 
 /* Элементы стрельбы */
@@ -760,6 +777,7 @@ body {
     .header-pos { width: 35px; }
     .header-flag { width: 40px; }
     .header-gap { width: 70px; }
+    .header-penalty { width: 35px; }
     
     .compact-row {
         padding: 10px 12px;
@@ -770,6 +788,9 @@ body {
     .compact-row .position { width: 35px; }
     .compact-row .flag { width: 40px; font-size: 12px; }
     .compact-row .gap { width: 70px; }
+    .compact-row .penalty { 
+        width: 35px; 
+        font-size: 11px;
     
     .targets-container {
         width: 70px;
