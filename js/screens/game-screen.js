@@ -91,13 +91,35 @@ class GameScreen {
         
         const race = window.biathlonGame.getCurrentRace();
         const location = window.biathlonGame.getCurrentLocation();
+        const player = window.biathlonGame.player;
+        
         let message = `🏁 ${race.name}\n`;
         message += `📍 Локация: ${location.name}\n`;
-        message += `📊 Сегмент: ${window.biathlonGame.player.completedSegments}/${race.totalSegments}\n`;
-        message += `🏅 Позиция: ${window.biathlonGame.player.position}\n`;
-        message += `💪 Выносливость: ${Math.round(window.biathlonGame.player.stamina)}%\n`;
-        message += `❤️ Пульс: ${Math.round(window.biathlonGame.player.pulse)}\n`;
-        message += `⏱️ Общее время: ${this.formatTime(window.biathlonGame.player.totalGameTime)}\n\n`;
+        message += `📏 Дистанция: ${Math.round(player.distanceCovered)}/${race.totalDistance}м\n`;
+        message += `🏅 Позиция: ${player.position}\n`;
+        message += `💪 Выносливость: ${Math.round(player.stamina)}%\n`;
+        message += `❤️ Пульс: ${Math.round(player.pulse)}\n`;
+        message += `⏱️ Общее время: ${this.formatTime(player.totalGameTime)}\n`;
+        message += `🏃 Время гонки: ${this.formatTime(player.raceGameTime)}\n`;
+        message += `🎯 Время стрельбы: ${this.formatTime(player.shootingGameTime)}\n`;
+        
+        if (player.penaltyGameTime > 0) {
+            message += `⏰ Время штрафов: ${this.formatTime(player.penaltyGameTime)}\n`;
+        }
+        
+        if (player.penaltyMinutes > 0) {
+            message += `⚠️ Штрафные минуты: ${player.penaltyMinutes}\n`;
+        }
+        
+        message += `\n`;
+        
+        // Информация о состоянии
+        let stateText = 'Гонка';
+        if (player.currentState === 'shooting') stateText = 'Стрельба';
+        if (player.currentState === 'penalty_loop') stateText = 'Штрафные круги';
+        if (player.finished) stateText = 'Финишировал';
+        
+        message += `📊 Состояние: ${stateText}\n`;
         
         // Информация о ботах на текущей локации
         message += `🤖 Уровни ботов: ${location.botMinLevel}-${location.botMaxLevel}\n\n`;
@@ -151,7 +173,9 @@ class GameScreen {
     
     hideAllStageScreens() {
         const stageScreens = [
-            'startStageScreen'
+            'startStageScreen',
+            'preShootingScreen',
+            'postShootingScreen'
         ];
         
         stageScreens.forEach(screenId => {
@@ -164,12 +188,13 @@ class GameScreen {
         
         const race = window.biathlonGame.getSelectedRace();
         const location = window.biathlonGame.getCurrentLocation();
+        const player = window.biathlonGame.player;
         
-        this.updateElement('startRaceName', `${race.name} - ${race.distance}`);
-        this.updateElement('startDistance', race.distance);
+        this.updateElement('startRaceName', `${race.name} - ${(race.totalDistance / 1000).toFixed(2)} км`);
+        this.updateElement('startDistance', (race.totalDistance / 1000).toFixed(2) + ' км');
         this.updateElement('startShootings', race.shootingRounds.length);
-        this.updateElement('startPosition', window.biathlonGame.player.position);
-        this.updateElement('startStamina', Math.round(window.biathlonGame.player.stamina) + '%');
+        this.updateElement('startPosition', player.position);
+        this.updateElement('startStamina', Math.round(player.stamina) + '%');
         
         // Добавляем информацию о локации и ботах
         const startStageScreen = document.getElementById('startStageScreen');
@@ -194,6 +219,9 @@ class GameScreen {
                 <div style="font-size: 0.8em; color: #FF5252; margin-top: 5px;">
                     Уровни ботов: ${location.botMinLevel}-${location.botMaxLevel}
                 </div>
+                <div style="font-size: 0.8em; color: #4FC3F7; margin-top: 5px;">
+                    Сложность: ${'⭐'.repeat(location.difficulty)}
+                </div>
             `;
         }
         
@@ -212,15 +240,27 @@ class GameScreen {
         this.updateElement('currentSegmentInLap', player.completedSegmentsInCurrentLap);
         
         // Определяем общее количество сегментов в текущем круге
-        const totalSegmentsInLap = race.segmentsPerLap + (player.extraSegmentsPerLap[player.currentLap] || 0);
+        const totalSegmentsInLap = race.segmentsPerLap;
         this.updateElement('totalSegmentsPerLap', totalSegmentsInLap);
         
         // Обновляем физиологические показатели
         this.updateElement('pulseValue', Math.round(player.pulse));
         this.updateElement('staminaValue', Math.round(player.stamina) + '%');
         
+        // Обновляем прогресс дистанции
+        const progressElement = document.getElementById('distanceProgress');
+        if (progressElement) {
+            const progress = (player.distanceCovered / race.totalDistance) * 100;
+            progressElement.style.width = Math.min(100, progress) + '%';
+        }
+        
         // Обновляем таблицу лидеров
         this.updateCompetitorsList();
+        
+        // Обновляем информацию о стрельбе, если игрок стреляет
+        if (player.isShooting) {
+            this.updateShootingDisplay(player);
+        }
     }
     
     updateElement(id, value) {
@@ -246,25 +286,34 @@ class GameScreen {
             const shortName = this.formatShortName(competitor.name);
             const penaltyValue = window.biathlonGame.getPenaltyDisplayValue(competitor);
             
+            // Определяем состояние для отображения
+            let stateIcon = '';
+            if (competitor.currentState === 'shooting') stateIcon = '🎯';
+            if (competitor.currentState === 'penalty_loop') stateIcon = '⏱️';
+            if (competitor.finished) stateIcon = '🏁';
+            
             if (competitor.isShooting) {
-                return this.createShootingRow(competitor, shortName, gap, penaltyValue);
+                return this.createShootingRow(competitor, shortName, gap, penaltyValue, stateIcon);
             } else {
-                return this.createNormalRow(competitor, shortName, gap, penaltyValue);
+                return this.createNormalRow(competitor, shortName, gap, penaltyValue, stateIcon);
             }
         }).join('');
     }
 
-    createNormalRow(competitor, shortName, gap, penaltyValue) {
+    createNormalRow(competitor, shortName, gap, penaltyValue, stateIcon) {
         // Добавляем отображение уровня для ботов
         const levelInfo = !competitor.isPlayer ? 
             `<div style="font-size: 9px; color: #888; margin-top: 2px;">Ур. ${competitor.level}</div>` : '';
+        
+        // Добавляем иконку состояния
+        const stateDisplay = stateIcon ? `<span style="margin-left: 5px;">${stateIcon}</span>` : '';
         
         return `
             <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
                 <div class="name">
-                    ${shortName}
+                    ${shortName}${stateDisplay}
                     ${levelInfo}
                 </div>
                 <div class="gap">+${this.formatTime(gap)}</div>
@@ -273,7 +322,7 @@ class GameScreen {
         `;
     }
 
-    createShootingRow(competitor, shortName, gap, penaltyValue) {
+    createShootingRow(competitor, shortName, gap, penaltyValue, stateIcon) {
         const results = window.biathlonGame.getShootingResults(competitor);
         let targetsHTML = '<div class="targets-inline">';
         
@@ -298,7 +347,7 @@ class GameScreen {
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
                 <div class="name">
-                    ${shortName}
+                    ${shortName} 🎯
                     ${levelInfo}
                 </div>
                 <div class="targets-container">
@@ -307,6 +356,35 @@ class GameScreen {
                 <div class="penalty">${penaltyValue > 0 ? penaltyValue : ''}</div>
             </div>
         `;
+    }
+    
+    updateShootingDisplay(player) {
+        const shootingScreen = document.getElementById('shootingScreen');
+        if (shootingScreen) {
+            if (player.isShooting) {
+                shootingScreen.style.display = 'block';
+                
+                // Обновляем информацию о стрельбе
+                const shootingRoundName = document.getElementById('shootingRoundName');
+                if (shootingRoundName && player.currentShootingRound) {
+                    shootingRoundName.textContent = player.currentShootingRound.name;
+                }
+                
+                const shootingTimer = document.getElementById('shootingTimer');
+                if (shootingTimer) {
+                    shootingTimer.textContent = `Выстрелов: ${player.shotsFired}/5`;
+                }
+                
+                // Обновляем прогресс стрельбы
+                const shootingProgress = document.getElementById('shootingProgress');
+                if (shootingProgress) {
+                    const progress = (player.shotsFired / 5) * 100;
+                    shootingProgress.style.width = progress + '%';
+                }
+            } else {
+                shootingScreen.style.display = 'none';
+            }
+        }
     }
     
     formatShortName(fullName) {
