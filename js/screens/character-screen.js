@@ -1,3 +1,4 @@
+// js/screens/character-screen.js
 class CharacterScreen {
     constructor() {
         this.isInitialized = false;
@@ -19,6 +20,7 @@ class CharacterScreen {
             this.setupEventListeners();
             this.setupTabs();
             this.createStatsDisplay();
+            this.createIntensitySystemDisplay(); // НОВОЕ: система интенсивности
             this.isInitialized = true;
             
             console.log("CharacterScreen успешно инициализирован для непрерывной системы");
@@ -39,7 +41,6 @@ class CharacterScreen {
             });
         }
         
-        // Кнопки управления характеристиками будут созданы динамически
         console.log("Обработчики CharacterScreen установлены для непрерывной системы");
     }
     
@@ -80,6 +81,8 @@ class CharacterScreen {
                 this.updateProgressDisplay();
             } else if (tabName === 'achievements') {
                 this.updateAchievementsDisplay();
+            } else if (tabName === 'intensity') {
+                this.updateIntensityDisplay(); // НОВАЯ ВКЛАДКА
             }
         }
     }
@@ -153,6 +156,55 @@ class CharacterScreen {
         this.setupStatButtons();
     }
     
+    // НОВЫЙ МЕТОД: Создание отображения системы интенсивности
+    createIntensitySystemDisplay() {
+        const intensityContainer = document.getElementById('intensityContainer');
+        if (!intensityContainer) return;
+        
+        const intensityLevels = [
+            { level: 1, name: "Восстановление", stamina: "+2.0/сек", speed: "70%", restriction: "нет" },
+            { level: 2, name: "Спокойный", stamina: "+1.0/сек", speed: "85%", restriction: "нет" },
+            { level: 3, name: "Стабильный", stamina: "0.0/сек", speed: "100%", restriction: "нет" },
+            { level: 4, name: "Средний", stamina: "-1.0/сек", speed: "110%", restriction: "нет" },
+            { level: 5, name: "Быстрый", stamina: "-2.0/сек", speed: "125%", restriction: "≥30%" },
+            { level: 6, name: "Очень быстрый", stamina: "-3.0/сек", speed: "140%", restriction: "≥40%" },
+            { level: 7, name: "Спринт", stamina: "-4.0/сек", speed: "160%", restriction: "≥50%" }
+        ];
+        
+        intensityContainer.innerHTML = `
+            <div class="intensity-system">
+                <h3>⚡ Система уровней интенсивности</h3>
+                <p class="system-description">Управляйте темпом бега во время гонки. Высокие уровни требуют больше выносливости.</p>
+                
+                <div class="intensity-levels">
+                    ${intensityLevels.map(level => `
+                        <div class="intensity-level" data-level="${level.level}">
+                            <div class="level-header">
+                                <span class="level-number">${level.level}</span>
+                                <span class="level-name">${level.name}</span>
+                                <span class="level-restriction">${level.restriction}</span>
+                            </div>
+                            <div class="level-stats">
+                                <span class="level-speed">${level.speed} скорости</span>
+                                <span class="level-stamina">${level.stamina}</span>
+                            </div>
+                            <div class="level-status" id="intensityStatus${level.level}">
+                                <!-- Статус доступности -->
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="intensity-preview">
+                    <h4>📊 Текущие возможности</h4>
+                    <div id="currentIntensityCapabilities">
+                        <!-- Динамическое обновление возможностей -->
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
     setupStatButtons() {
         // Обработчики для кнопок увеличения
         document.querySelectorAll('.increase-btn').forEach(btn => {
@@ -180,6 +232,7 @@ class CharacterScreen {
         const success = window.playerProfile.increaseStat(statName);
         if (success) {
             this.updateStatsDisplay();
+            this.updateIntensityDisplay(); // Обновляем систему интенсивности
             this.showStatChangeMessage(statName, 'increase');
         }
     }
@@ -193,6 +246,7 @@ class CharacterScreen {
         const success = window.playerProfile.decreaseStat(statName);
         if (success) {
             this.updateStatsDisplay();
+            this.updateIntensityDisplay(); // Обновляем систему интенсивности
             this.showStatChangeMessage(statName, 'decrease');
         }
     }
@@ -308,6 +362,10 @@ class CharacterScreen {
                     break;
                     
                 case 'accuracy':
+                    // Добавляем влияние пульса на меткость
+                    const pulseEffect = window.playerProfile.getStat('stamina') > 30 ? 
+                        "Незначительное" : "Сильное снижение при высоком пульсе";
+                    
                     previewHTML = `
                         <div class="preview-item">
                             <span class="preview-label">Меткость лёжа:</span>
@@ -316,6 +374,10 @@ class CharacterScreen {
                         <div class="preview-item">
                             <span class="preview-label">Меткость стоя:</span>
                             <span class="preview-value">${progressInfo.accuracyStanding}</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Влияние пульса:</span>
+                            <span class="preview-value">${pulseEffect}</span>
                         </div>
                     `;
                     break;
@@ -334,14 +396,21 @@ class CharacterScreen {
                     break;
                     
                 case 'stamina':
+                    const maxStamina = progressInfo.maxStamina;
+                    const recoveryRate = (GameConstants.PLAYER.STAMINA_RECOVERY_RATE * (window.playerProfile.getStat('stamina') / 60 + 1)).toFixed(1);
+                    
                     previewHTML = `
                         <div class="preview-item">
                             <span class="preview-label">Макс. выносливость:</span>
-                            <span class="preview-value">${progressInfo.maxStamina}</span>
+                            <span class="preview-value">${maxStamina}</span>
                         </div>
                         <div class="preview-item">
                             <span class="preview-label">Восстановление:</span>
-                            <span class="preview-value">${(GameConstants.PLAYER.STAMINA_RECOVERY_RATE * (window.playerProfile.getStat('stamina') / 60 + 1)).toFixed(1)}/сек</span>
+                            <span class="preview-value">${recoveryRate}/сек</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Доступные уровни:</span>
+                            <span class="preview-value">${this.getAvailableIntensityLevels(maxStamina)}</span>
                         </div>
                     `;
                     break;
@@ -349,6 +418,68 @@ class CharacterScreen {
             
             previewElement.innerHTML = previewHTML;
         });
+    }
+    
+    // НОВЫЙ МЕТОД: Получение доступных уровней интенсивности
+    getAvailableIntensityLevels(maxStamina) {
+        const levels = [];
+        if (maxStamina >= 50) levels.push("Спринт (7)");
+        if (maxStamina >= 40) levels.push("Очень быстрый (6)");
+        if (maxStamina >= 30) levels.push("Быстрый (5)");
+        levels.push("Средний (4) и ниже");
+        
+        return levels.join(", ");
+    }
+    
+    // НОВЫЙ МЕТОД: Обновление отображения системы интенсивности
+    updateIntensityDisplay() {
+        if (!window.playerProfile) return;
+        
+        const maxStamina = window.playerProfile.getMaxStamina();
+        
+        // Обновляем статусы доступности для каждого уровня
+        for (let level = 1; level <= 7; level++) {
+            const statusElement = document.getElementById(`intensityStatus${level}`);
+            if (statusElement) {
+                const isAvailable = this.isIntensityLevelAvailable(level, maxStamina);
+                statusElement.innerHTML = isAvailable ? 
+                    '<span style="color: #4CAF50;">✅ Доступен</span>' :
+                    '<span style="color: #F44336;">❌ Требует улучшения выносливости</span>';
+            }
+        }
+        
+        // Обновляем текущие возможности
+        const capabilitiesElement = document.getElementById('currentIntensityCapabilities');
+        if (capabilitiesElement) {
+            capabilitiesElement.innerHTML = `
+                <div class="capability-item">
+                    <span>Макс. выносливость:</span>
+                    <strong>${maxStamina}</strong>
+                </div>
+                <div class="capability-item">
+                    <span>Доступные уровни:</span>
+                    <strong>${this.getAvailableIntensityLevels(maxStamina)}</strong>
+                </div>
+                <div class="capability-item">
+                    <span>Ограничения:</span>
+                    <strong>Уровень 5: ≥30%, Уровень 6: ≥40%, Уровень 7: ≥50%</strong>
+                </div>
+            `;
+        }
+    }
+    
+    // НОВЫЙ МЕТОД: Проверка доступности уровня интенсивности
+    isIntensityLevelAvailable(level, maxStamina) {
+        const restrictions = {
+            5: 30, // уровень 5 требует минимум 30% выносливости
+            6: 40, // уровень 6 требует минимум 40% выносливости  
+            7: 50  // уровень 7 требует минимум 50% выносливости
+        };
+        
+        if (restrictions[level]) {
+            return maxStamina >= restrictions[level];
+        }
+        return true; // Уровни 1-4 всегда доступны
     }
     
     updateControlButtons() {
@@ -383,6 +514,7 @@ class CharacterScreen {
         if (confirmation) {
             window.playerProfile.resetStats();
             this.updateStatsDisplay();
+            this.updateIntensityDisplay();
             this.showMessage("♻️ Все характеристики сброшены!", "success");
         }
     }
@@ -629,6 +761,7 @@ class CharacterScreen {
             
             // Обновляем отображение при показе
             this.updateStatsDisplay();
+            this.updateIntensityDisplay();
             this.switchTab(this.currentTab);
             
             console.log("CharacterScreen показан");
