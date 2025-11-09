@@ -1,10 +1,9 @@
-// js/screens/character-screen.js
 class CharacterScreen {
     constructor() {
-        this.isInitialized = false;
         this.currentTab = 'stats';
+        this.isInitialized = false;
         
-        console.log("CharacterScreen создан для непрерывной системы");
+        console.log("CharacterScreen создан");
         
         setTimeout(() => {
             this.initialize();
@@ -14,40 +13,64 @@ class CharacterScreen {
     initialize() {
         if (this.isInitialized) return;
         
-        console.log("Инициализация CharacterScreen для непрерывной системы...");
+        console.log("Инициализация CharacterScreen...");
         
         try {
             this.setupEventListeners();
             this.setupTabs();
-            this.createStatsDisplay();
-            this.createIntensitySystemDisplay(); // НОВОЕ: система интенсивности
+            this.updateStatsDisplay();
             this.isInitialized = true;
             
-            console.log("CharacterScreen успешно инициализирован для непрерывной системы");
+            console.log("CharacterScreen успешно инициализирован");
         } catch (error) {
             console.error("Ошибка инициализации CharacterScreen:", error);
         }
     }
     
     setupEventListeners() {
-        // Кнопка возврата в меню
-        const backBtn = document.getElementById('characterBackBtn');
+        const backBtn = document.getElementById('backToMenuBtn');
         if (backBtn) {
             backBtn.addEventListener('click', () => {
                 this.hide();
-                if (window.mainMenu) {
-                    window.mainMenu.show();
-                }
             });
         }
         
-        console.log("Обработчики CharacterScreen установлены для непрерывной системы");
+        document.querySelectorAll('.stat-btn.plus').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const stat = e.target.closest('.stat-btn').getAttribute('data-stat');
+                this.increaseStat(stat);
+            });
+        });
+        
+        document.querySelectorAll('.stat-btn.minus').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const stat = e.target.closest('.stat-btn').getAttribute('data-stat');
+                this.decreaseStat(stat);
+            });
+        });
+        
+        const resetBtn = document.getElementById('resetStatsBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetStats();
+            });
+        }
+        
+        const saveBtn = document.getElementById('saveStatsBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                this.saveStats();
+            });
+        }
+        
+        console.log("Обработчики CharacterScreen установлены");
     }
     
     setupTabs() {
-        const tabButtons = document.querySelectorAll('.char-tab');
-        tabButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 const tabName = e.target.getAttribute('data-tab');
                 this.switchTab(tabName);
             });
@@ -55,651 +78,168 @@ class CharacterScreen {
     }
     
     switchTab(tabName) {
-        // Скрываем все вкладки
-        document.querySelectorAll('.char-tab-content').forEach(content => {
-            content.classList.remove('active');
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
         });
         
-        // Убираем активность со всех кнопок вкладок
-        document.querySelectorAll('.char-tab').forEach(tab => {
-            tab.classList.remove('active');
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.remove('active');
         });
         
-        // Показываем выбранную вкладку
-        const targetContent = document.getElementById(`${tabName}Tab`);
-        const targetButton = document.querySelector(`.char-tab[data-tab="${tabName}"]`);
+        const activeTabBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+        const activeTabPane = document.getElementById(`${tabName}-tab`);
         
-        if (targetContent && targetButton) {
-            targetContent.classList.add('active');
-            targetButton.classList.add('active');
+        if (activeTabBtn && activeTabPane) {
+            activeTabBtn.classList.add('active');
+            activeTabPane.classList.add('active');
             this.currentTab = tabName;
             
-            // Обновляем содержимое вкладки при переключении
-            if (tabName === 'stats') {
-                this.updateStatsDisplay();
-            } else if (tabName === 'progress') {
-                this.updateProgressDisplay();
-            } else if (tabName === 'achievements') {
-                this.updateAchievementsDisplay();
-            } else if (tabName === 'intensity') {
-                this.updateIntensityDisplay(); // НОВАЯ ВКЛАДКА
-            }
+            console.log(`Переключена вкладка: ${tabName}`);
         }
-    }
-    
-    createStatsDisplay() {
-        const statsContainer = document.getElementById('statsContainer');
-        if (!statsContainer) return;
-        
-        const stats = [
-            {
-                id: 'runningSpeed',
-                name: '🏃 Скорость бега',
-                description: 'Влияет на базовую скорость движения (4.44-7.78 м/с)',
-                icon: '⚡'
-            },
-            {
-                id: 'accuracy', 
-                name: '🎯 Меткость',
-                description: 'Влияет на точность стрельбы лёжа и стоя',
-                icon: '🎯'
-            },
-            {
-                id: 'shootingSpeed',
-                name: '🔫 Скорость стрельбы',
-                description: 'Влияет на время между выстрелами (6-3 секунды)',
-                icon: '⏱️'
-            },
-            {
-                id: 'stamina',
-                name: '💪 Выносливость',
-                description: 'Влияет на максимальную выносливость (60-150)',
-                icon: '❤️'
-            }
-        ];
-        
-        statsContainer.innerHTML = stats.map(stat => `
-            <div class="stat-card" data-stat="${stat.id}">
-                <div class="stat-header">
-                    <div class="stat-icon">${stat.icon}</div>
-                    <div class="stat-info">
-                        <h3>${stat.name}</h3>
-                        <p>${stat.description}</p>
-                    </div>
-                </div>
-                
-                <div class="stat-controls">
-                    <button class="stat-btn decrease-btn" data-stat="${stat.id}">
-                        <span>-</span>
-                    </button>
-                    
-                    <div class="stat-value-container">
-                        <div class="stat-current" id="${stat.id}Value">0</div>
-                        <div class="stat-bar">
-                            <div class="stat-bar-fill" id="${stat.id}Bar" style="width: 0%"></div>
-                        </div>
-                        <div class="stat-max">/ 60</div>
-                    </div>
-                    
-                    <button class="stat-btn increase-btn" data-stat="${stat.id}">
-                        <span>+</span>
-                    </button>
-                </div>
-                
-                <div class="stat-preview" id="${stat.id}Preview">
-                    <!-- Динамическое содержимое предпросмотра -->
-                </div>
-            </div>
-        `).join('');
-        
-        // Добавляем обработчики для кнопок
-        this.setupStatButtons();
-    }
-    
-    // НОВЫЙ МЕТОД: Создание отображения системы интенсивности
-    createIntensitySystemDisplay() {
-        const intensityContainer = document.getElementById('intensityContainer');
-        if (!intensityContainer) return;
-        
-        const intensityLevels = [
-            { level: 1, name: "Восстановление", stamina: "+2.0/сек", speed: "70%", restriction: "нет" },
-            { level: 2, name: "Спокойный", stamina: "+1.0/сек", speed: "85%", restriction: "нет" },
-            { level: 3, name: "Стабильный", stamina: "0.0/сек", speed: "100%", restriction: "нет" },
-            { level: 4, name: "Средний", stamina: "-1.0/сек", speed: "110%", restriction: "нет" },
-            { level: 5, name: "Быстрый", stamina: "-2.0/сек", speed: "125%", restriction: "≥30%" },
-            { level: 6, name: "Очень быстрый", stamina: "-3.0/сек", speed: "140%", restriction: "≥40%" },
-            { level: 7, name: "Спринт", stamina: "-4.0/сек", speed: "160%", restriction: "≥50%" }
-        ];
-        
-        intensityContainer.innerHTML = `
-            <div class="intensity-system">
-                <h3>⚡ Система уровней интенсивности</h3>
-                <p class="system-description">Управляйте темпом бега во время гонки. Высокие уровни требуют больше выносливости.</p>
-                
-                <div class="intensity-levels">
-                    ${intensityLevels.map(level => `
-                        <div class="intensity-level" data-level="${level.level}">
-                            <div class="level-header">
-                                <span class="level-number">${level.level}</span>
-                                <span class="level-name">${level.name}</span>
-                                <span class="level-restriction">${level.restriction}</span>
-                            </div>
-                            <div class="level-stats">
-                                <span class="level-speed">${level.speed} скорости</span>
-                                <span class="level-stamina">${level.stamina}</span>
-                            </div>
-                            <div class="level-status" id="intensityStatus${level.level}">
-                                <!-- Статус доступности -->
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                
-                <div class="intensity-preview">
-                    <h4>📊 Текущие возможности</h4>
-                    <div id="currentIntensityCapabilities">
-                        <!-- Динамическое обновление возможностей -->
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    setupStatButtons() {
-        // Обработчики для кнопок увеличения
-        document.querySelectorAll('.increase-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const statName = e.currentTarget.getAttribute('data-stat');
-                this.increaseStat(statName);
-            });
-        });
-        
-        // Обработчики для кнопок уменьшения
-        document.querySelectorAll('.decrease-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const statName = e.currentTarget.getAttribute('data-stat');
-                this.decreaseStat(statName);
-            });
-        });
     }
     
     increaseStat(statName) {
         if (!window.playerProfile) {
-            console.error("PlayerProfile не доступен");
+            console.error("PlayerProfile не найден");
             return;
         }
         
         const success = window.playerProfile.increaseStat(statName);
+        
         if (success) {
-            this.updateStatsDisplay();
-            this.updateIntensityDisplay(); // Обновляем систему интенсивности
-            this.showStatChangeMessage(statName, 'increase');
+            this.animateStatChange(statName, 'increase');
+            this.updateButtonStates();
+        } else {
+            this.showMessage("Недостаточно очков для улучшения!", "error");
         }
     }
     
     decreaseStat(statName) {
         if (!window.playerProfile) {
-            console.error("PlayerProfile не доступен");
+            console.error("PlayerProfile не найден");
             return;
         }
         
         const success = window.playerProfile.decreaseStat(statName);
+        
         if (success) {
-            this.updateStatsDisplay();
-            this.updateIntensityDisplay(); // Обновляем систему интенсивности
-            this.showStatChangeMessage(statName, 'decrease');
+            this.animateStatChange(statName, 'decrease');
+            this.updateButtonStates();
+        } else {
+            this.showMessage("Характеристика уже минимальная!", "error");
         }
     }
     
-    showStatChangeMessage(statName, type) {
-        const statNames = {
-            runningSpeed: 'Скорость бега',
-            accuracy: 'Меткость',
-            shootingSpeed: 'Скорость стрельбы',
-            stamina: 'Выносливость'
-        };
+    animateStatChange(statName, direction) {
+        const valueElement = document.getElementById(`${statName}Value`);
+        if (!valueElement) return;
         
-        const message = type === 'increase' 
-            ? `📈 ${statNames[statName]} улучшена!`
-            : `📉 ${statNames[statName]} уменьшена!`;
-            
-        this.showMessage(message, type === 'increase' ? 'success' : 'warning');
+        valueElement.classList.add(direction === 'increase' ? 'increased' : 'decreased');
+        
+        setTimeout(() => {
+            valueElement.classList.remove('increased', 'decreased');
+        }, 300);
     }
     
-    // Основное обновление отображения характеристик
     updateStatsDisplay() {
-        if (!window.playerProfile) return;
+        if (!window.playerProfile) {
+            console.error("PlayerProfile не найден для обновления UI");
+            return;
+        }
         
-        const profile = window.playerProfile;
-        const stats = profile.getAllStats();
-        const availablePoints = profile.getAvailablePoints();
-        
-        // Обновляем доступные очки
-        this.updateElement('availablePoints', availablePoints);
-        
-        // Обновляем каждую характеристику
-        Object.keys(stats).forEach(statName => {
-            this.updateStatDisplay(statName, stats[statName]);
-        });
-        
-        // Обновляем предпросмотр характеристик
-        this.updateStatsPreview();
-        
-        // Обновляем кнопки управления
-        this.updateControlButtons();
-        
-        // Обновляем общую информацию
-        this.updateSummaryInfo();
-    }
-    
-    updateStatDisplay(statName, value) {
-        // Обновляем числовое значение
-        this.updateElement(statName + 'Value', value);
-        
-        // Обновляем прогресс-бар
-        const bar = document.getElementById(statName + 'Bar');
-        if (bar) {
-            const percentage = (value / 60) * 100;
-            bar.style.width = percentage + '%';
+        const pointsElement = document.getElementById('availablePoints');
+        if (pointsElement) {
+            pointsElement.textContent = window.playerProfile.getAvailablePoints();
             
-            // Цвет в зависимости от уровня
-            if (percentage >= 80) bar.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
-            else if (percentage >= 60) bar.style.background = 'linear-gradient(135deg, #8BC34A, #689F38)';
-            else if (percentage >= 40) bar.style.background = 'linear-gradient(135deg, #FFC107, #FFA000)';
-            else if (percentage >= 20) bar.style.background = 'linear-gradient(135deg, #FF9800, #F57C00)';
-            else bar.style.background = 'linear-gradient(135deg, #F44336, #C62828)';
-        }
-        
-        // Обновляем состояние кнопок
-        this.updateStatButtons(statName);
-    }
-    
-    updateStatButtons(statName) {
-        if (!window.playerProfile) return;
-        
-        const increaseBtn = document.querySelector(`.increase-btn[data-stat="${statName}"]`);
-        const decreaseBtn = document.querySelector(`.decrease-btn[data-stat="${statName}"]`);
-        
-        if (increaseBtn) {
-            const canIncrease = window.playerProfile.canIncrease(statName);
-            increaseBtn.disabled = !canIncrease;
-            increaseBtn.style.opacity = canIncrease ? '1' : '0.5';
-            increaseBtn.style.cursor = canIncrease ? 'pointer' : 'not-allowed';
-        }
-        
-        if (decreaseBtn) {
-            const canDecrease = window.playerProfile.canDecrease(statName);
-            decreaseBtn.disabled = !canDecrease;
-            decreaseBtn.style.opacity = canDecrease ? '1' : '0.5';
-            decreaseBtn.style.cursor = canDecrease ? 'pointer' : 'not-allowed';
-        }
-    }
-    
-    updateStatsPreview() {
-        if (!window.playerProfile) return;
-        
-        const progressInfo = window.playerProfile.getProgressInfo();
-        
-        const stats = ['runningSpeed', 'accuracy', 'shootingSpeed', 'stamina'];
-        stats.forEach(statName => {
-            const previewElement = document.getElementById(statName + 'Preview');
-            if (!previewElement) return;
-            
-            let previewHTML = '';
-            
-            switch(statName) {
-                case 'runningSpeed':
-                    previewHTML = `
-                        <div class="preview-item">
-                            <span class="preview-label">Текущая скорость:</span>
-                            <span class="preview-value">${progressInfo.speed}</span>
-                        </div>
-                        <div class="preview-item">
-                            <span class="preview-label">Время круга (3км):</span>
-                            <span class="preview-value">${progressInfo.lapTime}</span>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'accuracy':
-                    // Добавляем влияние пульса на меткость
-                    const pulseEffect = window.playerProfile.getStat('stamina') > 30 ? 
-                        "Незначительное" : "Сильное снижение при высоком пульсе";
-                    
-                    previewHTML = `
-                        <div class="preview-item">
-                            <span class="preview-label">Меткость лёжа:</span>
-                            <span class="preview-value">${progressInfo.accuracyProne}</span>
-                        </div>
-                        <div class="preview-item">
-                            <span class="preview-label">Меткость стоя:</span>
-                            <span class="preview-value">${progressInfo.accuracyStanding}</span>
-                        </div>
-                        <div class="preview-item">
-                            <span class="preview-label">Влияние пульса:</span>
-                            <span class="preview-value">${pulseEffect}</span>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'shootingSpeed':
-                    previewHTML = `
-                        <div class="preview-item">
-                            <span class="preview-label">Интервал выстрелов:</span>
-                            <span class="preview-value">${progressInfo.shootingTime.split(' ')[0]}/выстрел</span>
-                        </div>
-                        <div class="preview-item">
-                            <span class="preview-label">Время стрельбы (5 выстр.):</span>
-                            <span class="preview-value">${progressInfo.shootingTime}</span>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'stamina':
-                    const maxStamina = progressInfo.maxStamina;
-                    const recoveryRate = (GameConstants.PLAYER.STAMINA_RECOVERY_RATE * (window.playerProfile.getStat('stamina') / 60 + 1)).toFixed(1);
-                    
-                    previewHTML = `
-                        <div class="preview-item">
-                            <span class="preview-label">Макс. выносливость:</span>
-                            <span class="preview-value">${maxStamina}</span>
-                        </div>
-                        <div class="preview-item">
-                            <span class="preview-label">Восстановление:</span>
-                            <span class="preview-value">${recoveryRate}/сек</span>
-                        </div>
-                        <div class="preview-item">
-                            <span class="preview-label">Доступные уровни:</span>
-                            <span class="preview-value">${this.getAvailableIntensityLevels(maxStamina)}</span>
-                        </div>
-                    `;
-                    break;
-            }
-            
-            previewElement.innerHTML = previewHTML;
-        });
-    }
-    
-    // НОВЫЙ МЕТОД: Получение доступных уровней интенсивности
-    getAvailableIntensityLevels(maxStamina) {
-        const levels = [];
-        if (maxStamina >= 50) levels.push("Спринт (7)");
-        if (maxStamina >= 40) levels.push("Очень быстрый (6)");
-        if (maxStamina >= 30) levels.push("Быстрый (5)");
-        levels.push("Средний (4) и ниже");
-        
-        return levels.join(", ");
-    }
-    
-    // НОВЫЙ МЕТОД: Обновление отображения системы интенсивности
-    updateIntensityDisplay() {
-        if (!window.playerProfile) return;
-        
-        const maxStamina = window.playerProfile.getMaxStamina();
-        
-        // Обновляем статусы доступности для каждого уровня
-        for (let level = 1; level <= 7; level++) {
-            const statusElement = document.getElementById(`intensityStatus${level}`);
-            if (statusElement) {
-                const isAvailable = this.isIntensityLevelAvailable(level, maxStamina);
-                statusElement.innerHTML = isAvailable ? 
-                    '<span style="color: #4CAF50;">✅ Доступен</span>' :
-                    '<span style="color: #F44336;">❌ Требует улучшения выносливости</span>';
-            }
-        }
-        
-        // Обновляем текущие возможности
-        const capabilitiesElement = document.getElementById('currentIntensityCapabilities');
-        if (capabilitiesElement) {
-            capabilitiesElement.innerHTML = `
-                <div class="capability-item">
-                    <span>Макс. выносливость:</span>
-                    <strong>${maxStamina}</strong>
-                </div>
-                <div class="capability-item">
-                    <span>Доступные уровни:</span>
-                    <strong>${this.getAvailableIntensityLevels(maxStamina)}</strong>
-                </div>
-                <div class="capability-item">
-                    <span>Ограничения:</span>
-                    <strong>Уровень 5: ≥30%, Уровень 6: ≥40%, Уровень 7: ≥50%</strong>
-                </div>
-            `;
-        }
-    }
-    
-    // НОВЫЙ МЕТОД: Проверка доступности уровня интенсивности
-    isIntensityLevelAvailable(level, maxStamina) {
-        const restrictions = {
-            5: 30, // уровень 5 требует минимум 30% выносливости
-            6: 40, // уровень 6 требует минимум 40% выносливости  
-            7: 50  // уровень 7 требует минимум 50% выносливости
-        };
-        
-        if (restrictions[level]) {
-            return maxStamina >= restrictions[level];
-        }
-        return true; // Уровни 1-4 всегда доступны
-    }
-    
-    updateControlButtons() {
-        if (!window.playerProfile) return;
-        
-        const resetBtn = document.getElementById('resetStatsBtn');
-        if (resetBtn) {
-            // Разрешаем сброс только если есть потраченные очки
-            const hasSpentPoints = window.playerProfile.getAvailablePoints() < GameConstants.STATS.STARTING_POINTS;
-            resetBtn.disabled = !hasSpentPoints;
-            
-            if (resetBtn.disabled) {
-                resetBtn.style.opacity = '0.5';
-                resetBtn.style.cursor = 'not-allowed';
+            if (window.playerProfile.getAvailablePoints() === 0) {
+                pointsElement.style.color = '#FF5252';
             } else {
-                resetBtn.style.opacity = '1';
-                resetBtn.style.cursor = 'pointer';
+                pointsElement.style.color = '#FFD700';
+            }
+        }
+        
+        const stats = window.playerProfile.getAllStats();
+        
+        for (const statName in stats) {
+            const valueElement = document.getElementById(`${statName}Value`);
+            if (valueElement) {
+                valueElement.textContent = window.playerProfile.getFormattedStat(statName);
+            }
+        }
+        
+        this.updateButtonStates();
+        
+        console.log("Статистика обновлена в UI");
+    }
+    
+    updateButtonStates() {
+        if (!window.playerProfile) return;
+        
+        document.querySelectorAll('.stat-btn').forEach(btn => {
+            const statName = btn.getAttribute('data-stat');
+            const isPlus = btn.classList.contains('plus');
+            
+            if (isPlus) {
+                btn.disabled = !window.playerProfile.canIncrease(statName);
+            } else {
+                btn.disabled = !window.playerProfile.canDecrease(statName);
             }
             
-            // Обновляем обработчик
-            resetBtn.onclick = () => {
-                this.resetStats();
-            };
-        }
+            if (btn.disabled) {
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        });
     }
     
     resetStats() {
         if (!window.playerProfile) return;
         
-        const confirmation = confirm("Вы уверены, что хотите сбросить все характеристики? Все очки будут возвращены.");
-        
-        if (confirmation) {
+        if (confirm("Вы уверены, что хотите сбросить все характеристики? Все распределенные очки будут возвращены.")) {
             window.playerProfile.resetStats();
             this.updateStatsDisplay();
-            this.updateIntensityDisplay();
-            this.showMessage("♻️ Все характеристики сброшены!", "success");
+            this.showMessage("Характеристики сброшены!", "success");
         }
     }
     
-    updateSummaryInfo() {
+    saveStats() {
         if (!window.playerProfile) return;
         
-        const profile = window.playerProfile;
-        const progressInfo = profile.getProgressInfo();
-        const playerLevel = profile.getPlayerLevel();
+        window.playerProfile.saveToStorage();
         
-        // Обновляем уровень игрока
-        this.updateElement('playerLevel', playerLevel);
-        
-        // Обновляем сводку характеристик
-        const summaryElement = document.getElementById('statsSummary');
-        if (summaryElement) {
-            summaryElement.innerHTML = `
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <div class="summary-label">Общий уровень</div>
-                        <div class="summary-value">${playerLevel}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Скорость</div>
-                        <div class="summary-value">${progressInfo.speed}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Время круга</div>
-                        <div class="summary-value">${progressInfo.lapTime}</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Время стрельбы</div>
-                        <div class="summary-value">${progressInfo.shootingTime}</div>
-                    </div>
-                </div>
-            `;
+        if (window.biathlonGame && window.biathlonGame.player) {
+            window.playerProfile.applyToGamePlayer(window.biathlonGame.player);
         }
-    }
-    
-    updateProgressDisplay() {
-        if (!window.raceManager) return;
         
-        const stats = window.raceManager.getRaceStatistics();
-        const progress = window.raceManager.getRaceTypeProgress();
-        const timeline = window.raceManager.getProgressTimeline();
+        this.showMessage("Характеристики сохранены и применены!", "success");
         
-        const progressContainer = document.getElementById('progressContainer');
-        if (!progressContainer) return;
+        // Показываем информацию о текущем уровне и рекомендациях
+        const playerLevel = window.playerProfile.getPlayerLevel();
+        const currentLocation = window.biathlonGame.getCurrentLocation();
         
-        let progressHTML = `
-            <div class="progress-stats-grid">
-                <div class="progress-stat-card">
-                    <div class="progress-stat-value">${stats.totalRaces}</div>
-                    <div class="progress-stat-label">Всего гонок</div>
-                </div>
-                <div class="progress-stat-card">
-                    <div class="progress-stat-value">${stats.victories}</div>
-                    <div class="progress-stat-label">Побед</div>
-                </div>
-                <div class="progress-stat-card">
-                    <div class="progress-stat-value">${stats.podiums}</div>
-                    <div class="progress-stat-label">Подиумов</div>
-                </div>
-                <div class="progress-stat-card">
-                    <div class="progress-stat-value">${stats.winRate}%</div>
-                    <div class="progress-stat-label">Процент побед</div>
-                </div>
-            </div>
-            
-            <div class="progress-details">
-                <h3>📊 Статистика по дистанциям</h3>
-        `;
+        let recommendationMessage = `Ваш уровень: ${playerLevel}\n`;
+        recommendationMessage += `Текущая локация: ${currentLocation.name}\n`;
+        recommendationMessage += `Уровни ботов: ${currentLocation.botMinLevel}-${currentLocation.botMaxLevel}\n\n`;
         
-        // Добавляем прогресс по типам гонок
-        Object.keys(progress).forEach(raceType => {
-            const raceProgress = progress[raceType];
-            progressHTML += `
-                <div class="race-progress-item">
-                    <div class="race-progress-header">
-                        <span class="race-name">${raceProgress.name}</span>
-                        <span class="race-stats">${raceProgress.completed} гонок, ${raceProgress.victories} побед</span>
-                    </div>
-                    <div class="race-progress-bar">
-                        <div class="race-progress-fill" style="width: ${Math.min(100, (raceProgress.completed / 10) * 100)}%"></div>
-                    </div>
-                    <div class="race-progress-details">
-                        <span>Лучшее время: ${raceProgress.bestTimeFormatted}</span>
-                        <span>Лучшая позиция: ${raceProgress.bestPosition || '-'}</span>
-                    </div>
-                </div>
-            `;
-        });
-        
-        progressHTML += `</div>`;
-        
-        progressContainer.innerHTML = progressHTML;
-    }
-    
-    updateAchievementsDisplay() {
-        if (!window.raceManager) return;
-        
-        const achievements = window.raceManager.getAchievements();
-        const analytics = window.raceManager.getImprovementAnalytics();
-        
-        const achievementsContainer = document.getElementById('achievementsContainer');
-        if (!achievementsContainer) return;
-        
-        let achievementsHTML = `
-            <div class="analytics-section">
-                <h3>📈 Аналитика эффективности</h3>
-                <div class="analytics-card">
-                    <div class="analytics-score">
-                        <div class="score-value">${analytics.overallEfficiency}%</div>
-                        <div class="score-label">Общая эффективность</div>
-                    </div>
-                    
-                    ${analytics.strengths.length > 0 ? `
-                        <div class="analytics-strengths">
-                            <h4>💪 Сильные стороны</h4>
-                            <ul>
-                                ${analytics.strengths.map(strength => `<li>${strength}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                    
-                    ${analytics.improvements.length > 0 ? `
-                        <div class="analytics-improvements">
-                            <h4>🎯 Области для улучшения</h4>
-                            <ul>
-                                ${analytics.improvements.map(improvement => `<li>${improvement}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                    
-                    ${analytics.recommendations.length > 0 ? `
-                        <div class="analytics-recommendations">
-                            <h4>💡 Рекомендации</h4>
-                            <ul>
-                                ${analytics.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-            
-            <div class="achievements-section">
-                <h3>🏆 Достижения</h3>
-                <div class="achievements-grid">
-        `;
-        
-        if (achievements.length === 0) {
-            achievementsHTML += `
-                <div class="no-achievements">
-                    <p>🎯 Достижения появятся после первых гонок!</p>
-                    <p>Участвуйте в гонках и побеждайте, чтобы открывать достижения.</p>
-                </div>
-            `;
+        if (playerLevel < currentLocation.minLevel) {
+            recommendationMessage += `⚠️  Эта локация может быть сложной для вашего уровня.\n`;
+            recommendationMessage += `Рекомендуемый уровень: ${currentLocation.minLevel}+`;
+        } else if (playerLevel >= currentLocation.minLevel && playerLevel <= currentLocation.maxLevel) {
+            recommendationMessage += `🎯  Эта локация идеально подходит для вашего уровня!`;
         } else {
-            achievements.forEach(achievement => {
-                achievementsHTML += `
-                    <div class="achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}">
-                        <div class="achievement-icon">${achievement.icon}</div>
-                        <div class="achievement-info">
-                            <h4>${achievement.name}</h4>
-                            <p>${achievement.description}</p>
-                        </div>
-                        <div class="achievement-status">
-                            ${achievement.unlocked ? '✅' : '🔒'}
-                        </div>
-                    </div>
-                `;
-            });
+            recommendationMessage += `💪  Вы переросли эту локацию! Попробуйте более сложные.`;
         }
         
-        achievementsHTML += `</div></div>`;
-        achievementsContainer.innerHTML = achievementsHTML;
-    }
-    
-    // Вспомогательные методы
-    updateElement(id, value) {
-        const element = document.getElementById(id);
-        if (element) {
-            element.textContent = value;
-        }
+        setTimeout(() => {
+            if (confirm(recommendationMessage + "\n\nХотите перейти к выбору локаций?")) {
+                if (window.mainMenu) {
+                    window.mainMenu.showLocationSelection();
+                }
+            }
+        }, 500);
     }
     
     showMessage(message, type = 'info') {
@@ -707,17 +247,16 @@ class CharacterScreen {
         messageDiv.textContent = message;
         messageDiv.style.cssText = `
             position: fixed;
-            top: 100px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 15px 25px;
+            border-radius: 10px;
             font-weight: bold;
             z-index: 10000;
             transition: all 0.3s ease;
             max-width: 80%;
             text-align: center;
-            font-size: 14px;
         `;
         
         switch(type) {
@@ -727,10 +266,6 @@ class CharacterScreen {
                 break;
             case 'error':
                 messageDiv.style.background = 'linear-gradient(135deg, #F44336, #C62828)';
-                messageDiv.style.color = 'white';
-                break;
-            case 'warning':
-                messageDiv.style.background = 'linear-gradient(135deg, #FF9800, #F57C00)';
                 messageDiv.style.color = 'white';
                 break;
             default:
@@ -753,27 +288,38 @@ class CharacterScreen {
     
     show() {
         const characterScreen = document.getElementById('characterScreen');
-        if (characterScreen) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
+        const mainMenu = document.getElementById('mainMenu');
+        
+        if (characterScreen && mainMenu) {
+            mainMenu.classList.remove('active');
             characterScreen.classList.add('active');
             
-            // Обновляем отображение при показе
             this.updateStatsDisplay();
-            this.updateIntensityDisplay();
-            this.switchTab(this.currentTab);
             
             console.log("CharacterScreen показан");
+        } else {
+            console.error("Не удалось найти элементы экрана характеристик");
         }
     }
     
     hide() {
         const characterScreen = document.getElementById('characterScreen');
-        if (characterScreen) {
+        const mainMenu = document.getElementById('mainMenu');
+        
+        if (characterScreen && mainMenu) {
             characterScreen.classList.remove('active');
+            mainMenu.classList.add('active');
+            
             console.log("CharacterScreen скрыт");
         }
+    }
+    
+    refresh() {
+        this.updateStatsDisplay();
+    }
+    
+    getCurrentTab() {
+        return this.currentTab;
     }
     
     isReady() {
