@@ -392,16 +392,16 @@ class BiathlonGame {
         const shootingRound = race.shootingRounds.find(round => round.afterLap === currentLap);
         
         if (shootingRound && !competitor.isShooting && !competitor.hasShotThisLap) {
-            // Стрельба происходит после прохождения БАЗОВОГО количества отрезков (без учета штрафных)
-            const baseSegmentsInLap = race.segmentsPerLap;
+            // Стрельба происходит после прохождения ВСЕХ отрезков круга (базовые + штрафные)
+            const totalSegmentsInLap = race.segmentsPerLap + (competitor.extraSegmentsPerLap[currentLap] || 0);
             
-            console.log(`${competitor.name} проверка стрельбы: круг ${currentLap}, отрезков в круге: ${competitor.completedSegmentsInCurrentLap}, базовых: ${baseSegmentsInLap}, стрелял в круге: ${competitor.hasShotThisLap}`);
+            console.log(`${competitor.name} проверка стрельбы: круг ${currentLap}, отрезков в круге: ${competitor.completedSegmentsInCurrentLap}, всего нужно: ${totalSegmentsInLap}, стрелял в круге: ${competitor.hasShotThisLap}`);
             
-            if (competitor.completedSegmentsInCurrentLap >= baseSegmentsInLap) {
+            if (competitor.completedSegmentsInCurrentLap >= totalSegmentsInLap) {
                 // Останавливаем движение и начинаем стрельбу
                 competitor.isRacing = false;
                 competitor.hasShotThisLap = true; // Предотвращаем повторную стрельбу
-                console.log(`${competitor.name} начинает стрельбу после ${baseSegmentsInLap} отрезков в круге ${currentLap}`);
+                console.log(`${competitor.name} начинает стрельбу после ${totalSegmentsInLap} отрезков в круге ${currentLap}`);
                 this.startShooting(competitor, shootingRound);
             }
         }
@@ -412,11 +412,11 @@ class BiathlonGame {
         const race = this.getCurrentRace();
         const currentLap = competitor.currentLap;
         
-        console.log(`${competitor.name} проверка перехода на следующий круг: круг ${currentLap}, отрезков: ${competitor.completedSegmentsInCurrentLap}, всего нужно: ${race.segmentsPerLap + (competitor.extraSegmentsPerLap[currentLap] || 0)}`);
-        
         // Если это не последний круг и участник прошел все отрезки (базовые + штрафные)
         if (currentLap <= race.totalLaps) {
             const totalSegmentsInLap = race.segmentsPerLap + (competitor.extraSegmentsPerLap[currentLap] || 0);
+            
+            console.log(`${competitor.name} проверка перехода на следующий круг: круг ${currentLap}, отрезков: ${competitor.completedSegmentsInCurrentLap}, всего нужно: ${totalSegmentsInLap}`);
             
             if (competitor.completedSegmentsInCurrentLap >= totalSegmentsInLap) {
                 if (currentLap < race.totalLaps) {
@@ -554,19 +554,19 @@ class BiathlonGame {
         }
     }
     
-    // Применение штрафов за стрельбу
+    // Применение штрафов за стрельбу - ИСПРАВЛЕННАЯ ВЕРСИЯ
     applyShootingPenalty(competitor, misses) {
         const race = this.getCurrentRace();
         
         if (this.currentRaceType === 'individual') {
             // Индивидуальная гонка: +1 минута за промах
             competitor.penaltyMinutes += misses;
-            console.log(`${competitor.name}: +${misses} минут штрафа`);
+            console.log(`${competitor.name}: +${misses} минут штрафа (всего: ${competitor.penaltyMinutes} минут)`);
         } else {
             // Остальные гонки: +1 отрезок за промах к следующему кругу
             const nextLap = competitor.currentLap;
             competitor.extraSegmentsPerLap[nextLap] = (competitor.extraSegmentsPerLap[nextLap] || 0) + misses;
-            console.log(`${competitor.name}: +${misses} отрезков в круге ${nextLap}`);
+            console.log(`${competitor.name}: +${misses} отрезков в круге ${nextLap} (всего штрафных: ${competitor.extraSegmentsPerLap[nextLap]})`);
         }
     }
     
