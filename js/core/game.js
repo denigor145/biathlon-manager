@@ -124,8 +124,8 @@ class BiathlonGame {
             
             // Стрельба
             shooting: {
-                prone: 0.1,
-                standing: 0.1
+                prone: 0.5,  // Минимум 50%
+                standing: 0.5 // Минимум 50%
             },
             shootingInterval: 6.0,         // Время между выстрелами (секунды)
             currentShootingRound: null,
@@ -167,7 +167,7 @@ class BiathlonGame {
         for (let i = 0; i < count; i++) {
             const level = Math.floor(Math.random() * (maxLevel - minLevel + 1)) + minLevel;
             const speedMps = 2.78 + (level * (5 - 2.78) / 70);
-            const accuracy = 0.1 + (level * 0.7 / 70);
+            const accuracy = 0.5 + (level * 0.45 / 70); // Минимум 50%
             const shootingInterval = 6 - (level * 3 / 70);
             
             opponents.push({
@@ -198,8 +198,8 @@ class BiathlonGame {
                 
                 // Стрельба
                 shooting: {
-                    prone: Math.min(0.95, accuracy * 1.1),
-                    standing: Math.min(0.85, accuracy * 0.9)
+                    prone: Math.min(0.95, accuracy * 1.1), // Минимум 50%
+                    standing: Math.min(0.85, accuracy * 0.9) // Минимум 50%
                 },
                 shootingInterval: shootingInterval,
                 currentShootingRound: null,
@@ -475,9 +475,13 @@ class BiathlonGame {
         
         // Автоматическая стрельба с интервалом
         if (competitor.shotsFired < 5) {
+            // Случайная вариация интервала стрельбы от -1 до +1 секунды
+            const intervalVariation = (Math.random() * 2) - 1; // от -1 до +1 секунды
+            const variedInterval = Math.max(0.5, competitor.shootingInterval + intervalVariation); // Минимум 0.5 секунды
+            
             const timeSinceLastShot = competitor.shootingGameTime - (competitor.shotsFired * competitor.shootingInterval);
             
-            if (timeSinceLastShot >= competitor.shootingInterval) {
+            if (timeSinceLastShot >= variedInterval) {
                 this.makeShot(competitor);
             }
         }
