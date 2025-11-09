@@ -52,20 +52,6 @@ class GameScreen {
                 this.handleStartRaceStage();
             });
         }
-
-        const startShootingBtn = document.getElementById('startShootingBtn');
-        if (startShootingBtn) {
-            startShootingBtn.addEventListener('click', () => {
-                this.handleStartShooting();
-            });
-        }
-
-        const continueAfterShootingBtn = document.getElementById('continueAfterShootingBtn');
-        if (continueAfterShootingBtn) {
-            continueAfterShootingBtn.addEventListener('click', () => {
-                this.handleContinueAfterShooting();
-            });
-        }
         
         console.log("Обработчики GameScreen установлены");
     }
@@ -97,24 +83,6 @@ class GameScreen {
         if (window.biathlonGame) {
             window.biathlonGame.startRaceAfterStage();
             this.hideStageScreen('startStageScreen');
-        }
-    }
-    
-    handleStartShooting() {
-        console.log("Starting shooting after stage screen");
-        if (window.biathlonGame) {
-            window.biathlonGame.startShootingAfterStage();
-            this.hideStageScreen('preShootingScreen');
-            this.showScreen('gameScreen');
-        }
-    }
-    
-    handleContinueAfterShooting() {
-        console.log("Continuing after shooting");
-        if (window.biathlonGame) {
-            window.biathlonGame.continueAfterShooting();
-            this.hideStageScreen('postShootingScreen');
-            this.showScreen('gameScreen');
         }
     }
     
@@ -177,9 +145,7 @@ class GameScreen {
     
     hideAllStageScreens() {
         const stageScreens = [
-            'startStageScreen',
-            'preShootingScreen', 
-            'postShootingScreen'
+            'startStageScreen'
         ];
         
         stageScreens.forEach(screenId => {
@@ -199,106 +165,6 @@ class GameScreen {
         this.updateElement('startStamina', Math.round(window.biathlonGame.player.stamina) + '%');
         
         this.showStageScreen('startStageScreen');
-    }
-    
-    showPreShootingStage(shootingRound) {
-        if (!window.biathlonGame) return;
-        
-        this.updateElement('preShootingTitle', `🎯 ${shootingRound.name}`);
-        this.updateElement('preShootingPosition', window.biathlonGame.player.position);
-        this.updateElement('preShootingGap', '+' + this.formatTime(window.biathlonGame.getPlayerGap()));
-        
-        const accuracy = window.biathlonGame.player.shooting[shootingRound.position] * 100;
-        this.updateElement('preShootingAccuracy', Math.round(accuracy) + '%');
-        
-        const wind = window.biathlonGame.getRandomWind();
-        this.updateElement('preShootingWind', wind);
-        
-        this.showStageScreen('preShootingScreen');
-    }
-    
-    showPostShootingStage() {
-        if (!window.biathlonGame) return;
-        
-        const player = window.biathlonGame.player;
-        const results = window.biathlonGame.getShootingResults(player);
-        
-        this.updateElement('postShootingSubtitle', 'Стрельба завершена');
-        this.updateElement('postShootingHits', `${results.hits}/5`);
-        this.updateElement('postShootingMisses', results.misses);
-        
-        // Определяем штраф в зависимости от типа гонки
-        if (window.biathlonGame.currentRaceType === 'individual') {
-            this.updateElement('postShootingPenalty', `+${results.misses} мин штрафа`);
-        } else {
-            this.updateElement('postShootingPenalty', `+${results.misses} отрезков в след. круге`);
-        }
-        
-        this.updateShootingTargetsPreview(results);
-        
-        this.showStageScreen('postShootingScreen');
-    }
-    
-    updateShootingTargetsPreview(results) {
-        const container = document.getElementById('postShootingTargets');
-        if (!container) return;
-        
-        container.innerHTML = '';
-        container.style.cssText = `
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-        `;
-        
-        for (let i = 0; i < 5; i++) {
-            const target = document.createElement('div');
-            target.className = 'preview-target';
-            target.style.cssText = `
-                width: 25px;
-                height: 25px;
-                background: white;
-                border-radius: 50%;
-                border: 2px solid #333;
-                position: relative;
-            `;
-            
-            if (results.shots[i] !== null) {
-                if (results.shots[i]) {
-                    target.classList.add('hit');
-                    target.style.cssText += `
-                        background: white;
-                    `;
-                    target.innerHTML = `<div style="
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        width: 15px;
-                        height: 15px;
-                        background: black;
-                        border-radius: 50%;
-                        transform: translate(-50%, -50%);
-                    "></div>`;
-                } else {
-                    target.classList.add('miss');
-                    target.style.cssText += `
-                        background: #e74c3c;
-                    `;
-                }
-            }
-            
-            container.appendChild(target);
-        }
-    }
-    
-    showShootingInProgress() {
-        this.hideAllStageScreens();
-        this.showScreen('gameScreen');
-        this.updateDisplay();
-    }
-    
-    hideShooting() {
-        this.updateDisplay();
     }
     
     updateDisplay() {
@@ -322,50 +188,6 @@ class GameScreen {
         
         // Обновляем таблицу лидеров
         this.updateCompetitorsList();
-        
-        // Обновляем информацию о стрельбе, если она идет
-        this.updateShootingInfo();
-    }
-    
-    updateShootingInfo() {
-        if (!window.biathlonGame) return;
-        
-        const shootingCompetitors = window.biathlonGame.allCompetitors.filter(c => c.isShooting);
-        
-        if (shootingCompetitors.length > 0) {
-            // Показываем информацию о стрельбе
-            const shootingContainer = document.getElementById('shootingScreen');
-            if (shootingContainer) {
-                shootingContainer.style.display = 'block';
-                
-                // Обновляем информацию о текущей стрельбе
-                shootingCompetitors.forEach(competitor => {
-                    if (competitor.isPlayer) {
-                        const elapsedTime = ((Date.now() - competitor.shootingStartTime) / 1000).toFixed(1);
-                        this.updateElement('shootingRoundName', competitor.currentShooting?.name || 'Стрельба');
-                        this.updateElement('shootingTimer', `Время: ${elapsedTime}с`);
-                        
-                        // Прогресс стрельбы
-                        const progress = (competitor.shotsFired / 5) * 100;
-                        const progressFill = document.getElementById('shootingProgress');
-                        const progressText = document.getElementById('shootingProgressText');
-                        
-                        if (progressFill) {
-                            progressFill.style.width = progress + '%';
-                        }
-                        if (progressText) {
-                            progressText.textContent = `${competitor.shotsFired}/5 выстрелов`;
-                        }
-                    }
-                });
-            }
-        } else {
-            // Скрываем информацию о стрельбе
-            const shootingContainer = document.getElementById('shootingScreen');
-            if (shootingContainer) {
-                shootingContainer.style.display = 'none';
-            }
-        }
     }
     
     updateElement(id, value) {
@@ -435,10 +257,6 @@ class GameScreen {
                 </div>
             </div>
         `;
-    }
- 
-    updateShootingStep(step) {
-        this.updateDisplay();
     }
     
     formatShortName(fullName) {
