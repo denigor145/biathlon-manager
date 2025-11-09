@@ -237,7 +237,7 @@
             </header>
 
             <!-- Блок стрельбы -->
-            <div id="shootingScreen" class="shooting-screen">
+            <div id="shootingScreen" class="shooting-screen" style="display: none;">
                 <div class="shooting-container">
                     <div class="shooting-header">
                         <h2 id="shootingRoundName">Стрельба лёжа</h2>
@@ -252,6 +252,21 @@
                         </div>
                         <div class="progress-text" id="shootingProgressText"></div>
                     </div>
+                    
+                    <div class="targets-display" id="targetsContainer">
+                        <!-- Мишени будут добавлены через JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Прогресс дистанции -->
+            <div class="distance-progress" style="margin: 10px 15px;">
+                <div class="progress-bar" style="background: rgba(255,255,255,0.1); border-radius: 10px; height: 8px;">
+                    <div class="progress-fill" id="distanceProgress" style="background: linear-gradient(135deg, #4CAF50, #2E7D32); height: 100%; border-radius: 10px; width: 0%; transition: width 0.3s ease;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 5px; color: rgba(255,255,255,0.7);">
+                    <span id="currentDistance">0м</span>
+                    <span id="totalDistance">7650м</span>
                 </div>
             </div>
 
@@ -395,8 +410,10 @@
     <!-- Подключение JavaScript файлов -->
     <script src="js/utils/constants.js"></script>
     <script src="js/utils/helpers.js"></script>
+    <script src="js/core/race-manager.js"></script>
     <script src="js/core/player.js"></script>
     <script src="js/core/game.js"></script>
+    <script src="js/core/shooting-engine.js"></script>
     <script src="js/screens/main-menu.js"></script>
     <script src="js/screens/game-screen.js"></script>
     <script src="js/screens/character-screen.js"></script>
@@ -406,9 +423,19 @@
             console.log('Загрузка игры...');
             
             try {
+                // Инициализация RaceManager
+                window.raceManager = new RaceManager();
+                window.raceManager.loadHistoryFromStorage();
+                
                 // Инициализация основных компонентов
                 window.playerProfile = new PlayerProfile();
                 window.biathlonGame = new BiathlonGame();
+                
+                // Инициализация ShootingEngine
+                window.shootingEngine = new ShootingEngine();
+                
+                // Передача raceTypes в RaceManager
+                window.raceManager.initializeRaces(window.biathlonGame.raceTypes);
                 
                 // Инициализация экранов
                 window.mainMenu = new MainMenu();
@@ -416,6 +443,7 @@
                 window.characterScreen = new CharacterScreen();
                 
                 console.log('Игра успешно загружена!');
+                console.log('Версия игры:', GameConstants.VERSION);
             } catch (error) {
                 console.error('Ошибка загрузки:', error);
                 alert('Ошибка загрузки игры. Проверьте консоль.');
