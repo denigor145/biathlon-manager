@@ -1,8 +1,9 @@
 class MainMenu {
     constructor() {
         this.isInitialized = false;
+        this.selectedRaceType = "sprint";
         
-        console.log("MainMenu создан");
+        console.log("MainMenu создан для непрерывной системы");
         
         setTimeout(() => {
             this.initialize();
@@ -12,14 +13,15 @@ class MainMenu {
     initialize() {
         if (this.isInitialized) return;
         
-        console.log("Инициализация MainMenu...");
+        console.log("Инициализация MainMenu для непрерывной системы...");
         
         try {
             this.setupEventListeners();
             this.setupRaceSelection();
+            this.updateRaceCards();
             this.isInitialized = true;
             
-            console.log("MainMenu успешно инициализирован");
+            console.log("MainMenu успешно инициализирован для непрерывной системы");
         } catch (error) {
             console.error("Ошибка инициализации MainMenu:", error);
         }
@@ -56,7 +58,7 @@ class MainMenu {
             });
         }
         
-        console.log("Обработчики MainMenu установлены");
+        console.log("Обработчики MainMenu установлены для непрерывной системы");
     }
     
     setupRaceSelection() {
@@ -66,6 +68,7 @@ class MainMenu {
             });
         });
         
+        // Устанавливаем спринт по умолчанию
         const defaultRace = document.querySelector('.race-card[data-race="sprint"]');
         if (defaultRace) {
             this.handleRaceCardClick(defaultRace);
@@ -80,6 +83,7 @@ class MainMenu {
         card.classList.add('selected');
         
         const raceType = card.getAttribute('data-race');
+        this.selectedRaceType = raceType;
         
         if (window.biathlonGame) {
             window.biathlonGame.selectRaceType(raceType);
@@ -87,6 +91,133 @@ class MainMenu {
         } else {
             console.error("BiathlonGame не доступен");
         }
+        
+        // Обновляем информацию о рекомендуемых характеристиках
+        this.updateRecommendedStats(raceType);
+    }
+    
+    // Обновление карточек гонок с новой информацией о дистанциях
+    updateRaceCards() {
+        Object.keys(GameConstants.RACE_TYPES).forEach(raceType => {
+            const race = GameConstants.RACE_TYPES[raceType];
+            const card = document.querySelector(`.race-card[data-race="${raceType}"]`);
+            
+            if (card) {
+                // Обновляем основную информацию
+                const title = card.querySelector('h3');
+                if (title) {
+                    title.textContent = race.name;
+                }
+                
+                const description = card.querySelector('p');
+                if (description) {
+                    description.textContent = `${(race.totalDistance / 1000).toFixed(2)} км • ${race.shootingRounds.length} стрельбы`;
+                }
+                
+                // Обновляем статистику
+                const stats = card.querySelector('.race-stats');
+                if (stats) {
+                    stats.innerHTML = `
+                        <span>📏 ${(race.lapDistance / 1000).toFixed(1)}km/круг</span>
+                        <span>🎯 ${race.shootingRounds.length}x</span>
+                        <span>⏱️ ${race.totalLaps} кругов</span>
+                    `;
+                }
+                
+                // Добавляем информацию о штрафах
+                const penaltyInfo = card.querySelector('.penalty-info') || document.createElement('div');
+                if (!card.querySelector('.penalty-info')) {
+                    penaltyInfo.className = 'penalty-info';
+                    penaltyInfo.style.cssText = `
+                        font-size: 0.8em;
+                        margin-top: 8px;
+                        padding: 4px 8px;
+                        border-radius: 8px;
+                        background: rgba(255,255,255,0.1);
+                    `;
+                    card.appendChild(penaltyInfo);
+                }
+                
+                if (race.penaltyType === 'minutes') {
+                    penaltyInfo.innerHTML = `⏰ Штраф: ${race.penaltyPerMiss / 60} мин/промах`;
+                    penaltyInfo.style.background = 'rgba(255,152,0,0.2)';
+                } else {
+                    penaltyInfo.innerHTML = `⏰ Штраф: ${race.penaltyLoopDistance}м круг/промах`;
+                    penaltyInfo.style.background = 'rgba(244,67,54,0.2)';
+                }
+            }
+        });
+    }
+    
+    // Обновление рекомендуемых характеристик для выбранной гонки
+    updateRecommendedStats(raceType) {
+        if (!window.playerProfile) return;
+        
+        const recommendedStats = window.playerProfile.getRecommendedStats(raceType);
+        const efficiency = window.playerProfile.getEfficiencyForRace(raceType);
+        
+        // Создаем или обновляем блок с рекомендациями
+        let recommendationElement = document.getElementById('raceRecommendation');
+        if (!recommendationElement) {
+            recommendationElement = document.createElement('div');
+            recommendationElement.id = 'raceRecommendation';
+            recommendationElement.style.cssText = `
+                background: rgba(255,255,255,0.1);
+                border-radius: 15px;
+                padding: 15px;
+                margin: 15px 0;
+                border-left: 4px solid #4FC3F7;
+            `;
+            
+            const raceSelection = document.querySelector('.race-selection');
+            if (raceSelection) {
+                raceSelection.appendChild(recommendationElement);
+            }
+        }
+        
+        const race = GameConstants.RACE_TYPES[raceType.toUpperCase()];
+        const progressInfo = window.playerProfile.getProgressInfo();
+        
+        recommendationElement.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="color: #4FC3F7; margin: 0;">📊 Подготовка к гонке</h4>
+                <div style="background: ${this.getEfficiencyColor(efficiency.percentage)}; padding: 4px 8px; border-radius: 10px; font-size: 0.8em;">
+                    ${efficiency.percentage}% - ${efficiency.description}
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em;">
+                <div style="text-align: center;">
+                    <div style="color: #FFD700; font-weight: bold;">${progressInfo.speed}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Скорость</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #FFD700; font-weight: bold;">${progressInfo.lapTime}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Время круга</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #FFD700; font-weight: bold;">${progressInfo.shootingTime}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Время стрельбы</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #FFD700; font-weight: bold;">${progressInfo.accuracyProne}</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Меткость лёжа</div>
+                </div>
+            </div>
+            
+            ${efficiency.percentage < 70 ? `
+                <div style="margin-top: 10px; padding: 8px; background: rgba(255,152,0,0.2); border-radius: 8px; font-size: 0.8em;">
+                    💡 Совет: Улучшите характеристики для лучших результатов в этой гонке
+                </div>
+            ` : ''}
+        `;
+    }
+    
+    getEfficiencyColor(percentage) {
+        if (percentage >= 90) return 'rgba(76,175,80,0.3)';
+        if (percentage >= 70) return 'rgba(255,193,7,0.3)';
+        if (percentage >= 50) return 'rgba(255,152,0,0.3)';
+        return 'rgba(244,67,54,0.3)';
     }
     
     handleStartRace() {
@@ -94,7 +225,7 @@ class MainMenu {
         
         if (!window.biathlonGame) {
             console.error("BiathlonGame не доступен");
-            alert("Ошибка: игровая система не загружена");
+            this.showMessage("Ошибка: игровая система не загружена", "error");
             return;
         }
         
@@ -104,26 +235,34 @@ class MainMenu {
         if (selectedRace) {
             this.startGame();
         } else {
-            alert('Пожалуйста, выберите тип гонки!');
+            this.showMessage('Пожалуйста, выберите тип гонки!', "error");
         }
     }
     
     startGame() {
-        console.log("Starting game...");
+        console.log("Starting game with continuous system...");
         
-        if (window.playerProfile && window.biathlonGame && window.biathlonGame.player) {
-            window.playerProfile.applyToGamePlayer(window.biathlonGame.player);
-            console.log("Характеристики игрока применены перед стартом гонки");
-        }
-        
-        const success = window.biathlonGame.startRace();
-        console.log("Race started:", success);
+        // Инициализируем гонку
+        const success = window.biathlonGame.initializeRace(this.selectedRaceType);
         
         if (success) {
+            console.log("Гонка инициализирована, переходим к экрану старта");
+            
+            // Применяем характеристики игрока
+            if (window.playerProfile && window.biathlonGame.player) {
+                window.playerProfile.applyToGamePlayer(window.biathlonGame.player);
+                console.log("Характеристики игрока применены перед стартом гонки");
+            }
+            
+            // Показываем экран старта гонки
             this.hide();
+            
+            if (window.gameScreen) {
+                window.gameScreen.showStartStage();
+            }
         } else {
-            console.error("Не удалось начать гонку");
-            alert("Ошибка при запуске гонки");
+            console.error("Не удалось инициализировать гонку");
+            this.showMessage("Ошибка при инициализации гонки", "error");
         }
     }
     
@@ -134,7 +273,7 @@ class MainMenu {
             window.characterScreen.show();
         } else {
             console.error("CharacterScreen не доступен");
-            alert("Система характеристик временно недоступна");
+            this.showMessage("Система характеристик временно недоступна", "error");
         }
     }
     
@@ -144,6 +283,11 @@ class MainMenu {
     }
     
     showLocationSelectionDialog() {
+        if (!window.biathlonGame) {
+            this.showMessage("Игровая система не загружена", "error");
+            return;
+        }
+        
         const locationHTML = `
             <div class="location-dialog" style="
                 position: fixed;
@@ -151,7 +295,7 @@ class MainMenu {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0,0,0,0.8);
+                background: rgba(0,0,0,0.9);
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -162,30 +306,44 @@ class MainMenu {
                     padding: 30px;
                     border-radius: 20px;
                     border: 3px solid #4FC3F7;
-                    max-width: 800px;
+                    max-width: 900px;
                     width: 90%;
                     text-align: center;
                     color: white;
-                    max-height: 80vh;
+                    max-height: 90vh;
                     overflow-y: auto;
                 ">
                     <h2 style="color: #FFD700; margin-bottom: 20px;">🌍 Выбор локации</h2>
-                    <p style="margin-bottom: 20px; opacity: 0.8;">Уровни ботов на каждой локации ограничены для сбалансированного соревнования</p>
+                    <p style="margin-bottom: 20px; opacity: 0.8;">Каждая локация имеет уникальные условия и ограничения уровней ботов</p>
                     
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 25px;">
                         ${this.generateLocationCards()}
                     </div>
                     
-                    <button id="closeLocationSelection" style="
-                        background: linear-gradient(135deg, #4CAF50, #2E7D32);
-                        color: white;
-                        border: none;
-                        padding: 12px 25px;
-                        border-radius: 10px;
-                        cursor: pointer;
-                        font-weight: bold;
-                        width: 100%;
-                    ">Закрыть</button>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="closeLocationSelection" style="
+                            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+                            color: white;
+                            border: none;
+                            padding: 12px 25px;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            font-weight: bold;
+                            flex: 1;
+                            max-width: 200px;
+                        ">Выбрать</button>
+                        <button id="cancelLocationSelection" style="
+                            background: rgba(255,255,255,0.15);
+                            color: white;
+                            border: 2px solid rgba(255,255,255,0.3);
+                            padding: 12px 25px;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            font-weight: bold;
+                            flex: 1;
+                            max-width: 200px;
+                        ">Отмена</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -194,17 +352,38 @@ class MainMenu {
         tempDiv.innerHTML = locationHTML;
         document.body.appendChild(tempDiv.firstElementChild);
         
+        // Обработчики для карточек локаций
         tempDiv.firstElementChild.querySelectorAll('.location-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                const locationId = parseInt(e.currentTarget.getAttribute('data-location'));
-                this.selectLocation(locationId);
-                tempDiv.firstElementChild.remove();
+                // Снимаем выделение со всех карточек
+                tempDiv.firstElementChild.querySelectorAll('.location-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+                
+                // Выделяем выбранную карточку
+                e.currentTarget.classList.add('selected');
             });
         });
         
-        const closeBtn = tempDiv.firstElementChild.querySelector('#closeLocationSelection');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
+        // Обработчик выбора локации
+        const selectBtn = tempDiv.firstElementChild.querySelector('#closeLocationSelection');
+        if (selectBtn) {
+            selectBtn.addEventListener('click', () => {
+                const selectedCard = tempDiv.firstElementChild.querySelector('.location-card.selected');
+                if (selectedCard) {
+                    const locationId = parseInt(selectedCard.getAttribute('data-location'));
+                    this.selectLocation(locationId);
+                } else {
+                    this.showMessage("Пожалуйста, выберите локацию", "warning");
+                }
+                tempDiv.firstElementChild.remove();
+            });
+        }
+        
+        // Обработчик отмены
+        const cancelBtn = tempDiv.firstElementChild.querySelector('#cancelLocationSelection');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
                 tempDiv.firstElementChild.remove();
             });
         }
@@ -216,7 +395,8 @@ class MainMenu {
         
         return window.biathlonGame.locations.map((location, index) => {
             const accessInfo = window.biathlonGame.getLocationAccessInfo(index);
-            const isCurrent = window.biathlonGame.currentLocation === index;
+            const isCurrent = window.biathlonGame.currentLocationId === index;
+            const playerLevel = accessInfo.playerLevel;
             
             return `
                 <div class="location-card ${isCurrent ? 'selected' : ''}" 
@@ -228,7 +408,15 @@ class MainMenu {
                          cursor: pointer;
                          border: 2px solid ${isCurrent ? '#FFD700' : '#4FC3F7'};
                          transition: all 0.3s ease;
+                         position: relative;
+                         overflow: hidden;
                      ">
+                    ${isCurrent ? `
+                        <div style="position: absolute; top: 10px; right: 10px; background: #FFD700; color: black; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold;">
+                            ТЕКУЩАЯ
+                        </div>
+                    ` : ''}
+                    
                     <h3 style="color: #4FC3F7; margin-bottom: 15px; font-size: 1.2em;">
                         ${location.name}
                     </h3>
@@ -246,29 +434,45 @@ class MainMenu {
                         
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <span style="opacity: 0.8;">Реком. уровень:</span>
-                            <span style="color: ${accessInfo.isRecommended ? '#4CAF50' : '#FF9800'};">${location.minLevel}+</span>
+                            <span style="color: ${playerLevel >= location.minLevel ? '#4CAF50' : '#FF9800'};">${location.minLevel}+</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="opacity: 0.8;">Ветер:</span>
+                            <span style="color: #4FC3F7;">${Math.round(location.windStrength * 100)}%</span>
                         </div>
                         
                         <div style="display: flex; justify-content: space-between;">
-                            <span style="opacity: 0.8;">Ваш уровень:</span>
-                            <span style="color: #4FC3F7; font-weight: bold;">${accessInfo.playerLevel}</span>
+                            <span style="opacity: 0.8;">Состояние трассы:</span>
+                            <span style="color: #4FC3F7;">${Math.round(location.trackCondition * 100)}%</span>
                         </div>
                     </div>
                     
-                    ${isCurrent ? 
-                        '<div style="background: rgba(255,215,0,0.2); padding: 8px; border-radius: 8px; margin-top: 10px;">✅ Текущая локация</div>' : 
-                        (accessInfo.isRecommended ? 
-                            '<div style="background: rgba(76,175,80,0.2); padding: 8px; border-radius: 8px; margin-top: 10px;">🎯 Рекомендуется</div>' :
-                            '<div style="background: rgba(255,152,0,0.2); padding: 8px; border-radius: 8px; margin-top: 10px;">⚠️ Сложновато</div>')
-                    }
+                    <div style="margin-top: 15px; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1);">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9em;">
+                            <span>Ваш уровень:</span>
+                            <span style="color: #4FC3F7; font-weight: bold;">${playerLevel}</span>
+                        </div>
+                        <div style="height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 5px; overflow: hidden;">
+                            <div style="height: 100%; background: ${this.getLevelColor(playerLevel, location.minLevel, location.maxLevel)}; width: ${Math.min(100, (playerLevel / location.maxLevel) * 100)}%; border-radius: 3px;"></div>
+                        </div>
+                    </div>
                     
-                    ${isCurrent ? 
-                        '<div style="margin-top: 10px; font-size: 0.9em; color: #FFD700;">Боты будут уровней: ' + location.botMinLevel + '-' + location.botMaxLevel + '</div>' : 
-                        ''
+                    ${playerLevel < location.minLevel ? 
+                        '<div style="background: rgba(255,152,0,0.3); padding: 8px; border-radius: 8px; margin-top: 10px; font-size: 0.8em;">⚠️ Сложновато для вашего уровня</div>' : 
+                        (playerLevel <= location.maxLevel ? 
+                            '<div style="background: rgba(76,175,80,0.3); padding: 8px; border-radius: 8px; margin-top: 10px; font-size: 0.8em;">🎯 Идеально для вашего уровня</div>' :
+                            '<div style="background: rgba(33,150,243,0.3); padding: 8px; border-radius: 8px; margin-top: 10px; font-size: 0.8em;">💪 Вы переросли эту локацию</div>')
                     }
                 </div>
             `;
         }).join('');
+    }
+    
+    getLevelColor(playerLevel, minLevel, maxLevel) {
+        if (playerLevel < minLevel) return '#FF9800';
+        if (playerLevel <= maxLevel) return '#4CAF50';
+        return '#2196F3';
     }
 
     // Выбор локации
@@ -281,6 +485,11 @@ class MainMenu {
                     `Локация изменена: ${location.name}\nУровни ботов: ${location.botMinLevel}-${location.botMaxLevel}`, 
                     "success"
                 );
+                
+                // Обновляем соперников для выбранной гонки
+                if (this.selectedRaceType) {
+                    window.biathlonGame.initializeRace(this.selectedRaceType, locationId);
+                }
             } else {
                 this.showMessage("Ошибка при смене локации", "error");
             }
@@ -299,7 +508,7 @@ class MainMenu {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0,0,0,0.8);
+                background: rgba(0,0,0,0.9);
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -310,40 +519,44 @@ class MainMenu {
                     padding: 30px;
                     border-radius: 20px;
                     border: 3px solid #4FC3F7;
-                    max-width: 500px;
+                    max-width: 600px;
                     width: 90%;
                     text-align: center;
                     color: white;
                 ">
-                    <h2 style="color: #FFD700; margin-bottom: 20px;">⚙️ Настройки</h2>
+                    <h2 style="color: #FFD700; margin-bottom: 20px;">⚙️ Настройки игры</h2>
                     
                     <div style="text-align: left; margin-bottom: 25px;">
-                        <div style="margin-bottom: 15px;">
-                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">Система локаций</h3>
-                            <p>• Каждая локация имеет ограничения уровней ботов</p>
-                            <p>• Игрок может посещать любую локацию</p>
-                            <p>• Рекомендуется выбирать локации по уровню</p>
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">🎯 Новая система гонок</h3>
+                            <p>• <strong>Непрерывное движение</strong> - реалистичный расчет дистанции и времени</p>
+                            <p>• <strong>7 уровней интенсивности</strong> - от восстановления до спринта</p>
+                            <p>• <strong>Реальное время стрельбы</strong> - зависит от характеристик игрока</p>
+                            <p>• <strong>Система выносливости</strong> - ограничивает использование спринта</p>
                         </div>
                         
-                        <div style="margin-bottom: 15px;">
-                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">Управление</h3>
-                            <p>• Спринт: кнопка "💨 Спринт!"</p>
-                            <p>• Медленный темп: кнопка "🐢 Снизить темп"</p>
-                            <p>• Меню: кнопка "⚙️ Меню"</p>
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">🏁 Типы гонок</h3>
+                            <p>• <strong>Спринт</strong>: 3 круга × 3300м = 9.9 км, 2 стрельбы</p>
+                            <p>• <strong>Гонка преследования</strong>: 5 кругов × 2500м = 12.5 км, 4 стрельбы</p>
+                            <p>• <strong>Масс-старт</strong>: 5 кругов × 3000м = 15 км, 4 стрельбы</p>
+                            <p>• <strong>Индивидуальная</strong>: 5 кругов × 4000м = 20 км, 4 стрельбы</p>
                         </div>
                         
-                        <div style="margin-bottom: 15px;">
-                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">Характеристики</h3>
-                            <p>• Управляйте характеристиками в разделе "👤 Персонаж"</p>
-                            <p>• Распределяйте очки между навыками</p>
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">🎮 Управление</h3>
+                            <p>• <strong>Спринт</strong>: кнопка "💨 Спринт!" (требует ≥50% выносливости)</p>
+                            <p>• <strong>Медленный темп</strong>: кнопка "🐢 Снизить темп" (восстанавливает выносливость)</p>
+                            <p>• <strong>Пауза</strong>: кнопка "⚙️ Меню" во время гонки</p>
+                            <p>• <strong>Характеристики</strong>: раздел "👤 Персонаж" для прокачки</p>
                         </div>
                         
                         <div>
-                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">Гонки</h3>
-                            <p>• Спринт: 7.65 км, 3 круга, 2 стрельбы</p>
-                            <p>• Гонка преследования: 8.4 км, 4 круга, 4 стрельбы</p>
-                            <p>• Масс-старт: 12.75 км, 5 кругов, 4 стрельбы</p>
-                            <p>• Индивидуальная: 15 км, 5 кругов, 4 стрельбы</p>
+                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">📊 Система характеристик</h3>
+                            <p>• <strong>Скорость бега</strong>: 16-28 км/ч (4.44-7.78 м/с)</p>
+                            <p>• <strong>Меткость</strong>: 50-95% точность стрельбы</p>
+                            <p>• <strong>Скорость стрельбы</strong>: 6-3 секунды между выстрелами</p>
+                            <p>• <strong>Выносливость</strong>: 60-150 единиц максимальной выносливости</p>
                         </div>
                     </div>
                     
@@ -400,6 +613,10 @@ class MainMenu {
                 messageDiv.style.background = 'linear-gradient(135deg, #F44336, #C62828)';
                 messageDiv.style.color = 'white';
                 break;
+            case 'warning':
+                messageDiv.style.background = 'linear-gradient(135deg, #FF9800, #F57C00)';
+                messageDiv.style.color = 'white';
+                break;
             default:
                 messageDiv.style.background = 'linear-gradient(135deg, #2196F3, #1565C0)';
                 messageDiv.style.color = 'white';
@@ -425,6 +642,13 @@ class MainMenu {
                 screen.classList.remove('active');
             });
             mainMenu.classList.add('active');
+            
+            // Обновляем информацию при показе меню
+            this.updateRaceCards();
+            if (this.selectedRaceType) {
+                this.updateRecommendedStats(this.selectedRaceType);
+            }
+            
             console.log("MainMenu показан");
         }
     }
@@ -442,7 +666,13 @@ class MainMenu {
     }
     
     getSelectedRaceType() {
-        const selectedCard = document.querySelector('.race-card.selected');
-        return selectedCard ? selectedCard.getAttribute('data-race') : 'sprint';
+        return this.selectedRaceType;
+    }
+    
+    // Обновление при изменении характеристик игрока
+    refresh() {
+        if (this.selectedRaceType) {
+            this.updateRecommendedStats(this.selectedRaceType);
+        }
     }
 }
