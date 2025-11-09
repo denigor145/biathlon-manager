@@ -131,7 +131,9 @@ class BiathlonGame {
             currentShooting: null,
             shootingResults: [],
             shotsFired: 0,
-            shootingStartTime: 0
+            shootingStartTime: 0,
+            // НОВОЕ: Общее количество промахов за гонку
+            totalMisses: 0
         };
     }
     
@@ -190,7 +192,9 @@ class BiathlonGame {
                 shootingStartTime: 0,
                 // Характеристики AI
                 aggression: 0.5 + Math.random() * 0.5,
-                consistency: 0.7 + Math.random() * 0.3
+                consistency: 0.7 + Math.random() * 0.3,
+                // НОВОЕ: Общее количество промахов за гонку
+                totalMisses: 0
             });
         }
         
@@ -284,6 +288,8 @@ class BiathlonGame {
             competitor.position = index + 1;
             competitor.stamina = competitor.maxStamina;
             competitor.pulse = 120;
+            // НОВОЕ: Сбрасываем общее количество промахов
+            competitor.totalMisses = 0;
         });
         
         // Сортируем по времени
@@ -529,10 +535,13 @@ class BiathlonGame {
         // Подсчитываем промахи
         const misses = competitor.shootingResults.filter(result => !result).length;
         
+        // НОВОЕ: Добавляем промахи к общему количеству
+        competitor.totalMisses += misses;
+        
         // Применяем штрафы
         this.applyShootingPenalty(competitor, misses);
         
-        console.log(`${competitor.name}: ${5 - misses}/5, промахов: ${misses}`);
+        console.log(`${competitor.name}: ${5 - misses}/5, промахов: ${misses} (всего за гонку: ${competitor.totalMisses})`);
         
         // Сбрасываем состояние стрельбы
         competitor.isShooting = false;
@@ -726,5 +735,16 @@ class BiathlonGame {
     getRandomWind() {
         const windConditions = ["Слабый ветер", "Умеренный ветер", "Сильный ветер"];
         return windConditions[Math.floor(Math.random() * windConditions.length)];
+    }
+    
+    // НОВЫЙ МЕТОД: Получение значения штрафа для отображения
+    getPenaltyDisplayValue(competitor) {
+        if (this.currentRaceType === 'individual') {
+            // Для индивидуальной гонки показываем штрафные минуты
+            return competitor.penaltyMinutes;
+        } else {
+            // Для остальных гонок показываем общее количество промахов
+            return competitor.totalMisses;
+        }
     }
 }
