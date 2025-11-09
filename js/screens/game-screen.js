@@ -211,27 +211,29 @@ class GameScreen {
         competitorsList.innerHTML = window.biathlonGame.allCompetitors.map(competitor => {
             const gap = competitor.totalGameTime - leader.totalGameTime;
             const shortName = this.formatShortName(competitor.name);
+            const penaltyValue = window.biathlonGame.getPenaltyDisplayValue(competitor);
             
             if (competitor.isShooting) {
-                return this.createShootingRow(competitor, shortName, gap);
+                return this.createShootingRow(competitor, shortName, gap, penaltyValue);
             } else {
-                return this.createNormalRow(competitor, shortName, gap);
+                return this.createNormalRow(competitor, shortName, gap, penaltyValue);
             }
         }).join('');
     }
 
-    createNormalRow(competitor, shortName, gap) {
+    createNormalRow(competitor, shortName, gap, penaltyValue) {
         return `
             <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
                 <div class="name">${shortName}</div>
                 <div class="gap">+${this.formatTime(gap)}</div>
+                <div class="penalty">${penaltyValue > 0 ? penaltyValue : ''}</div>
             </div>
         `;
     }
 
-    createShootingRow(competitor, shortName, gap) {
+    createShootingRow(competitor, shortName, gap, penaltyValue) {
         const results = window.biathlonGame.getShootingResults(competitor);
         let targetsHTML = '<div class="targets-inline">';
         
@@ -255,6 +257,7 @@ class GameScreen {
                 <div class="targets-container">
                     ${targetsHTML}
                 </div>
+                <div class="penalty">${penaltyValue > 0 ? penaltyValue : ''}</div>
             </div>
         `;
     }
