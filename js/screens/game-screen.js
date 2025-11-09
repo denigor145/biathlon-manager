@@ -90,12 +90,17 @@ class GameScreen {
         if (!window.biathlonGame) return;
         
         const race = window.biathlonGame.getCurrentRace();
+        const location = window.biathlonGame.getCurrentLocation();
         let message = `🏁 ${race.name}\n`;
+        message += `📍 Локация: ${location.name}\n`;
         message += `📊 Сегмент: ${window.biathlonGame.player.completedSegments}/${race.totalSegments}\n`;
         message += `🏅 Позиция: ${window.biathlonGame.player.position}\n`;
         message += `💪 Выносливость: ${Math.round(window.biathlonGame.player.stamina)}%\n`;
         message += `❤️ Пульс: ${Math.round(window.biathlonGame.player.pulse)}\n`;
         message += `⏱️ Общее время: ${this.formatTime(window.biathlonGame.player.totalGameTime)}\n\n`;
+        
+        // Информация о ботах на текущей локации
+        message += `🤖 Уровни ботов: ${location.botMinLevel}-${location.botMaxLevel}\n\n`;
         
         if (window.playerProfile) {
             const stats = window.playerProfile.getAllStats();
@@ -103,7 +108,8 @@ class GameScreen {
             message += `🏃 Скорость: ${window.playerProfile.getFormattedStat('runningSpeed')}\n`;
             message += `🎯 Меткость: ${window.playerProfile.getFormattedStat('accuracy')}\n`;
             message += `⚡ Стрельба: ${window.playerProfile.getFormattedStat('shootingSpeed')}\n`;
-            message += `💪 Выносливость: ${window.playerProfile.getFormattedStat('stamina')}`;
+            message += `💪 Выносливость: ${window.playerProfile.getFormattedStat('stamina')}\n`;
+            message += `📊 Общий уровень: ${window.playerProfile.getPlayerLevel()}`;
         }
         
         alert(message);
@@ -157,12 +163,39 @@ class GameScreen {
         if (!window.biathlonGame) return;
         
         const race = window.biathlonGame.getSelectedRace();
+        const location = window.biathlonGame.getCurrentLocation();
         
         this.updateElement('startRaceName', `${race.name} - ${race.distance}`);
         this.updateElement('startDistance', race.distance);
         this.updateElement('startShootings', race.shootingRounds.length);
         this.updateElement('startPosition', window.biathlonGame.player.position);
         this.updateElement('startStamina', Math.round(window.biathlonGame.player.stamina) + '%');
+        
+        // Добавляем информацию о локации и ботах
+        const startStageScreen = document.getElementById('startStageScreen');
+        if (startStageScreen) {
+            let locationInfo = startStageScreen.querySelector('.location-info');
+            if (!locationInfo) {
+                locationInfo = document.createElement('div');
+                locationInfo.className = 'location-info';
+                locationInfo.style.cssText = `
+                    background: rgba(255,255,255,0.1);
+                    border-radius: 10px;
+                    padding: 10px;
+                    margin: 15px 0;
+                    text-align: center;
+                `;
+                const statsContainer = startStageScreen.querySelector('.stage-stats');
+                statsContainer.parentNode.insertBefore(locationInfo, statsContainer);
+            }
+            
+            locationInfo.innerHTML = `
+                <div style="font-size: 0.9em; opacity: 0.8;">📍 ${location.name}</div>
+                <div style="font-size: 0.8em; color: #FF5252; margin-top: 5px;">
+                    Уровни ботов: ${location.botMinLevel}-${location.botMaxLevel}
+                </div>
+            `;
+        }
         
         this.showStageScreen('startStageScreen');
     }
@@ -222,11 +255,18 @@ class GameScreen {
     }
 
     createNormalRow(competitor, shortName, gap, penaltyValue) {
+        // Добавляем отображение уровня для ботов
+        const levelInfo = !competitor.isPlayer ? 
+            `<div style="font-size: 9px; color: #888; margin-top: 2px;">Ур. ${competitor.level}</div>` : '';
+        
         return `
             <div class="compact-row ${competitor.isPlayer ? 'player' : ''}">
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
-                <div class="name">${shortName}</div>
+                <div class="name">
+                    ${shortName}
+                    ${levelInfo}
+                </div>
                 <div class="gap">+${this.formatTime(gap)}</div>
                 <div class="penalty">${penaltyValue > 0 ? penaltyValue : ''}</div>
             </div>
@@ -249,11 +289,18 @@ class GameScreen {
         
         targetsHTML += '</div>';
 
+        // Добавляем отображение уровня для ботов
+        const levelInfo = !competitor.isPlayer ? 
+            `<div style="font-size: 9px; color: #888; margin-top: 2px;">Ур. ${competitor.level}</div>` : '';
+
         return `
             <div class="compact-row ${competitor.isPlayer ? 'player' : 'shooting'}">
                 <div class="position">${competitor.position}</div>
                 <div class="flag">${competitor.flag}</div>
-                <div class="name">${shortName}</div>
+                <div class="name">
+                    ${shortName}
+                    ${levelInfo}
+                </div>
                 <div class="targets-container">
                     ${targetsHTML}
                 </div>
