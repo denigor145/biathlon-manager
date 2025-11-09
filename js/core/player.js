@@ -2,10 +2,10 @@ class PlayerProfile {
     constructor() {
         // Базовые характеристики игрока - начинаем с 0
         this.stats = {
-            runningSpeed: 0,    // Влияет на скорость в м/с
-            accuracy: 0,        // Влияет на точность стрельбы
-            shootingSpeed: 0,   // Влияет на время между выстрелами
-            stamina: 0          // Влияет на максимальную выносливость
+            runningSpeed: 0,    // Влияет на скорость в м/с (от 2.78 до 5 м/с)
+            accuracy: 0,        // Влияет на точность стрельбы (от 10% до 95%)
+            shootingSpeed: 0,   // Влияет на время между выстрелами (от 6 до 3 секунд)
+            stamina: 0          // Влияет на максимальную выносливость (от 60 до 150)
         };
         
         // Очки для распределения
@@ -259,11 +259,11 @@ class PlayerProfile {
         }
     }
     
-    // Применить характеристики к игроку в гонке
+    // Применить характеристики к игроку в гонке (ОБНОВЛЕНО для новой системы времени)
     applyToGamePlayer(gamePlayer) {
         if (!gamePlayer) return;
         
-        // Скорость в м/с
+        // Скорость в м/с (для расчета времени прохождения отрезков)
         gamePlayer.speedMps = this.getSpeedMps();
         
         // Выносливость
@@ -276,19 +276,78 @@ class PlayerProfile {
             standing: this.getShootingAccuracy('standing')
         };
         
-        // Скорость стрельбы
-        gamePlayer.shootingSpeed = this.getShotInterval();
+        // Скорость стрельбы (интервал между выстрелами в секундах)
+        gamePlayer.shootingInterval = this.getShotInterval();
         
         // Уровень для отображения
         gamePlayer.level = this.getPlayerLevel();
 
         console.log("Характеристики применены к игроку:", {
-            speed: gamePlayer.speedMps + ' м/с',
-            shootingSpeed: gamePlayer.shootingSpeed + 'с',
+            speed: gamePlayer.speedMps.toFixed(2) + ' м/с (' + (gamePlayer.speedMps * 3.6).toFixed(1) + ' км/ч)',
+            shootingInterval: gamePlayer.shootingInterval.toFixed(1) + 'с',
             accuracyProne: (gamePlayer.shooting.prone * 100).toFixed(1) + '%',
             accuracyStanding: (gamePlayer.shooting.standing * 100).toFixed(1) + '%',
             stamina: gamePlayer.stamina,
             playerLevel: gamePlayer.level
         });
+    }
+    
+    // Получить информацию о рекомендуемых характеристиках для гонки (совместимость с RaceManager)
+    getRecommendedStats(raceType) {
+        // Базовые рекомендации на основе сложности гонки
+        const difficulty = this.calculateRaceDifficulty(raceType);
+        
+        return {
+            runningSpeed: Math.max(5, difficulty * 0.8),
+            accuracy: Math.max(70, difficulty * 5),
+            shootingSpeed: Math.max(2.0, difficulty * 0.3),
+            stamina: Math.max(100, difficulty * 10)
+        };
+    }
+    
+    // Вспомогательный метод для расчета сложности гонки
+    calculateRaceDifficulty(raceType) {
+        // Упрощенный расчет сложности гонки
+        const raceInfo = this.getRaceInfo(raceType);
+        if (!raceInfo) return 0;
+        
+        let difficulty = 0;
+        difficulty += raceInfo.shootingRounds.length * 2;
+        difficulty += raceInfo.totalLaps;
+        
+        return difficulty;
+    }
+    
+    // Вспомогательный метод для получения информации о гонке
+    getRaceInfo(raceType) {
+        // Этот метод должен быть совместим с RaceManager
+        if (window.biathlonGame && window.biathlonGame.raceTypes) {
+            return window.biathlonGame.raceTypes[raceType] || null;
+        }
+        return null;
+    }
+    
+    // Получить расчетное время прохождения отрезка (150м)
+    getSegmentTime() {
+        const speedMps = this.getSpeedMps();
+        return 150 / speedMps; // Время в секундах для прохождения 150 метров
+    }
+    
+    // Получить расчетное время стрельбы (5 выстрелов)
+    getShootingTime() {
+        const shotInterval = this.getShotInterval();
+        return shotInterval * 5; // Общее время стрельбы
+    }
+    
+    // Получить информацию о прогрессе для отображения
+    getProgressInfo() {
+        return {
+            segmentTime: this.getSegmentTime().toFixed(1) + 'с',
+            shootingTime: this.getShootingTime().toFixed(1) + 'с',
+            totalLevel: this.getPlayerLevel(),
+            speed: (this.getSpeedMps() * 3.6).toFixed(1) + ' км/ч',
+            accuracyProne: (this.getShootingAccuracy('prone') * 100).toFixed(1) + '%',
+            accuracyStanding: (this.getShootingAccuracy('standing') * 100).toFixed(1) + '%'
+        };
     }
 }
