@@ -162,7 +162,7 @@ class MainMenu {
                     padding: 30px;
                     border-radius: 20px;
                     border: 3px solid #4FC3F7;
-                    max-width: 600px;
+                    max-width: 800px;
                     width: 90%;
                     text-align: center;
                     color: white;
@@ -170,8 +170,9 @@ class MainMenu {
                     overflow-y: auto;
                 ">
                     <h2 style="color: #FFD700; margin-bottom: 20px;">🌍 Выбор локации</h2>
+                    <p style="margin-bottom: 20px; opacity: 0.8;">Уровни ботов на каждой локации ограничены для сбалансированного соревнования</p>
                     
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 25px;">
                         ${this.generateLocationCards()}
                     </div>
                     
@@ -193,7 +194,6 @@ class MainMenu {
         tempDiv.innerHTML = locationHTML;
         document.body.appendChild(tempDiv.firstElementChild);
         
-        // Добавляем обработчики для выбора локации
         tempDiv.firstElementChild.querySelectorAll('.location-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 const locationId = parseInt(e.currentTarget.getAttribute('data-location'));
@@ -210,40 +210,61 @@ class MainMenu {
         }
     }
 
-    // Генерация карточек локаций
+    // Генерация карточек локаций с информацией об уровнях ботов
     generateLocationCards() {
         if (!window.biathlonGame) return '';
         
         return window.biathlonGame.locations.map((location, index) => {
-            const playerLevel = window.playerProfile ? Math.max(
-                window.playerProfile.stats.runningSpeed,
-                window.playerProfile.stats.accuracy,
-                window.playerProfile.stats.shootingSpeed,
-                window.playerProfile.stats.stamina
-            ) : 0;
-            
-            const isLocked = playerLevel < location.minLevel;
+            const accessInfo = window.biathlonGame.getLocationAccessInfo(index);
             const isCurrent = window.biathlonGame.currentLocation === index;
             
             return `
-                <div class="location-card ${isCurrent ? 'selected' : ''} ${isLocked ? 'locked' : ''}" 
+                <div class="location-card ${isCurrent ? 'selected' : ''}" 
                      data-location="${index}"
                      style="
-                         background: ${isLocked ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.15)'};
+                         background: rgba(255,255,255,0.15);
                          border-radius: 15px;
-                         padding: 15px;
-                         cursor: ${isLocked ? 'not-allowed' : 'pointer'};
-                         border: 2px solid ${isCurrent ? '#FFD700' : (isLocked ? '#666' : '#4FC3F7')};
-                         opacity: ${isLocked ? 0.6 : 1};
+                         padding: 20px;
+                         cursor: pointer;
+                         border: 2px solid ${isCurrent ? '#FFD700' : '#4FC3F7'};
+                         transition: all 0.3s ease;
                      ">
-                    <h3 style="color: ${isLocked ? '#999' : '#4FC3F7'}; margin-bottom: 10px;">
-                        ${isLocked ? '🔒 ' : ''}${location.name}
+                    <h3 style="color: #4FC3F7; margin-bottom: 15px; font-size: 1.2em;">
+                        ${location.name}
                     </h3>
-                    <p style="font-size: 12px; margin-bottom: 8px;">Уровни: ${location.minLevel}-${location.maxLevel}</p>
-                    <p style="font-size: 12px; margin-bottom: 8px;">Сложность: ${'⭐'.repeat(location.difficulty)}</p>
-                    ${isLocked ? 
-                        `<p style="font-size: 11px; color: #FF5252;">Требуется уровень: ${location.minLevel}+</p>` : 
-                        `<p style="font-size: 11px; color: #4CAF50;">Доступно</p>`
+                    
+                    <div style="text-align: left; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="opacity: 0.8;">Сложность:</span>
+                            <span style="color: #FFD700;">${'⭐'.repeat(location.difficulty)}</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="opacity: 0.8;">Уровни ботов:</span>
+                            <span style="color: #FF5252; font-weight: bold;">${location.botMinLevel}-${location.botMaxLevel}</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="opacity: 0.8;">Реком. уровень:</span>
+                            <span style="color: ${accessInfo.isRecommended ? '#4CAF50' : '#FF9800'};">${location.minLevel}+</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="opacity: 0.8;">Ваш уровень:</span>
+                            <span style="color: #4FC3F7; font-weight: bold;">${accessInfo.playerLevel}</span>
+                        </div>
+                    </div>
+                    
+                    ${isCurrent ? 
+                        '<div style="background: rgba(255,215,0,0.2); padding: 8px; border-radius: 8px; margin-top: 10px;">✅ Текущая локация</div>' : 
+                        (accessInfo.isRecommended ? 
+                            '<div style="background: rgba(76,175,80,0.2); padding: 8px; border-radius: 8px; margin-top: 10px;">🎯 Рекомендуется</div>' :
+                            '<div style="background: rgba(255,152,0,0.2); padding: 8px; border-radius: 8px; margin-top: 10px;">⚠️ Сложновато</div>')
+                    }
+                    
+                    ${isCurrent ? 
+                        '<div style="margin-top: 10px; font-size: 0.9em; color: #FFD700;">Боты будут уровней: ' + location.botMinLevel + '-' + location.botMaxLevel + '</div>' : 
+                        ''
                     }
                 </div>
             `;
@@ -255,7 +276,11 @@ class MainMenu {
         if (window.biathlonGame) {
             const success = window.biathlonGame.setLocation(locationId);
             if (success) {
-                this.showMessage(`Локация изменена: ${window.biathlonGame.getCurrentLocation().name}`, "success");
+                const location = window.biathlonGame.getCurrentLocation();
+                this.showMessage(
+                    `Локация изменена: ${location.name}\nУровни ботов: ${location.botMinLevel}-${location.botMaxLevel}`, 
+                    "success"
+                );
             } else {
                 this.showMessage("Ошибка при смене локации", "error");
             }
@@ -293,6 +318,13 @@ class MainMenu {
                     <h2 style="color: #FFD700; margin-bottom: 20px;">⚙️ Настройки</h2>
                     
                     <div style="text-align: left; margin-bottom: 25px;">
+                        <div style="margin-bottom: 15px;">
+                            <h3 style="color: #4FC3F7; margin-bottom: 10px;">Система локаций</h3>
+                            <p>• Каждая локация имеет ограничения уровней ботов</p>
+                            <p>• Игрок может посещать любую локацию</p>
+                            <p>• Рекомендуется выбирать локации по уровню</p>
+                        </div>
+                        
                         <div style="margin-bottom: 15px;">
                             <h3 style="color: #4FC3F7; margin-bottom: 10px;">Управление</h3>
                             <p>• Спринт: кнопка "💨 Спринт!"</p>
