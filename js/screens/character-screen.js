@@ -109,6 +109,7 @@ class CharacterScreen {
         if (success) {
             this.animateStatChange(statName, 'increase');
             this.updateButtonStates();
+            this.updateLocationRecommendations();
         } else {
             this.showMessage("Недостаточно очков для улучшения!", "error");
         }
@@ -125,6 +126,7 @@ class CharacterScreen {
         if (success) {
             this.animateStatChange(statName, 'decrease');
             this.updateButtonStates();
+            this.updateLocationRecommendations();
         } else {
             this.showMessage("Характеристика уже минимальная!", "error");
         }
@@ -168,6 +170,7 @@ class CharacterScreen {
         }
         
         this.updateButtonStates();
+        this.updateLocationRecommendations();
         
         console.log("Статистика обновлена в UI");
     }
@@ -195,6 +198,27 @@ class CharacterScreen {
         });
     }
     
+    // Обновление рекомендаций по локациям
+    updateLocationRecommendations() {
+        if (!window.biathlonGame || !window.playerProfile) return;
+        
+        const playerLevel = window.playerProfile.getPlayerLevel();
+        const locationsInfo = window.biathlonGame.locations.map(location => {
+            return {
+                name: location.name,
+                minLevel: location.minLevel,
+                maxLevel: location.maxLevel,
+                botMinLevel: location.botMinLevel,
+                botMaxLevel: location.botMaxLevel,
+                isRecommended: playerLevel >= location.minLevel,
+                isCurrent: window.biathlonGame.currentLocation === location.id
+            };
+        });
+        
+        // Можно добавить отображение рекомендаций в UI, если нужно
+        console.log("Рекомендации по локациям обновлены. Уровень игрока:", playerLevel);
+    }
+    
     resetStats() {
         if (!window.playerProfile) return;
         
@@ -215,6 +239,31 @@ class CharacterScreen {
         }
         
         this.showMessage("Характеристики сохранены и применены!", "success");
+        
+        // Показываем информацию о текущем уровне и рекомендациях
+        const playerLevel = window.playerProfile.getPlayerLevel();
+        const currentLocation = window.biathlonGame.getCurrentLocation();
+        
+        let recommendationMessage = `Ваш уровень: ${playerLevel}\n`;
+        recommendationMessage += `Текущая локация: ${currentLocation.name}\n`;
+        recommendationMessage += `Уровни ботов: ${currentLocation.botMinLevel}-${currentLocation.botMaxLevel}\n\n`;
+        
+        if (playerLevel < currentLocation.minLevel) {
+            recommendationMessage += `⚠️  Эта локация может быть сложной для вашего уровня.\n`;
+            recommendationMessage += `Рекомендуемый уровень: ${currentLocation.minLevel}+`;
+        } else if (playerLevel >= currentLocation.minLevel && playerLevel <= currentLocation.maxLevel) {
+            recommendationMessage += `🎯  Эта локация идеально подходит для вашего уровня!`;
+        } else {
+            recommendationMessage += `💪  Вы переросли эту локацию! Попробуйте более сложные.`;
+        }
+        
+        setTimeout(() => {
+            if (confirm(recommendationMessage + "\n\nХотите перейти к выбору локаций?")) {
+                if (window.mainMenu) {
+                    window.mainMenu.showLocationSelection();
+                }
+            }
+        }, 500);
     }
     
     showMessage(message, type = 'info') {
