@@ -2,28 +2,28 @@ class PlayerProfile {
     constructor() {
         // Базовые характеристики игрока - начинаем с 0
         this.stats = {
-            runningSpeed: 0,    // Влияет на скорость в м/с (от 2.78 до 5 м/с)
-            accuracy: 0,        // Влияет на точность стрельбы (от 10% до 95%)
+            runningSpeed: 0,    // Влияет на базовую скорость (от 4.44 до 7.78 м/с)
+            accuracy: 0,        // Влияет на точность стрельбы (от 50% до 95%)
             shootingSpeed: 0,   // Влияет на время между выстрелами (от 6 до 3 секунд)
             stamina: 0          // Влияет на максимальную выносливость (от 60 до 150)
         };
         
         // Очки для распределения
-        this.availablePoints = 60;
+        this.availablePoints = GameConstants.STATS.STARTING_POINTS;
         
         // Минимальные и максимальные значения характеристик
         this.minValues = {
-            runningSpeed: 0,
-            accuracy: 0,
-            shootingSpeed: 0,
-            stamina: 0
+            runningSpeed: GameConstants.STATS.MIN_RUNNING_SPEED,
+            accuracy: GameConstants.STATS.MIN_ACCURACY,
+            shootingSpeed: GameConstants.STATS.MIN_SHOOTING_SPEED,
+            stamina: GameConstants.STATS.MIN_STAMINA
         };
         
         this.maxValues = {
-            runningSpeed: 60,
-            accuracy: 60,
-            shootingSpeed: 60,
-            stamina: 60
+            runningSpeed: GameConstants.STATS.MAX_RUNNING_SPEED,
+            accuracy: GameConstants.STATS.MAX_ACCURACY,
+            shootingSpeed: GameConstants.STATS.MAX_SHOOTING_SPEED,
+            stamina: GameConstants.STATS.MAX_STAMINA
         };
         
         // Стоимость улучшения
@@ -34,10 +34,17 @@ class PlayerProfile {
             stamina: 1
         };
         
+        // Экипировка (будет добавляться позже)
+        this.equipment = {
+            skis: { level: 1, speedBonus: 0 },
+            rifle: { level: 1, accuracyBonus: 0, shootingSpeedBonus: 0 },
+            suit: { level: 1, staminaBonus: 0 }
+        };
+        
         // Загружаем сохраненные данные
         this.loadFromStorage();
         
-        console.log("PlayerProfile инициализирован:", this.stats);
+        console.log("PlayerProfile инициализирован с новой системой:", this.stats);
     }
     
     // Увеличить характеристику
@@ -118,7 +125,7 @@ class PlayerProfile {
             stamina: 0
         };
         
-        this.availablePoints = 60;
+        this.availablePoints = GameConstants.STATS.STARTING_POINTS;
         
         console.log("Характеристики сброшены, доступно очков:", this.availablePoints);
         
@@ -128,38 +135,49 @@ class PlayerProfile {
         return true;
     }
     
-    // Получить скорость в м/с (от 2.78 до 5 м/с)
-    getSpeedMps() {
+    // === РАСЧЕТНЫЕ ХАРАКТЕРИСТИКИ ===
+    
+    // Получить базовую скорость в м/с (от 4.44 до 7.78 м/с)
+    getBaseSpeedMps() {
         const level = this.stats.runningSpeed;
-        // От 10 км/ч (2.78 м/с) до 18 км/ч (5 м/с)
-        return 2.78 + (level * (5 - 2.78) / 60);
+        const minSpeed = GameConstants.PLAYER.MIN_SPEED;
+        const maxSpeed = GameConstants.PLAYER.MAX_SPEED;
+        
+        return minSpeed + (level * (maxSpeed - minSpeed) / 60);
     }
     
     // Получить время между выстрелами в секундах (от 6 до 3 секунд)
     getShotInterval() {
         const level = this.stats.shootingSpeed;
-        // От 6 секунд до 3 секунд
-        return 6 - (level * (6 - 3) / 60);
+        const minInterval = GameConstants.SHOOTING.MIN_SHOOTING_INTERVAL;
+        const maxInterval = GameConstants.SHOOTING.MAX_SHOOTING_INTERVAL;
+        
+        return maxInterval - (level * (maxInterval - minInterval) / 60);
     }
     
-    // Получить точность стрельбы (от 0.1 до 0.95)
+    // Получить точность стрельбы (от 0.5 до 0.95)
     getShootingAccuracy(position) {
         const level = this.stats.accuracy;
-        const baseAccuracy = 0.1 + (level * (0.95 - 0.1) / 60);
+        const minAccuracy = GameConstants.PLAYER.MIN_ACCURACY;
+        const maxAccuracy = GameConstants.PLAYER.MAX_ACCURACY;
+        
+        const baseAccuracy = minAccuracy + (level * (maxAccuracy - minAccuracy) / 60);
         
         // Модификатор для разных положений
         if (position === 'prone') {
-            return Math.min(0.95, baseAccuracy * 1.1); // +10% к точности лёжа
+            return Math.min(maxAccuracy, baseAccuracy * GameConstants.SHOOTING.PRONE_ACCURACY_BONUS);
         } else { // standing
-            return Math.min(0.85, baseAccuracy * 0.9); // -10% к точности стоя
+            return Math.min(maxAccuracy, baseAccuracy * GameConstants.SHOOTING.STANDING_ACCURACY_PENALTY);
         }
     }
     
     // Получить максимальную выносливость
     getMaxStamina() {
         const level = this.stats.stamina;
-        // От 60 до 150
-        return 60 + (level * (150 - 60) / 60);
+        const minStamina = 60;
+        const maxStamina = 150;
+        
+        return minStamina + (level * (maxStamina - minStamina) / 60);
     }
     
     // Получить общий уровень игрока
@@ -171,6 +189,27 @@ class PlayerProfile {
             this.stats.stamina
         );
     }
+    
+    // Получить расчетное время прохождения круга (в секундах)
+    getLapTime(lapDistance = 3000) {
+        const speedMps = this.getBaseSpeedMps();
+        return lapDistance / speedMps;
+    }
+    
+    // Получить расчетное время стрельбы (5 выстрелов)
+    getShootingTime() {
+        const shotInterval = this.getShotInterval();
+        return shotInterval * 5; // Общее время стрельбы
+    }
+    
+    // Получить расчетное время штрафного круга
+    getPenaltyLoopTime() {
+        const speedMps = this.getBaseSpeedMps() * 0.8; // Медленнее на штрафных
+        const penaltyDistance = GameConstants.RACE.PENALTY_LOOP_LENGTH;
+        return penaltyDistance / speedMps;
+    }
+    
+    // === ИНФОРМАЦИЯ ДЛЯ ОТОБРАЖЕНИЯ ===
     
     // Получить значение характеристики
     getStat(statName) {
@@ -192,20 +231,88 @@ class PlayerProfile {
         const value = this.stats[statName];
         
         switch(statName) {
-            case 'accuracy':
-                return Math.round(this.getShootingAccuracy('prone') * 100) + '%';
             case 'runningSpeed':
-                const speedMps = this.getSpeedMps();
+                const speedMps = this.getBaseSpeedMps();
                 const speedKmh = (speedMps * 3.6).toFixed(1);
-                return speedKmh + ' км/ч';
+                return `${speedKmh} км/ч (${value}/60)`;
+                
+            case 'accuracy':
+                const proneAccuracy = this.getShootingAccuracy('prone');
+                const standingAccuracy = this.getShootingAccuracy('standing');
+                return `Лёжа: ${Math.round(proneAccuracy * 100)}%, Стоя: ${Math.round(standingAccuracy * 100)}%`;
+                
             case 'shootingSpeed':
                 const interval = this.getShotInterval();
-                return interval.toFixed(1) + 'с';
+                return `${interval.toFixed(1)}с (${value}/60)`;
+                
             case 'stamina':
-                return this.getMaxStamina().toFixed(0);
+                const maxStamina = this.getMaxStamina();
+                return `${maxStamina} (${value}/60)`;
+                
             default:
                 return value.toString();
         }
+    }
+    
+    // Получить информацию о прогрессе для отображения
+    getProgressInfo() {
+        const lapTime = this.getLapTime(3000); // для среднего круга 3000м
+        const shootingTime = this.getShootingTime();
+        const penaltyTime = this.getPenaltyLoopTime();
+        
+        return {
+            // Основные показатели
+            speed: (this.getBaseSpeedMps() * 3.6).toFixed(1) + ' км/ч',
+            lapTime: this.formatTime(lapTime),
+            shootingTime: this.formatTime(shootingTime),
+            penaltyTime: this.formatTime(penaltyTime),
+            
+            // Точность
+            accuracyProne: (this.getShootingAccuracy('prone') * 100).toFixed(1) + '%',
+            accuracyStanding: (this.getShootingAccuracy('standing') * 100).toFixed(1) + '%',
+            
+            // Выносливость
+            maxStamina: this.getMaxStamina().toFixed(0),
+            
+            // Уровень
+            totalLevel: this.getPlayerLevel(),
+            
+            // Расчетное время для разных гонок
+            sprintTime: this.formatTime(this.calculateRaceTime('sprint')),
+            pursuitTime: this.formatTime(this.calculateRaceTime('pursuit')),
+            massTime: this.formatTime(this.calculateRaceTime('mass')),
+            individualTime: this.formatTime(this.calculateRaceTime('individual'))
+        };
+    }
+    
+    // Расчет времени для конкретной гонки
+    calculateRaceTime(raceType) {
+        const race = GameConstants.RACE_TYPES[raceType.toUpperCase()];
+        if (!race) return 0;
+        
+        // Время гонки = время на трассе + время стрельбы
+        const lapTime = this.getLapTime(race.lapDistance);
+        const shootingTime = this.getShootingTime();
+        
+        // Общее время на круги
+        const totalLapTime = lapTime * race.totalLaps;
+        
+        // Время стрельбы (все стрельбы)
+        const totalShootingTime = shootingTime * race.shootingRounds.length;
+        
+        // Добавляем 10% на случайные факторы
+        return (totalLapTime + totalShootingTime) * 1.1;
+    }
+    
+    // Форматирование времени
+    formatTime(seconds) {
+        if (seconds < 60) {
+            return seconds.toFixed(1) + 'с';
+        }
+        
+        const mins = Math.floor(seconds / 60);
+        const secs = (seconds % 60).toFixed(1);
+        return `${mins}:${secs.padStart(4, '0')}`;
     }
     
     // Проверить, можно ли увеличить характеристику
@@ -232,9 +339,11 @@ class PlayerProfile {
             const saveData = {
                 stats: this.stats,
                 availablePoints: this.availablePoints,
-                version: '1.0'
+                equipment: this.equipment,
+                version: '3.0',
+                lastSaved: new Date().toISOString()
             };
-            localStorage.setItem('biathlonPlayerProfile', JSON.stringify(saveData));
+            localStorage.setItem(GameConstants.STORAGE_KEYS.PLAYER_PROFILE, JSON.stringify(saveData));
             console.log("Данные игрока сохранены");
         } catch (error) {
             console.error("Ошибка сохранения данных:", error);
@@ -244,14 +353,25 @@ class PlayerProfile {
     // Загрузить из localStorage
     loadFromStorage() {
         try {
-            const savedData = localStorage.getItem('biathlonPlayerProfile');
+            const savedData = localStorage.getItem(GameConstants.STORAGE_KEYS.PLAYER_PROFILE);
             if (savedData) {
                 const data = JSON.parse(savedData);
                 
-                if (data.version === '1.0') {
+                // Поддержка разных версий
+                if (data.version === '3.0') {
                     this.stats = { ...this.stats, ...data.stats };
                     this.availablePoints = data.availablePoints || this.availablePoints;
-                    console.log("Данные игрока загружены:", this.stats);
+                    this.equipment = data.equipment || this.equipment;
+                    console.log("Данные игрока загружены (v3.0):", this.stats);
+                } else if (data.version === '1.0' || data.version === '2.0') {
+                    // Миграция со старых версий
+                    this.migrateFromOldVersion(data);
+                } else {
+                    // Старый формат без версии
+                    this.stats = data.stats || data || this.stats;
+                    this.availablePoints = data.availablePoints || this.availablePoints;
+                    console.log("Данные игрока загружены (старый формат):", this.stats);
+                    this.saveToStorage(); // Сохраняем в новом формате
                 }
             }
         } catch (error) {
@@ -259,12 +379,28 @@ class PlayerProfile {
         }
     }
     
-    // Применить характеристики к игроку в гонке (ОБНОВЛЕНО для новой системы времени)
-    applyToGamePlayer(gamePlayer) {
-        if (!gamePlayer) return;
+    // Миграция данных со старых версий
+    migrateFromOldVersion(oldData) {
+        console.log("Миграция данных игрока со старой версии...");
         
-        // Скорость в м/с (для расчета времени прохождения отрезков)
-        gamePlayer.speedMps = this.getSpeedMps();
+        this.stats = oldData.stats || this.stats;
+        this.availablePoints = oldData.availablePoints || this.availablePoints;
+        
+        // Сохраняем в новом формате
+        this.saveToStorage();
+        console.log("Миграция завершена:", this.stats);
+    }
+    
+    // Применить характеристики к игроку в гонке
+    applyToGamePlayer(gamePlayer) {
+        if (!gamePlayer) {
+            console.error("Не передан объект игрока для применения характеристик");
+            return;
+        }
+        
+        // Базовая скорость в м/с
+        gamePlayer.baseSpeedMps = this.getBaseSpeedMps();
+        gamePlayer.currentSpeedMps = gamePlayer.baseSpeedMps;
         
         // Выносливость
         gamePlayer.maxStamina = this.getMaxStamina();
@@ -281,73 +417,167 @@ class PlayerProfile {
         
         // Уровень для отображения
         gamePlayer.level = this.getPlayerLevel();
-
+        
+        // Расчетные показатели для отладки
+        const progressInfo = this.getProgressInfo();
+        
         console.log("Характеристики применены к игроку:", {
-            speed: gamePlayer.speedMps.toFixed(2) + ' м/с (' + (gamePlayer.speedMps * 3.6).toFixed(1) + ' км/ч)',
-            shootingInterval: gamePlayer.shootingInterval.toFixed(1) + 'с',
-            accuracyProne: (gamePlayer.shooting.prone * 100).toFixed(1) + '%',
-            accuracyStanding: (gamePlayer.shooting.standing * 100).toFixed(1) + '%',
-            stamina: gamePlayer.stamina,
-            playerLevel: gamePlayer.level
+            speed: `${gamePlayer.baseSpeedMps.toFixed(2)} м/с (${(gamePlayer.baseSpeedMps * 3.6).toFixed(1)} км/ч)`,
+            shootingInterval: `${gamePlayer.shootingInterval.toFixed(1)}с`,
+            accuracyProne: `${(gamePlayer.shooting.prone * 100).toFixed(1)}%`,
+            accuracyStanding: `${(gamePlayer.shooting.standing * 100).toFixed(1)}%`,
+            stamina: `${gamePlayer.stamina}/${gamePlayer.maxStamina}`,
+            playerLevel: gamePlayer.level,
+            lapTime: progressInfo.lapTime,
+            shootingTime: progressInfo.shootingTime
         });
+        
+        return true;
     }
     
-    // Получить информацию о рекомендуемых характеристиках для гонки (совместимость с RaceManager)
+    // Получить информацию о рекомендуемых характеристиках для гонки
     getRecommendedStats(raceType) {
-        // Базовые рекомендации на основе сложности гонки
-        const difficulty = this.calculateRaceDifficulty(raceType);
-        
-        return {
-            runningSpeed: Math.max(5, difficulty * 0.8),
-            accuracy: Math.max(70, difficulty * 5),
-            shootingSpeed: Math.max(2.0, difficulty * 0.3),
-            stamina: Math.max(100, difficulty * 10)
-        };
-    }
-    
-    // Вспомогательный метод для расчета сложности гонки
-    calculateRaceDifficulty(raceType) {
-        // Упрощенный расчет сложности гонки
-        const raceInfo = this.getRaceInfo(raceType);
-        if (!raceInfo) return 0;
-        
-        let difficulty = 0;
-        difficulty += raceInfo.shootingRounds.length * 2;
-        difficulty += raceInfo.totalLaps;
-        
-        return difficulty;
-    }
-    
-    // Вспомогательный метод для получения информации о гонке
-    getRaceInfo(raceType) {
-        // Этот метод должен быть совместим с RaceManager
-        if (window.biathlonGame && window.biathlonGame.raceTypes) {
-            return window.biathlonGame.raceTypes[raceType] || null;
+        if (!window.raceManager) {
+            return this.getDefaultRecommendedStats(raceType);
         }
-        return null;
+        
+        return window.raceManager.getRecommendedStats(raceType);
     }
     
-    // Получить расчетное время прохождения отрезка (150м)
-    getSegmentTime() {
-        const speedMps = this.getSpeedMps();
-        return 150 / speedMps; // Время в секундах для прохождения 150 метров
-    }
-    
-    // Получить расчетное время стрельбы (5 выстрелов)
-    getShootingTime() {
-        const shotInterval = this.getShotInterval();
-        return shotInterval * 5; // Общее время стрельбы
-    }
-    
-    // Получить информацию о прогрессе для отображения
-    getProgressInfo() {
-        return {
-            segmentTime: this.getSegmentTime().toFixed(1) + 'с',
-            shootingTime: this.getShootingTime().toFixed(1) + 'с',
-            totalLevel: this.getPlayerLevel(),
-            speed: (this.getSpeedMps() * 3.6).toFixed(1) + ' км/ч',
-            accuracyProne: (this.getShootingAccuracy('prone') * 100).toFixed(1) + '%',
-            accuracyStanding: (this.getShootingAccuracy('standing') * 100).toFixed(1) + '%'
+    // Базовые рекомендации (если RaceManager не доступен)
+    getDefaultRecommendedStats(raceType) {
+        const baseRecommendations = {
+            sprint: { runningSpeed: 20, accuracy: 25, shootingSpeed: 15, stamina: 20 },
+            pursuit: { runningSpeed: 25, accuracy: 30, shootingSpeed: 20, stamina: 25 },
+            mass: { runningSpeed: 30, accuracy: 35, shootingSpeed: 25, stamina: 30 },
+            individual: { runningSpeed: 35, accuracy: 40, shootingSpeed: 30, stamina: 35 }
         };
+        
+        return baseRecommendations[raceType] || baseRecommendations.sprint;
+    }
+    
+    // Получить эффективность для текущих характеристик
+    getEfficiencyForRace(raceType) {
+        const recommended = this.getRecommendedStats(raceType);
+        const current = this.stats;
+        
+        let efficiency = 0;
+        let totalWeight = 0;
+        
+        // Бег (вес 40%)
+        if (recommended.runningSpeed > 0) {
+            const runningEff = Math.min(1, current.runningSpeed / recommended.runningSpeed);
+            efficiency += runningEff * 0.4;
+            totalWeight += 0.4;
+        }
+        
+        // Точность (вес 30%)
+        if (recommended.accuracy > 0) {
+            const accuracyEff = Math.min(1, current.accuracy / recommended.accuracy);
+            efficiency += accuracyEff * 0.3;
+            totalWeight += 0.3;
+        }
+        
+        // Скорость стрельбы (вес 20%)
+        if (recommended.shootingSpeed > 0) {
+            const shootingEff = Math.min(1, current.shootingSpeed / recommended.shootingSpeed);
+            efficiency += shootingEff * 0.2;
+            totalWeight += 0.2;
+        }
+        
+        // Выносливость (вес 10%)
+        if (recommended.stamina > 0) {
+            const staminaEff = Math.min(1, current.stamina / recommended.stamina);
+            efficiency += staminaEff * 0.1;
+            totalWeight += 0.1;
+        }
+        
+        // Нормализуем эффективность
+        efficiency = totalWeight > 0 ? efficiency / totalWeight : 0;
+        
+        return {
+            efficiency: efficiency,
+            percentage: Math.round(efficiency * 100),
+            description: this.getEfficiencyDescription(efficiency)
+        };
+    }
+    
+    // Получить описание эффективности
+    getEfficiencyDescription(efficiency) {
+        if (efficiency >= 0.9) return "Отличная подготовка";
+        if (efficiency >= 0.7) return "Хорошая подготовка";
+        if (efficiency >= 0.5) return "Средняя подготовка";
+        if (efficiency >= 0.3) return "Слабая подготовка";
+        return "Недостаточная подготовка";
+    }
+    
+    // === МЕТОДЫ ДЛЯ БУДУЩЕЙ СИСТЕМЫ ЭКИПИРОВКИ ===
+    
+    // Улучшить экипировку
+    upgradeEquipment(type) {
+        if (!this.equipment[type]) {
+            console.error("Неизвестный тип экипировки:", type);
+            return false;
+        }
+        
+        // TODO: Реализовать систему улучшения экипировки
+        console.log(`Улучшение экипировки: ${type}`);
+        return true;
+    }
+    
+    // Получить бонусы от экипировки
+    getEquipmentBonuses() {
+        return {
+            speedBonus: this.equipment.skis.speedBonus,
+            accuracyBonus: this.equipment.rifle.accuracyBonus,
+            shootingSpeedBonus: this.equipment.rifle.shootingSpeedBonus,
+            staminaBonus: this.equipment.suit.staminaBonus
+        };
+    }
+    
+    // Рассчитать общие характеристики с учетом экипировки
+    getTotalStats() {
+        const baseStats = this.getAllStats();
+        const equipmentBonuses = this.getEquipmentBonuses();
+        
+        return {
+            runningSpeed: baseStats.runningSpeed + equipmentBonuses.speedBonus,
+            accuracy: baseStats.accuracy + equipmentBonuses.accuracyBonus,
+            shootingSpeed: baseStats.shootingSpeed + equipmentBonuses.shootingSpeedBonus,
+            stamina: baseStats.stamina + equipmentBonuses.staminaBonus
+        };
+    }
+    
+    // Экспорт данных игрока
+    exportData() {
+        return {
+            stats: this.stats,
+            availablePoints: this.availablePoints,
+            equipment: this.equipment,
+            progressInfo: this.getProgressInfo(),
+            version: '3.0',
+            exportedAt: new Date().toISOString()
+        };
+    }
+    
+    // Импорт данных игрока
+    importData(data) {
+        try {
+            if (data.stats && data.availablePoints !== undefined) {
+                this.stats = data.stats;
+                this.availablePoints = data.availablePoints;
+                this.equipment = data.equipment || this.equipment;
+                
+                this.saveToStorage();
+                this.updateUI();
+                
+                console.log("Данные игрока импортированы");
+                return true;
+            }
+        } catch (error) {
+            console.error("Ошибка импорта данных:", error);
+        }
+        
+        return false;
     }
 }
