@@ -1,4 +1,4 @@
-/* css/style.css */
+/* css/style.css - ПОЛНОСТЬЮ ПЕРЕПИСАННЫЙ */
 * {
     margin: 0;
     padding: 0;
@@ -494,7 +494,7 @@ body {
     display: none;
 }
 
-/* Строки таблицы */
+/* Строки таблицы - ОСНОВНЫЕ СТИЛИ */
 .compact-row {
     display: flex;
     align-items: center;
@@ -511,25 +511,29 @@ body {
     border-bottom: none;
 }
 
-/* ЦВЕТА ДЛЯ СОСТОЯНИЙ - ИСПРАВЛЕНИЕ */
+/* ЦВЕТА ДЛЯ СОСТОЯНИЙ - УСИЛЕННЫЕ СТИЛИ */
 .compact-row.player {
-    background: rgba(33, 150, 243, 0.15) !important;
-    border-left: 3px solid #2196F3 !important;
+    background: rgba(33, 150, 243, 0.3) !important;
+    border-left: 4px solid #2196F3 !important;
+    box-shadow: inset 0 0 10px rgba(33, 150, 243, 0.3);
 }
 
 .compact-row.shooting {
-    background: rgba(255, 165, 0, 0.1) !important;
-    border-left: 3px solid #FFA500 !important;
+    background: rgba(255, 165, 0, 0.3) !important;
+    border-left: 4px solid #FFA500 !important;
+    box-shadow: inset 0 0 10px rgba(255, 165, 0, 0.3);
 }
 
 .compact-row.penalty {
-    background: rgba(244, 67, 54, 0.1) !important;
-    border-left: 3px solid #F44336 !important;
+    background: rgba(244, 67, 54, 0.3) !important;
+    border-left: 4px solid #F44336 !important;
+    box-shadow: inset 0 0 10px rgba(244, 67, 54, 0.3);
 }
 
 .compact-row.finished {
-    background: rgba(76, 175, 80, 0.1) !important;
-    border-left: 3px solid #4CAF50 !important;
+    background: rgba(76, 175, 80, 0.3) !important;
+    border-left: 4px solid #4CAF50 !important;
+    box-shadow: inset 0 0 10px rgba(76, 175, 80, 0.3);
 }
 
 /* Колонки таблицы */
@@ -621,11 +625,13 @@ body {
 
 .inline-target.miss {
     background: #e74c3c !important;
+    border-color: #c0392b !important;
     animation: missFlash 0.5s ease;
 }
 
 .inline-target.pending {
     background: #f39c12 !important;
+    border-color: #e67e22 !important;
     animation: pendingPulse 1s infinite;
 }
 
@@ -689,14 +695,17 @@ body {
 
 .sprint-btn {
     background: linear-gradient(135deg, #FF5252, #FF1744) !important;
+    box-shadow: 0 4px 8px rgba(255, 82, 82, 0.3);
 }
 
 .slow-btn {
     background: linear-gradient(135deg, #4CAF50, #2E7D32) !important;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
 }
 
 .menu-btn-control {
     background: linear-gradient(135deg, #2196F3, #1565C0) !important;
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
 }
 
 .btn-icon {
@@ -808,17 +817,20 @@ body {
 .target-hit {
     background: #4CAF50 !important;
     border-color: #2E7D32 !important;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
 }
 
 .target-miss {
     background: #F44336 !important;
     border-color: #C62828 !important;
+    box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
     animation: missFlash 0.5s ease;
 }
 
 .target-aiming {
     background: #FF9800 !important;
     border-color: #F57C00 !important;
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
     animation: pendingPulse 1s infinite;
 }
 
@@ -1290,3 +1302,9 @@ body {
 .wind-weak { color: #4CAF50; }
 .wind-moderate { color: #FF9800; }
 .wind-strong { color: #F44336; }
+
+/* ТЕСТОВЫЕ СТИЛИ ДЛЯ ПРОВЕРКИ ЦВЕТОВ */
+.test-player-color { background: rgba(33, 150, 243, 0.3) !important; }
+.test-shooting-color { background: rgba(255, 165, 0, 0.3) !important; }
+.test-penalty-color { background: rgba(244, 67, 54, 0.3) !important; }
+.test-finished-color { background: rgba(76, 175, 80, 0.3) !important; }
