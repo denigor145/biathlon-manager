@@ -138,8 +138,16 @@ class GameScreen {
     handleStartRaceStage() {
         console.log("Starting race after stage screen");
         if (window.biathlonGame) {
+            // Запускаем гонку
             window.biathlonGame.startRaceAfterStage();
+            
+            // Скрываем экран старта
             this.hideStageScreen('startStageScreen');
+            
+            // ПОКАЗЫВАЕМ ЭКРАН ГОНКИ - это было пропущено!
+            this.showScreen('gameScreen');
+            
+            console.log("Гонка началась, экран гонки активирован");
         }
     }
     
@@ -217,11 +225,26 @@ class GameScreen {
     
     // Основное обновление интерфейса
     updateDisplay() {
-        if (!window.biathlonGame || !window.biathlonGame.isRacing) return;
+        if (!window.biathlonGame) {
+            console.log("BiathlonGame не доступен для обновления");
+            return;
+        }
+        
+        if (!window.biathlonGame.isRacing) {
+            console.log("Гонка не активна, пропускаем обновление");
+            return;
+        }
 
         const game = window.biathlonGame;
         const race = game.getCurrentRace();
         const player = game.player;
+        
+        if (!race || !player) {
+            console.error("Нет данных о гонке или игроке");
+            return;
+        }
+        
+        console.log(`Обновление интерфейса: круг ${player.currentLap}, прогресс ${Math.round(player.lapProgress * 100)}%`);
         
         // Обновляем основную информацию
         this.updateBasicInfo(player, race);
@@ -607,10 +630,10 @@ class GameScreen {
         this.updateElement('startRaceName', `${race.name} - ${(race.totalDistance / 1000).toFixed(2)} км`);
         this.updateElement('startDistance', (race.totalDistance / 1000).toFixed(2) + ' км');
         this.updateElement('startShootings', race.shootingRounds.length);
-        this.updateElement('startPosition', player.position);
-        this.updateElement('startStamina', Math.round(player.stamina) + '%');
+        this.updateElement('startLaps', race.totalLaps);
+        this.updateElement('startLapDistance', (race.lapDistance / 1000).toFixed(1) + ' км');
         
-        // Добавляем информацию о локации и характеристиках
+        // Добавляем информацию о локации
         const startStageScreen = document.getElementById('startStageScreen');
         if (startStageScreen) {
             let locationInfo = startStageScreen.querySelector('.location-info');
