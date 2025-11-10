@@ -1,4 +1,4 @@
-// js/core/game.js
+// js/core/game.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 class BiathlonGame {
     constructor() {
         // Основное состояние игры
@@ -34,7 +34,6 @@ class BiathlonGame {
     
     // Выбор типа гонки
     selectRaceType(raceType) {
-        // Приводим к верхнему регистру для consistency
         const normalizedRaceType = raceType.toUpperCase();
         
         if (GameConstants.RACE_TYPES[normalizedRaceType]) {
@@ -93,7 +92,7 @@ class BiathlonGame {
     
     // Инициализация гонки
     initializeRace(raceType, locationId = null) {
-        // Если передан raceType, устанавливаем его (с нормализацией)
+        // Если передан raceType, устанавливаем его
         if (raceType) {
             const normalizedRaceType = raceType.toUpperCase();
             this.selectRaceType(normalizedRaceType);
@@ -122,6 +121,9 @@ class BiathlonGame {
         this.opponents = this.generateOpponents(16);
         this.allCompetitors = [this.player, ...this.opponents];
         
+        // ОБНОВЛЕНО: Инициализируем позиции
+        this.updatePositions();
+        
         // Сбрасываем состояние гонки
         this.isRacing = false;
         this.isPaused = false;
@@ -133,6 +135,8 @@ class BiathlonGame {
         this.trackCondition = this.location.trackCondition;
         
         console.log(`Гонка инициализирована: ${this.race.name}, Локация: ${this.location.name}`);
+        console.log(`Участников: ${this.allCompetitors.length}, Игрок: ${this.player.name}`);
+        
         return true;
     }
 
@@ -228,7 +232,7 @@ class BiathlonGame {
                 lapProgress: 0,
                 distanceCovered: 0,
                 totalDistance: 0,
-                position: i + 2,
+                position: i + 2, // Временная позиция, будет обновлена
                 
                 // Физические параметры
                 baseSpeedMps: baseSpeedMps,
@@ -301,6 +305,7 @@ class BiathlonGame {
         this.startGameLoop();
         
         console.log(`Гонка началась: ${this.race.name}`);
+        console.log(`Участников: ${this.allCompetitors.length}`);
         return true;
     }
     
@@ -481,35 +486,38 @@ class BiathlonGame {
     
     // Совершение выстрела
     makeShot(competitor) {
-        // Используем ShootingEngine для совершения выстрела
-        if (window.shootingEngine) {
-            window.shootingEngine.makeShot(competitor);
-        } else {
-            // Резервный вариант, если ShootingEngine не доступен
-            const shootingRound = competitor.currentShootingRound;
-            const baseAccuracy = competitor.shooting[shootingRound.position];
-            const consistency = competitor.consistency || 0.8;
-            
-            // Расчет точности с учетом пульса
-            const pulsePenalty = competitor.pulse > 140 ? 
-                (competitor.pulse - 140) * GameConstants.PLAYER.PULSE_ACCURACY_PENALTY : 0;
-            
-            const effectiveAccuracy = Math.max(0.1, baseAccuracy * consistency - pulsePenalty);
-            const isHit = Math.random() < effectiveAccuracy;
-            
-            competitor.shootingResults.push(isHit);
-            competitor.shotsFired++;
-            
-            if (!isHit) {
-                competitor.totalMisses++;
-            }
-            
-            console.log(`${competitor.name}: выстрел ${competitor.shotsFired} - ${isHit ? 'ПОПАДАНИЕ' : 'ПРОМАХ'} (${Math.round(effectiveAccuracy * 100)}%)`);
+        if (competitor.shotsFired >= 5) {
+            console.log("Все выстрелы уже произведены");
+            return false;
+        }
+
+        // Расчет точности с учетом характеристик и условий
+        const shootingRound = competitor.currentShootingRound;
+        const baseAccuracy = competitor.shooting[shootingRound.position];
+        const consistency = competitor.consistency || 0.8;
+        
+        // Расчет точности с учетом пульса
+        const pulsePenalty = competitor.pulse > 140 ? 
+            (competitor.pulse - 140) * GameConstants.PLAYER.PULSE_ACCURACY_PENALTY : 0;
+        
+        const effectiveAccuracy = Math.max(0.1, baseAccuracy * consistency - pulsePenalty);
+        const isHit = Math.random() < effectiveAccuracy;
+
+        competitor.shootingResults.push(isHit);
+        competitor.shotsFired++;
+        
+        if (!isHit) {
+            competitor.totalMisses++;
         }
         
+        console.log(`${competitor.name}: выстрел ${competitor.shotsFired} - ${isHit ? 'ПОПАДАНИЕ' : 'ПРОМАХ'} (${Math.round(effectiveAccuracy * 100)}%)`);
+
+        // Обновляем интерфейс
         if (window.gameScreen) {
             window.gameScreen.updateDisplay();
         }
+
+        return isHit;
     }
     
     // Завершение стрельбы
@@ -592,12 +600,14 @@ class BiathlonGame {
         console.log(`${competitor.name} финишировал! Время: ${this.formatTime(competitor.totalTime)}`);
     }
     
-    // Обновление позиций
+    // Обновление позиций - ИСПРАВЛЕННАЯ ВЕРСИЯ
     updatePositions() {
+        // Создаем временный массив для сортировки
         const tempCompetitors = [...this.allCompetitors];
         
+        // Сортируем участников
         tempCompetitors.sort((a, b) => {
-            // Сначала финишировавшие
+            // Сначала по финишу
             if (a.finished && !b.finished) return -1;
             if (!a.finished && b.finished) return 1;
             
@@ -610,10 +620,12 @@ class BiathlonGame {
             return a.totalTime - b.totalTime;
         });
         
+        // Обновляем позиции
         tempCompetitors.forEach((competitor, index) => {
             competitor.position = index + 1;
         });
         
+        // Сохраняем отсортированный массив
         this.allCompetitors = tempCompetitors;
     }
     
@@ -761,6 +773,39 @@ class BiathlonGame {
         }
     }
     
+    // НОВЫЙ МЕТОД: Получить результаты стрельбы для отображения
+    getShootingResults(competitor) {
+        if (!competitor) return { hits: 0, misses: 0, shots: [] };
+        
+        const hits = competitor.shootingResults ? 
+            competitor.shootingResults.filter(result => result).length : 0;
+        const misses = competitor.shootingResults ? 
+            competitor.shootingResults.filter(result => !result).length : 0;
+        
+        return {
+            hits: hits,
+            misses: misses,
+            shots: competitor.shootingResults || []
+        };
+    }
+    
+    // НОВЫЙ МЕТОД: Получить значение штрафа для отображения
+    getPenaltyDisplayValue(competitor) {
+        if (!this.race) return 0;
+        
+        if (this.race.penaltyType === 'minutes') {
+            return competitor.penaltyMinutes > 0 ? '+' + (competitor.penaltyMinutes / 60).toFixed(1) + 'м' : '';
+        } else {
+            return competitor.penaltyLoops > 0 ? competitor.penaltyLoops : '';
+        }
+    }
+    
+    // НОВЫЙ МЕТОД: Получить отставание игрока
+    getPlayerGap(competitor) {
+        const leader = this.allCompetitors[0];
+        return competitor.totalTime - leader.totalTime;
+    }
+    
     // Вспомогательные методы
     calculateSpeedFromLevel(level) {
         return GameConstants.PLAYER.MIN_SPEED + (level / 60) * (GameConstants.PLAYER.MAX_SPEED - GameConstants.PLAYER.MIN_SPEED);
@@ -786,28 +831,6 @@ class BiathlonGame {
     // Геттеры
     getCurrentRace() {
         return this.race;
-    }
-    
-    getPlayerGap() {
-        const leader = this.allCompetitors[0];
-        return this.player.totalTime - leader.totalTime;
-    }
-    
-    getShootingResults(competitor) {
-        return {
-            hits: competitor.shootingResults.filter(result => result).length,
-            misses: competitor.shootingResults.filter(result => !result).length,
-            shots: [...competitor.shootingResults],
-            finished: !competitor.currentShootingRound && competitor.shootingResults.length === 5
-        };
-    }
-    
-    getPenaltyDisplayValue(competitor) {
-        if (this.race.penaltyType === 'minutes') {
-            return competitor.penaltyMinutes / 60;
-        } else {
-            return competitor.penaltyLoops;
-        }
     }
     
     // Возврат в меню
