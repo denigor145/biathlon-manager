@@ -1289,3 +1289,91 @@ body {
 .wind-weak { color: #4CAF50; }
 .wind-moderate { color: #FF9800; }
 .wind-strong { color: #F44336; }
+
+.compact-row.player {
+background: rgba(33, 150, 243, 0.15);
+border-left: 3px solid #2196F3;
+}
+
+.compact-row.shooting {
+background: rgba(255, 165, 0, 0.1);
+border-left: 3px solid #FFA500;
+}
+
+.compact-row.penalty {
+background: rgba(244, 67, 54, 0.1);
+border-left: 3px solid #F44336;
+}
+
+.compact-row.finished {
+background: rgba(76, 175, 80, 0.1);
+border-left: 3px solid #4CAF50;
+}
+
+/* Стили для индикаторов прогресса */
+.progress-bar {
+background: rgba(255,255,255,0.1);
+border-radius: 10px;
+height: 8px;
+overflow: hidden;
+}
+
+.progress-fill {
+height: 100%;
+border-radius: 10px;
+transition: width 0.3s ease;
+}
+
+/* Стили для мишеней */
+.targets-inline {
+display: flex;
+gap: 3px;
+justify-content: flex-end;
+align-items: center;
+}
+
+.inline-target {
+width: 12px;
+height: 12px;
+background: white;
+border-radius: 50%;
+border: 2px solid #333;
+position: relative;
+transition: all 0.3s ease;
+flex-shrink: 0;
+}
+
+.inline-target.hit::before {
+content: '';
+position: absolute;
+top: 50%;
+left: 50%;
+width: 8px;
+height: 8px;
+background: black;
+border-radius: 50%;
+transform: translate(-50%, -50%);
+}
+
+.inline-target.miss {
+background: #e74c3c;
+animation: missFlash 0.5s ease;
+}
+
+.inline-target.pending {
+background: #f39c12;
+animation: pendingPulse 1s infinite;
+}
+
+/* Анимации для мишеней */
+@keyframes missFlash {
+0% { transform: scale(1); }
+50% { transform: scale(1.2); }
+100% { transform: scale(1); }
+}
+
+@keyframes pendingPulse {
+0% { opacity: 0.6; }
+50% { opacity: 1; }
+100% { opacity: 0.6; }
+}
