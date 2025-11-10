@@ -144,7 +144,7 @@ class GameScreen {
             // Скрываем экран старта
             this.hideStageScreen('startStageScreen');
             
-            // ПОКАЗЫВАЕМ ЭКРАН ГОНКИ - это было пропущено!
+            // ПОКАЗЫВАЕМ ЭКРАН ГОНКИ
             this.showScreen('gameScreen');
             
             console.log("Гонка началась, экран гонки активирован");
@@ -223,10 +223,12 @@ class GameScreen {
         }
     }
     
-    // Основное обновление интерфейса
+    // Основное обновление интерфейса - ИСПРАВЛЕННАЯ ВЕРСИЯ
     updateDisplay() {
+        console.log("=== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ===");
+        
         if (!window.biathlonGame) {
-            console.log("BiathlonGame не доступен для обновления");
+            console.error("BiathlonGame не доступен для обновления");
             return;
         }
         
@@ -245,6 +247,7 @@ class GameScreen {
         }
         
         console.log(`Обновление интерфейса: круг ${player.currentLap}, прогресс ${Math.round(player.lapProgress * 100)}%`);
+        console.log(`Участников: ${game.allCompetitors ? game.allCompetitors.length : 0}`);
         
         // Обновляем основную информацию
         this.updateBasicInfo(player, race);
@@ -311,6 +314,7 @@ class GameScreen {
         }
     }
     
+    // ОБНОВЛЕННЫЙ МЕТОД: Обновление таблицы лидеров
     updateCompetitorsList() {
         const competitorsList = document.getElementById('competitorsList');
         if (!competitorsList) {
@@ -318,15 +322,30 @@ class GameScreen {
             return;
         }
 
-        if (!window.biathlonGame) return;
+        if (!window.biathlonGame || !window.biathlonGame.allCompetitors) {
+            console.error("BiathlonGame или allCompetitors не доступен");
+            competitorsList.innerHTML = '<div class="compact-row">Загрузка участников...</div>';
+            return;
+        }
         
         const game = window.biathlonGame;
-        const leader = game.allCompetitors[0];
+        const competitors = game.allCompetitors;
         
-        competitorsList.innerHTML = game.allCompetitors.map(competitor => {
+        if (!competitors || competitors.length === 0) {
+            console.error("Нет данных о участниках");
+            competitorsList.innerHTML = '<div class="compact-row">Нет данных о участниках</div>';
+            return;
+        }
+
+        const leader = competitors[0];
+        
+        console.log("Обновление таблицы лидеров. Участников:", competitors.length);
+        
+        competitorsList.innerHTML = competitors.map(competitor => {
+            // Правильный расчет отставания
             const gap = game.getPlayerGap ? game.getPlayerGap(competitor) : competitor.totalTime - leader.totalTime;
             const shortName = this.formatShortName(competitor.name);
-            const penaltyValue = game.getPenaltyDisplayValue(competitor);
+            const penaltyValue = game.getPenaltyDisplayValue ? game.getPenaltyDisplayValue(competitor) : competitor.penaltyLoops;
             
             // Определяем состояние для отображения
             let stateIcon = '';
@@ -343,29 +362,34 @@ class GameScreen {
                 stateClass = 'finished';
             }
             
+            const playerClass = competitor.isPlayer ? 'player' : '';
+            const rowClass = `compact-row ${playerClass} ${stateClass}`.trim();
+            
             if (competitor.currentState === GameConstants.PLAYER_STATES.SHOOTING) {
-                return this.createShootingRow(competitor, shortName, gap, penaltyValue, stateIcon, stateClass);
+                return this.createShootingRow(competitor, shortName, gap, penaltyValue, stateIcon, rowClass);
             } else {
-                return this.createNormalRow(competitor, shortName, gap, penaltyValue, stateIcon, stateClass);
+                return this.createNormalRow(competitor, shortName, gap, penaltyValue, stateIcon, rowClass);
             }
         }).join('');
+        
+        console.log("Таблица лидеров обновлена");
     }
 
-    createNormalRow(competitor, shortName, gap, penaltyValue, stateIcon, stateClass) {
+    createNormalRow(competitor, shortName, gap, penaltyValue, stateIcon, rowClass) {
+        // Правильное форматирование отставания
+        const gapDisplay = competitor.position === 1 ? '' : `+${this.formatTime(Math.max(0, gap))}`;
+        
         // Добавляем отображение уровня для ботов
         const levelInfo = !competitor.isPlayer ? 
-            `<div style="font-size: 9px; color: #888; margin-top: 2px;">Ур. ${competitor.level}</div>` : '';
+            `<div style="font-size: 9px; color: #888; margin-top: 2px;">Ур. ${competitor.level || 0}</div>` : '';
         
         // Добавляем иконку состояния
         const stateDisplay = stateIcon ? `<span style="margin-left: 5px;">${stateIcon}</span>` : '';
         
-        // Форматируем отставание
-        const gapDisplay = competitor.position === 1 ? '' : `+${this.formatTime(gap)}`;
-        
         return `
-            <div class="compact-row ${competitor.isPlayer ? 'player' : ''} ${stateClass}">
-                <div class="position">${competitor.position}</div>
-                <div class="flag">${competitor.flag}</div>
+            <div class="${rowClass}">
+                <div class="position">${competitor.position || 1}</div>
+                <div class="flag">${competitor.flag || '🏳️'}</div>
                 <div class="name">
                     ${shortName}${stateDisplay}
                     ${levelInfo}
@@ -376,14 +400,18 @@ class GameScreen {
         `;
     }
 
-    createShootingRow(competitor, shortName, gap, penaltyValue, stateIcon, stateClass) {
-        const results = window.biathlonGame.getShootingResults(competitor);
+    createShootingRow(competitor, shortName, gap, penaltyValue, stateIcon, rowClass) {
+        const gapDisplay = competitor.position === 1 ? '' : `+${this.formatTime(Math.max(0, gap))}`;
+        
+        // Создаем отображение мишеней для стрельбы
         let targetsHTML = '<div class="targets-inline">';
+        const results = window.biathlonGame.getShootingResults ? 
+            window.biathlonGame.getShootingResults(competitor) : { shots: [] };
         
         for (let i = 0; i < 5; i++) {
             let targetClass = 'inline-target';
             if (i < competitor.shotsFired) {
-                targetClass += results.shots[i] ? ' hit' : ' miss';
+                targetClass += results.shots && results.shots[i] ? ' hit' : ' miss';
             } else {
                 targetClass += ' pending';
             }
@@ -392,17 +420,13 @@ class GameScreen {
         
         targetsHTML += '</div>';
 
-        // Добавляем отображение уровня для ботов
         const levelInfo = !competitor.isPlayer ? 
-            `<div style="font-size: 9px; color: #888; margin-top: 2px;">Ур. ${competitor.level}</div>` : '';
-
-        // Форматируем отставание
-        const gapDisplay = competitor.position === 1 ? '' : `+${this.formatTime(gap)}`;
+            `<div style="font-size: 9px; color: #888; margin-top: 2px;">Ур. ${competitor.level || 0}</div>` : '';
 
         return `
-            <div class="compact-row ${competitor.isPlayer ? 'player' : 'shooting'} ${stateClass}">
-                <div class="position">${competitor.position}</div>
-                <div class="flag">${competitor.flag}</div>
+            <div class="${rowClass}">
+                <div class="position">${competitor.position || 1}</div>
+                <div class="flag">${competitor.flag || '🏳️'}</div>
                 <div class="name">
                     ${shortName} 🎯
                     ${levelInfo}
