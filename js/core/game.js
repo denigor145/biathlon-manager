@@ -34,12 +34,15 @@ class BiathlonGame {
     
     // Выбор типа гонки
     selectRaceType(raceType) {
-        if (GameConstants.RACE_TYPES[raceType]) {
-            this.currentRaceType = raceType;
-            console.log(`Выбран тип гонки: ${raceType}`);
+        // Приводим к верхнему регистру для consistency
+        const normalizedRaceType = raceType.toUpperCase();
+        
+        if (GameConstants.RACE_TYPES[normalizedRaceType]) {
+            this.currentRaceType = normalizedRaceType;
+            console.log(`Выбран тип гонки: ${normalizedRaceType}`);
             return true;
         } else {
-            console.error(`Неизвестный тип гонки: ${raceType}`);
+            console.error(`Неизвестный тип гонки: ${raceType} (нормализовано: ${normalizedRaceType})`);
             return false;
         }
     }
@@ -90,12 +93,24 @@ class BiathlonGame {
     
     // Инициализация гонки
     initializeRace(raceType, locationId = null) {
-        // Если передан raceType, устанавливаем его
+        // Если передан raceType, устанавливаем его (с нормализацией)
         if (raceType) {
-            this.selectRaceType(raceType);
+            const normalizedRaceType = raceType.toUpperCase();
+            this.selectRaceType(normalizedRaceType);
+        }
+        
+        // Проверяем, что гонка установлена
+        if (!this.currentRaceType) {
+            console.error("Тип гонки не установлен!");
+            return false;
         }
         
         this.race = GameConstants.RACE_TYPES[this.currentRaceType];
+        
+        if (!this.race) {
+            console.error(`Гонка не найдена: ${this.currentRaceType}`);
+            return false;
+        }
         
         if (locationId !== null) {
             this.currentLocationId = locationId;
