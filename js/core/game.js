@@ -1,4 +1,4 @@
-// js/core/game.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// js/core/game.js - БИАТЛОННЫЙ МЕНЕДЖЕР С УСКОРЕННОЙ СИСТЕМОЙ
 class BiathlonGame {
     constructor() {
         // Основное состояние игры
@@ -27,7 +27,7 @@ class BiathlonGame {
         this.currentLocationId = 0;
         this.locations = GameConstants.LOCATIONS;
         
-        console.log("Биатлонный менеджер инициализирован с непрерывной системой!");
+        console.log("Биатлонный менеджер инициализирован с УСКОРЕННОЙ системой!");
     }
 
     // === МЕТОДЫ ДЛЯ ИНТЕГРАЦИИ С MAIN-MENU ===
@@ -121,7 +121,7 @@ class BiathlonGame {
         this.opponents = this.generateOpponents(16);
         this.allCompetitors = [this.player, ...this.opponents];
         
-        // ОБНОВЛЕНО: Инициализируем позиции
+        // Инициализируем позиции
         this.updatePositions();
         
         // Сбрасываем состояние гонки
@@ -365,8 +365,11 @@ class BiathlonGame {
         competitor.totalTime = competitor.raceTime + competitor.shootingTime + competitor.penaltyTime;
     }
     
-    // Обновление состояния гонки
+    // Обновление состояния гонки - ИСПРАВЛЕННАЯ ВЕРСИЯ С УСКОРЕНИЕМ
     updateRacingState(competitor, deltaTime) {
+        // УСКОРЕНИЕ: умножаем deltaTime на множитель для быстрой гонки
+        const acceleratedDeltaTime = deltaTime * GameConstants.RACE.TIME_MULTIPLIER;
+        
         // Расчет скорости с учетом модификаторов
         const intensityModifier = GameConstants.INTENSITY_LEVELS[competitor.intensityLevel].speedModifier;
         const randomVariation = 1 + (Math.random() * 2 - 1) * GameConstants.RACE.RANDOM_VARIATION;
@@ -374,10 +377,10 @@ class BiathlonGame {
         
         competitor.currentSpeedMps = competitor.baseSpeedMps * intensityModifier * randomVariation * trackModifier;
         
-        // Пройденная дистанция
-        const distanceThisFrame = competitor.currentSpeedMps * deltaTime;
+        // Пройденная дистанция (используем ускоренное время)
+        const distanceThisFrame = competitor.currentSpeedMps * acceleratedDeltaTime;
         competitor.distanceCovered += distanceThisFrame;
-        competitor.raceTime += deltaTime;
+        competitor.raceTime += acceleratedDeltaTime;
         
         // Обновляем прогресс круга
         const lapDistance = this.race.lapDistance;
@@ -388,13 +391,13 @@ class BiathlonGame {
         this.checkLapCompletion(competitor);
         this.checkShootingPoint(competitor);
         
-        // Обновляем физиологию
-        this.updatePhysiology(competitor, deltaTime);
+        // Обновляем физиологию (используем ускоренное время)
+        this.updatePhysiology(competitor, acceleratedDeltaTime);
     }
     
-    // Обновление состояния стрельбы
+    // Обновление состояния стрельбы - БЕЗ УСКОРЕНИЯ
     updateShootingState(competitor, deltaTime) {
-        competitor.shootingTime += deltaTime;
+        competitor.shootingTime += deltaTime; // НЕ используем ускорение для стрельбы
         
         // Автоматическая стрельба
         if (competitor.shotsFired < 5) {
@@ -413,13 +416,14 @@ class BiathlonGame {
         }
     }
     
-    // Обновление состояния штрафных кругов
+    // Обновление состояния штрафных кругов - УСКОРЕННАЯ ВЕРСИЯ
     updatePenaltyLoopState(competitor, deltaTime) {
-        competitor.penaltyTime += deltaTime;
+        const acceleratedDeltaTime = deltaTime * GameConstants.RACE.TIME_MULTIPLIER;
+        competitor.penaltyTime += acceleratedDeltaTime;
         
         // Расчет скорости на штрафных кругах (медленнее)
         const penaltySpeed = competitor.baseSpeedMps * 0.8;
-        const distanceThisFrame = penaltySpeed * deltaTime;
+        const distanceThisFrame = penaltySpeed * acceleratedDeltaTime;
         
         // Обновляем прогресс штрафных кругов
         const totalPenaltyDistance = competitor.penaltyLoops * GameConstants.RACE.PENALTY_LOOP_LENGTH;
@@ -600,7 +604,7 @@ class BiathlonGame {
         console.log(`${competitor.name} финишировал! Время: ${this.formatTime(competitor.totalTime)}`);
     }
     
-    // Обновление позиций - ИСПРАВЛЕННАЯ ВЕРСИЯ
+    // Обновление позиций
     updatePositions() {
         // Создаем временный массив для сортировки
         const tempCompetitors = [...this.allCompetitors];
