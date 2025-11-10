@@ -1,9 +1,8 @@
-// js/core/game.js - ДОБАВЛЯЕМ НУЖНЫЕ МЕТОДЫ
-
+// js/core/game.js
 class BiathlonGame {
     constructor() {
         // Основное состояние игры
-        this.currentRaceType = "SPRINT"; // Изменено на SPRINT
+        this.currentRaceType = "SPRINT";
         this.isRacing = false;
         this.isPaused = false;
         this.raceStartTime = 0;
@@ -31,7 +30,7 @@ class BiathlonGame {
         console.log("Биатлонный менеджер инициализирован с непрерывной системой!");
     }
 
-    // === ДОБАВЛЕННЫЕ МЕТОДЫ ДЛЯ ИНТЕГРАЦИИ С MAIN-MENU ===
+    // === МЕТОДЫ ДЛЯ ИНТЕГРАЦИИ С MAIN-MENU ===
     
     // Выбор типа гонки
     selectRaceType(raceType) {
@@ -79,7 +78,15 @@ class BiathlonGame {
         };
     }
 
-    // === СУЩЕСТВУЮЩИЕ МЕТОДЫ (остаются без изменений) ===
+    // === ИСПРАВЛЕНИЕ ДЛЯ GAME-SCREEN ===
+    
+    // Запуск гонки после экрана старта
+    startRaceAfterStage() {
+        console.log("Запуск гонки после экрана старта");
+        return this.startRace();
+    }
+
+    // === ОСНОВНЫЕ МЕТОДЫ ===
     
     // Инициализация гонки
     initializeRace(raceType, locationId = null) {
@@ -128,15 +135,15 @@ class BiathlonGame {
             
             // Прогресс гонки
             currentLap: 1,
-            lapProgress: 0, // 0-1 прогресс текущего круга
-            distanceCovered: 0, // общая пройденная дистанция (метры)
+            lapProgress: 0,
+            distanceCovered: 0,
             totalDistance: 0,
             position: 1,
             
             // Физические параметры
-            baseSpeedMps: GameConstants.PLAYER.MIN_SPEED, // базовая скорость
-            currentSpeedMps: GameConstants.PLAYER.MIN_SPEED, // текущая скорость с модификаторами
-            intensityLevel: 4, // средний темп по умолчанию
+            baseSpeedMps: GameConstants.PLAYER.MIN_SPEED,
+            currentSpeedMps: GameConstants.PLAYER.MIN_SPEED,
+            intensityLevel: 4,
             stamina: GameConstants.PLAYER.MAX_STAMINA,
             pulse: GameConstants.PLAYER.MIN_PULSE,
             
@@ -147,7 +154,7 @@ class BiathlonGame {
             },
             shootingInterval: GameConstants.SHOOTING.MAX_SHOOTING_INTERVAL,
             currentShootingRound: null,
-            shootingProgress: 0, // 0-1 прогресс стрельбы
+            shootingProgress: 0,
             shotsFired: 0,
             shootingResults: [],
             shootingStartTime: 0,
@@ -155,14 +162,14 @@ class BiathlonGame {
             // Штрафы
             penaltyMinutes: 0,
             penaltyLoops: 0,
-            penaltyProgress: 0, // 0-1 прогресс штрафных кругов
+            penaltyProgress: 0,
             totalMisses: 0,
             
             // Время
-            raceTime: 0, // время на трассе
-            shootingTime: 0, // время стрельбы
-            penaltyTime: 0, // время штрафных кругов
-            totalTime: 0, // общее время
+            raceTime: 0,
+            shootingTime: 0,
+            penaltyTime: 0,
+            totalTime: 0,
             
             // Технические
             isPlayer: true,
@@ -211,7 +218,7 @@ class BiathlonGame {
                 // Физические параметры
                 baseSpeedMps: baseSpeedMps,
                 currentSpeedMps: baseSpeedMps,
-                intensityLevel: 4 + Math.floor(Math.random() * 2), // 4-5 уровень
+                intensityLevel: 4 + Math.floor(Math.random() * 2),
                 stamina: GameConstants.PLAYER.MAX_STAMINA,
                 pulse: GameConstants.PLAYER.MIN_PULSE + Math.random() * 20,
                 
@@ -292,7 +299,7 @@ class BiathlonGame {
             if (!this.isRacing || this.isPaused) return;
             
             const currentTime = Date.now();
-            const deltaTime = (currentTime - this.lastUpdateTime) / 1000; // в секундах
+            const deltaTime = (currentTime - this.lastUpdateTime) / 1000;
             this.lastUpdateTime = currentTime;
             
             // Обновляем всех участников
@@ -782,7 +789,7 @@ class BiathlonGame {
     
     getPenaltyDisplayValue(competitor) {
         if (this.race.penaltyType === 'minutes') {
-            return competitor.penaltyMinutes / 60; // в минутах
+            return competitor.penaltyMinutes / 60;
         } else {
             return competitor.penaltyLoops;
         }
