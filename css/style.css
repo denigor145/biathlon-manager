@@ -1308,3 +1308,182 @@ body {
 .test-shooting-color { background: rgba(255, 165, 0, 0.3) !important; }
 .test-penalty-color { background: rgba(244, 67, 54, 0.3) !important; }
 .test-finished-color { background: rgba(76, 175, 80, 0.3) !important; }
+
+/* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ИСПРАВЛЕНИЯ ОТОБРАЖЕНИЯ */
+
+/* Убедимся, что body имеет правильный фон */
+body {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Усиленные стили для таблицы лидеров */
+.leaderboard-content {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-radius: 10px !important;
+    min-height: 200px !important;
+}
+
+/* Яркие стили для строки игрока */
+.compact-row.player {
+    background: rgba(33, 150, 243, 0.6) !important;
+    border-left: 4px solid #2196F3 !important;
+    box-shadow: inset 0 0 20px rgba(33, 150, 243, 0.5) !important;
+    font-weight: bold !important;
+    color: white !important;
+}
+
+.compact-row.player .position {
+    color: #2196F3 !important;
+    font-weight: bold !important;
+    font-size: 16px !important;
+}
+
+.compact-row.player .name {
+    color: #2196F3 !important;
+    font-weight: bold !important;
+}
+
+/* Стили для ботов */
+.compact-row:not(.player) {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.compact-row:not(.player):hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Стили для состояний */
+.compact-row.shooting {
+    background: rgba(255, 165, 0, 0.4) !important;
+    border-left: 4px solid #FFA500 !important;
+}
+
+.compact-row.penalty {
+    background: rgba(244, 67, 54, 0.4) !important;
+    border-left: 4px solid #F44336 !important;
+}
+
+.compact-row.finished {
+    background: rgba(76, 175, 80, 0.4) !important;
+    border-left: 4px solid #4CAF50 !important;
+}
+
+/* Убедимся, что все экраны правильно отображаются */
+.screen.active {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Отладочные стили для проверки загрузки CSS */
+.debug-css-loaded::before {
+    content: 'CSS загружен правильно';
+    display: none;
+}
+
+/* Улучшенные стили для мишеней */
+.targets-inline {
+    display: flex !important;
+    gap: 3px !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.inline-target {
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50% !important;
+    border: 2px solid #333 !important;
+    background: white !important;
+    display: block !important;
+}
+
+.inline-target.hit {
+    background: #4CAF50 !important;
+    border-color: #2E7D32 !important;
+}
+
+.inline-target.miss {
+    background: #F44336 !important;
+    border-color: #C62828 !important;
+}
+
+.inline-target.pending {
+    background: #FF9800 !important;
+    border-color: #F57C00 !important;
+    animation: pulse 1s infinite !important;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* Убедимся, что прогресс-бары видны */
+.progress-bar {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 10px !important;
+    height: 8px !important;
+    overflow: hidden !important;
+}
+
+.progress-fill {
+    height: 100% !important;
+    border-radius: 10px !important;
+    transition: width 0.3s ease !important;
+}
+
+/* Стили для отображения отставания */
+.gap {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+}
+
+/* Стили для штрафов */
+.penalty {
+    color: #FF5252 !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .compact-row {
+        padding: 10px 8px !important;
+        font-size: 11px !important;
+    }
+    
+    .compact-row .position {
+        width: 30px !important;
+        font-size: 12px !important;
+    }
+    
+    .compact-row .flag {
+        width: 35px !important;
+        font-size: 12px !important;
+    }
+    
+    .compact-row .gap {
+        width: 60px !important;
+        font-size: 10px !important;
+    }
+    
+    .compact-row .penalty {
+        width: 30px !important;
+        font-size: 10px !important;
+    }
+    
+    .targets-container {
+        width: 60px !important;
+    }
+    
+    .inline-target {
+        width: 8px !important;
+        height: 8px !important;
+    }
+}
