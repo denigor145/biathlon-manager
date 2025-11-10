@@ -1,7 +1,9 @@
+// js/core/game.js - ДОБАВЛЯЕМ НУЖНЫЕ МЕТОДЫ
+
 class BiathlonGame {
     constructor() {
         // Основное состояние игры
-        this.currentRaceType = "sprint";
+        this.currentRaceType = "SPRINT"; // Изменено на SPRINT
         this.isRacing = false;
         this.isPaused = false;
         this.raceStartTime = 0;
@@ -28,11 +30,65 @@ class BiathlonGame {
         
         console.log("Биатлонный менеджер инициализирован с непрерывной системой!");
     }
+
+    // === ДОБАВЛЕННЫЕ МЕТОДЫ ДЛЯ ИНТЕГРАЦИИ С MAIN-MENU ===
+    
+    // Выбор типа гонки
+    selectRaceType(raceType) {
+        if (GameConstants.RACE_TYPES[raceType]) {
+            this.currentRaceType = raceType;
+            console.log(`Выбран тип гонки: ${raceType}`);
+            return true;
+        } else {
+            console.error(`Неизвестный тип гонки: ${raceType}`);
+            return false;
+        }
+    }
+    
+    // Получить выбранную гонку
+    getSelectedRace() {
+        return GameConstants.RACE_TYPES[this.currentRaceType];
+    }
+    
+    // Получить текущую локацию
+    getCurrentLocation() {
+        return this.locations[this.currentLocationId];
+    }
+    
+    // Установить локацию
+    setLocation(locationId) {
+        if (locationId >= 0 && locationId < this.locations.length) {
+            this.currentLocationId = locationId;
+            this.location = this.locations[locationId];
+            console.log(`Установлена локация: ${this.location.name}`);
+            return true;
+        }
+        return false;
+    }
+    
+    // Получить информацию о доступе к локации
+    getLocationAccessInfo(locationId) {
+        const location = this.locations[locationId];
+        const playerLevel = window.playerProfile ? window.playerProfile.getPlayerLevel() : 0;
+        
+        return {
+            playerLevel: playerLevel,
+            hasAccess: playerLevel >= location.minLevel,
+            isRecommended: playerLevel >= location.minLevel && playerLevel <= location.maxLevel,
+            isTooEasy: playerLevel > location.maxLevel
+        };
+    }
+
+    // === СУЩЕСТВУЮЩИЕ МЕТОДЫ (остаются без изменений) ===
     
     // Инициализация гонки
     initializeRace(raceType, locationId = null) {
-        this.currentRaceType = raceType;
-        this.race = GameConstants.RACE_TYPES[raceType];
+        // Если передан raceType, устанавливаем его
+        if (raceType) {
+            this.selectRaceType(raceType);
+        }
+        
+        this.race = GameConstants.RACE_TYPES[this.currentRaceType];
         
         if (locationId !== null) {
             this.currentLocationId = locationId;
@@ -57,7 +113,7 @@ class BiathlonGame {
         console.log(`Гонка инициализирована: ${this.race.name}, Локация: ${this.location.name}`);
         return true;
     }
-    
+
     // Создание игрока с новой системой состояний
     createPlayer() {
         return {
@@ -115,7 +171,7 @@ class BiathlonGame {
             justReturnedFromShooting: false
         };
     }
-    
+
     // Генерация соперников с учетом локации
     generateOpponents(count) {
         const opponents = [];
@@ -391,6 +447,11 @@ class BiathlonGame {
         
         console.log(`${competitor.name} начинает стрельбу: ${shootingRound.name}`);
         
+        // Используем ShootingEngine для управления стрельбой
+        if (window.shootingEngine) {
+            window.shootingEngine.startShooting(competitor, shootingRound);
+        }
+        
         if (window.gameScreen) {
             window.gameScreen.updateDisplay();
         }
@@ -398,25 +459,31 @@ class BiathlonGame {
     
     // Совершение выстрела
     makeShot(competitor) {
-        const shootingRound = competitor.currentShootingRound;
-        const baseAccuracy = competitor.shooting[shootingRound.position];
-        const consistency = competitor.consistency || 0.8;
-        
-        // Расчет точности с учетом пульса
-        const pulsePenalty = competitor.pulse > 140 ? 
-            (competitor.pulse - 140) * GameConstants.PLAYER.PULSE_ACCURACY_PENALTY : 0;
-        
-        const effectiveAccuracy = Math.max(0.1, baseAccuracy * consistency - pulsePenalty);
-        const isHit = Math.random() < effectiveAccuracy;
-        
-        competitor.shootingResults.push(isHit);
-        competitor.shotsFired++;
-        
-        if (!isHit) {
-            competitor.totalMisses++;
+        // Используем ShootingEngine для совершения выстрела
+        if (window.shootingEngine) {
+            window.shootingEngine.makeShot(competitor);
+        } else {
+            // Резервный вариант, если ShootingEngine не доступен
+            const shootingRound = competitor.currentShootingRound;
+            const baseAccuracy = competitor.shooting[shootingRound.position];
+            const consistency = competitor.consistency || 0.8;
+            
+            // Расчет точности с учетом пульса
+            const pulsePenalty = competitor.pulse > 140 ? 
+                (competitor.pulse - 140) * GameConstants.PLAYER.PULSE_ACCURACY_PENALTY : 0;
+            
+            const effectiveAccuracy = Math.max(0.1, baseAccuracy * consistency - pulsePenalty);
+            const isHit = Math.random() < effectiveAccuracy;
+            
+            competitor.shootingResults.push(isHit);
+            competitor.shotsFired++;
+            
+            if (!isHit) {
+                competitor.totalMisses++;
+            }
+            
+            console.log(`${competitor.name}: выстрел ${competitor.shotsFired} - ${isHit ? 'ПОПАДАНИЕ' : 'ПРОМАХ'} (${Math.round(effectiveAccuracy * 100)}%)`);
         }
-        
-        console.log(`${competitor.name}: выстрел ${competitor.shotsFired} - ${isHit ? 'ПОПАДАНИЕ' : 'ПРОМАХ'} (${Math.round(effectiveAccuracy * 100)}%)`);
         
         if (window.gameScreen) {
             window.gameScreen.updateDisplay();
@@ -687,6 +754,8 @@ class BiathlonGame {
     }
     
     formatTime(seconds) {
+        if (seconds < 0) return '0:00.0';
+        
         const mins = Math.floor(seconds / 60);
         const secs = (seconds % 60).toFixed(1);
         return `${mins}:${secs.padStart(4, '0')}`;
@@ -695,10 +764,6 @@ class BiathlonGame {
     // Геттеры
     getCurrentRace() {
         return this.race;
-    }
-    
-    getCurrentLocation() {
-        return this.location;
     }
     
     getPlayerGap() {
