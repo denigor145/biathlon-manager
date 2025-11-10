@@ -1,7 +1,7 @@
 class MainMenu {
     constructor() {
         this.isInitialized = false;
-        this.selectedRaceType = "sprint";
+        this.selectedRaceType = "SPRINT"; // Изменено на верхний регистр по умолчанию
         
         console.log("MainMenu создан для непрерывной системы");
         
@@ -69,7 +69,7 @@ class MainMenu {
         });
         
         // Устанавливаем спринт по умолчанию
-        const defaultRace = document.querySelector('.race-card[data-race="sprint"]');
+        const defaultRace = document.querySelector('.race-card[data-race="SPRINT"]');
         if (defaultRace) {
             this.handleRaceCardClick(defaultRace);
         }
@@ -83,17 +83,18 @@ class MainMenu {
         card.classList.add('selected');
         
         const raceType = card.getAttribute('data-race');
-        this.selectedRaceType = raceType;
+        // Сохраняем в верхнем регистре для consistency
+        this.selectedRaceType = raceType.toUpperCase();
         
         if (window.biathlonGame) {
-            window.biathlonGame.selectRaceType(raceType);
-            console.log(`Выбрана гонка: ${raceType}`);
+            window.biathlonGame.selectRaceType(this.selectedRaceType);
+            console.log(`Выбрана гонка: ${this.selectedRaceType}`);
         } else {
             console.error("BiathlonGame не доступен");
         }
         
         // Обновляем информацию о рекомендуемых характеристиках
-        this.updateRecommendedStats(raceType);
+        this.updateRecommendedStats(this.selectedRaceType);
     }
     
     // Обновление карточек гонок с новой информацией о дистанциях
@@ -201,7 +202,7 @@ class MainMenu {
                 </div>
                 <div style="text-align: center;">
                     <div style="color: #FFD700; font-weight: bold;">${progressInfo.accuracyProne}</div>
-                    <div style="font-size: 0.8em; opacity: 0.8;">Меткость лёжа</div>
+                    <div style="font-size: 0.8em; opacity: 0.8;">Метчность лёжа</div>
                 </div>
             </div>
             
