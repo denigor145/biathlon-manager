@@ -1,45 +1,44 @@
-// Константы игры - НЕПРЕРЫВНАЯ СИСТЕМА
-
+// js/utils/constants.js - НЕПРЕРЫВНАЯ СИСТЕМА
 const GameConstants = {
     // Версия игры
     VERSION: '3.0.0',
     
     // Система обновления
     UPDATE: {
-        INTERVAL: 500, // 500мс между обновлениями
-        TIME_STEP: 0.5, // 0.5 секунды за обновление
-        RACE_SPEED: 1.0 // множитель скорости гонки
+        INTERVAL: 100, // 100мс между обновлениями для плавности
+        TIME_STEP: 0.1, // 0.1 секунды за обновление
+        RACE_SPEED: 1.0
     },
     
     // Настройки игрока
     PLAYER: {
-        // Скорости (м/с)
+        // Скорости (м/с) - реальные скорости биатлонистов
         MIN_SPEED: 4.44,     // 16 км/ч
         MAX_SPEED: 7.78,     // 28 км/ч
         
         // Выносливость
         MAX_STAMINA: 100,
-        STAMINA_RECOVERY_RATE: 2.0, // восстановление на уровне 1
+        STAMINA_RECOVERY_RATE: 2.0,
         STAMINA_DRAIN_RATES: {
-            1: -2.0, // восстановление
-            2: -1.0, // восстановление  
-            3: 0.0,  // нейтрально
-            4: 1.0,  // средний темп
-            5: 2.0,  // быстрый
-            6: 3.0,  // очень быстрый
-            7: 4.0   // спринт
+            1: -2.0,
+            2: -1.0,  
+            3: 0.0,
+            4: 1.0,
+            5: 2.0,
+            6: 3.0,
+            7: 4.0
         },
         
         // Пульс
         MIN_PULSE: 80,
         MAX_PULSE: 200,
-        PULSE_INCREASE_RATE: 0.5, // увеличение пульса в секунду
-        PULSE_DECREASE_RATE: 0.3, // снижение пульса в секунду
+        PULSE_INCREASE_RATE: 0.5,
+        PULSE_DECREASE_RATE: 0.3,
         
         // Точность стрельбы
-        MIN_ACCURACY: 0.5,  // 50% минимум
-        MAX_ACCURACY: 0.95, // 95% максимум
-        PULSE_ACCURACY_PENALTY: 0.003, // -0.3% точности за единицу пульса выше 140
+        MIN_ACCURACY: 0.5,
+        MAX_ACCURACY: 0.95,
+        PULSE_ACCURACY_PENALTY: 0.003,
     },
     
     // Уровни интенсивности
@@ -55,9 +54,9 @@ const GameConstants = {
     
     // Ограничения по выносливости для уровней интенсивности
     STAMINA_RESTRICTIONS: {
-        5: 30, // уровень 5 требует минимум 30% выносливости
-        6: 40, // уровень 6 требует минимум 40% выносливости  
-        7: 50  // уровень 7 требует минимум 50% выносливости
+        5: 30,
+        6: 40,  
+        7: 50
     },
     
     // Настройки характеристик
@@ -75,29 +74,30 @@ const GameConstants = {
     
     // Настройки гонки
     RACE: {
-        PENALTY_LOOP_LENGTH: 150, // Длина штрафного круга в метрах
-        WIND_EFFECT: 0.1, // Влияние ветра на скорость (10%)
-        TRACK_CONDITION_EFFECT: 0.15, // Влияние состояния трассы на скорость (15%)
-        RANDOM_VARIATION: 0.1, // Случайное отклонение скорости (±10%)
+        PENALTY_LOOP_LENGTH: 150,
+        WIND_EFFECT: 0.1,
+        TRACK_CONDITION_EFFECT: 0.15,
+        RANDOM_VARIATION: 0.1,
+        TIME_MULTIPLIER: 10.0 // МНОЖИТЕЛЬ ВРЕМЕНИ ДЛЯ УСКОРЕНИЯ ГОНКИ
     },
     
     // Настройки стрельбы
     SHOOTING: {
         SHOTS_PER_ROUND: 5,
-        MIN_SHOOTING_INTERVAL: 3.0, // 3 секунды минимум
-        MAX_SHOOTING_INTERVAL: 6.0, // 6 секунд максимум
-        PRONE_ACCURACY_BONUS: 1.1,  // +10% к точности лёжа
-        STANDING_ACCURACY_PENALTY: 0.9, // -10% к точности стоя
-        WIND_ACCURACY_EFFECT: 0.05, // Влияние ветра на точность (5%)
+        MIN_SHOOTING_INTERVAL: 3.0,
+        MAX_SHOOTING_INTERVAL: 6.0,
+        PRONE_ACCURACY_BONUS: 1.1,
+        STANDING_ACCURACY_PENALTY: 0.9,
+        WIND_ACCURACY_EFFECT: 0.05,
     },
     
-    // Типы гонок - ОБНОВЛЕННЫЕ ПАРАМЕТРЫ
+    // Типы гонок - РЕАЛЬНЫЕ ДИСТАНЦИИ БИАТЛОНА
     RACE_TYPES: {
         SPRINT: {
             name: "Спринт",
             lapDistance: 3300,
             totalLaps: 3,
-            totalDistance: 9900, // 3300 * 3
+            totalDistance: 9900,
             shootingRounds: [
                 { afterLap: 1, position: "prone", name: "Стрельба лёжа" },
                 { afterLap: 2, position: "standing", name: "Стрельба стоя" }
@@ -111,7 +111,7 @@ const GameConstants = {
             name: "Гонка преследования", 
             lapDistance: 2500,
             totalLaps: 5,
-            totalDistance: 12500, // 2500 * 5
+            totalDistance: 12500,
             shootingRounds: [
                 { afterLap: 1, position: "prone", name: "Стрельба лёжа 1" },
                 { afterLap: 2, position: "prone", name: "Стрельба лёжа 2" },
@@ -127,7 +127,7 @@ const GameConstants = {
             name: "Масс-старт",
             lapDistance: 3000, 
             totalLaps: 5,
-            totalDistance: 15000, // 3000 * 5
+            totalDistance: 15000,
             shootingRounds: [
                 { afterLap: 1, position: "prone", name: "Стрельба лёжа 1" },
                 { afterLap: 2, position: "prone", name: "Стрельба лёжа 2" },
@@ -143,7 +143,7 @@ const GameConstants = {
             name: "Индивидуальная гонка",
             lapDistance: 4000,
             totalLaps: 5, 
-            totalDistance: 20000, // 4000 * 5
+            totalDistance: 20000,
             shootingRounds: [
                 { afterLap: 1, position: "prone", name: "Стрельба лёжа 1" },
                 { afterLap: 2, position: "standing", name: "Стрельба стоя 1" },
@@ -151,7 +151,7 @@ const GameConstants = {
                 { afterLap: 4, position: "standing", name: "Стрельба стоя 2" }
             ],
             penaltyType: 'minutes',
-            penaltyPerMiss: 60, // 60 секунд за промах
+            penaltyPerMiss: 60,
             description: "Самая длинная дистанция с 4 стрельбами"
         }
     },
